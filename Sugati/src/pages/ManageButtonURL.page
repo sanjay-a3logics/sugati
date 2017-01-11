@@ -1,0 +1,347 @@
+<apex:page controller="ManageButtonURLController"  sidebar="false" showHeader="false" title="Itinerary Category">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+         <head>
+             <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <c:BasicResources ></c:BasicResources>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+            <apex:stylesheet value="https://appssential-sf.s3.amazonaws.com/sugati/css/slds-appssential.css" />
+            <apex:includescript value="https://appssential-sf.s3.amazonaws.com/sugati/js/slds-appssential.js" />
+             
+             <script>
+                    var myApp = angular.module('MyApp', []);
+                    
+                    var contrl = myApp.controller('myController' ,function($scope){
+                        $scope.PageNames = {!PageNames};
+                        $scope.customSettingValue={!CustomNames};
+                        
+                        $scope.filterPageName = function(pageName){
+                            console.log(pageName);
+                            return function (item) {
+                                if (item.label.indexOf(pageName) != -1)
+                                {
+                                    return true;
+                                }
+                                return false;
+                            };
+                        }
+                        
+                        
+                        $scope.saveCustomSetting = function(type){
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.ManageButtonURLController.Save}',JSON.stringify($scope.customSettingValue[0]),
+                                function(result, event){
+                                    if (event.status) {
+                                    
+                                        if(type != ''){
+                                                alert('Saved Successfully');
+                                                 window.open('', '_self', '');
+                                                 window.close();
+                                                
+                                        }
+                                        else{
+                                            alert('Saved Successfully');
+                                         }
+                                    }
+                                    else if (event.type === 'exception') 
+                                            alert(event.message, 'error');
+                                 }, 
+                                    {escape: false}
+                             );
+                        }
+                      });  
+                    
+                    
+                    
+             </script>       
+             
+         </head>    
+         <body >
+            <div ng-app="MyApp" >
+                <br/>
+                <div class="slds" id="mycontroller" ng-controller="myController"   >
+                    <c:AlertBox />
+                    <c:Loading />
+                        <div class="slds-card slds-page-header__detail-row" style="margin: 10px;">
+                            <div class="slds-card__body " style="padding : 0px">
+                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                                    <div class="slds-form--horizontal" style="text-align: inherit;padding-left: 27px;">
+                                    </div>
+                                </div>
+                                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal slds-no-row-hover">
+                                    <thead>
+                                        <tr style="background-color: #f4f6f9;">
+                                            <th class="slds-text-heading--label slds-size--1-of-4" scope="col">Button</th>
+                                            <th class="slds-text-heading--label slds-size--1-of-4" scope="col">Page Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody >
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Holiday Enquiry</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Holiday_Enquiry__c" ng-options="record.value as record.label for record in PageNames| filter : filterPageName('Holiday Enquiry')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Holiday Suggestion</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Holiday_Suggestion__c" ng-options="record.value as record.label for record in PageNames| filter : filterPageName('Suggestion')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Acknowledgement Email </button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Acknowledgement_Email__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Ack')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Itinerary Builder </button><br/>
+                                        </td> 
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Itinerary_Builder__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Itinerary Builder')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Final Message </button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Final_Message__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Final Message')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Final Docs Settings</button><br/>
+                                        </td> 
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Final_Docs_Setting__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Final')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Final Docs Category</button><br/>
+                                        </td>   
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Final_Docs_Category__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Category')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Client Payments</button><br/>
+                                        </td> 
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Client_Payments__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Client Payments')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Supplier Payments</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Supplier_Payments__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Supplier Payments')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Itinerary Category</button><br/>
+                                        </td> 
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Itinerary_Category__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Category')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                           <button class="slds-button  slds-button--brand slds-m-top--x-small">Itinerary Setting</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Itinerary_Settings__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Setting')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                             <button class="slds-button  slds-button--brand slds-m-top--x-small">Cover Image</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Cover_Image__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Cover')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                             <button class="slds-button  slds-button--brand slds-m-top--x-small">Itinerary Pdf</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Itinerary_Pdf__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Pdf')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                             <button class="slds-button  slds-button--brand slds-m-top--x-small">Itinerary Web</button><br/>
+                                        </td> 
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Itinerary_Web__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Site')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                             <button class="slds-button  slds-button--brand slds-m-top--x-small">Send Email</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Send_Email__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Email')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                               <button class="slds-button  slds-button--brand slds-m-top--x-small">ATOL</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].ATOL__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('ATOL')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                            <button class="slds-button  slds-button--brand slds-m-top--x-small">Questionnaire</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Questionnaire__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Questionnaire')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                           <button class="slds-button  slds-button--brand slds-m-top--x-small">Internal Booking Form</button><br/>
+                                        </td> 
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Internal_Booking_Form__c" ng-options="record.value as record.label for record in PageNames| filter:filterPageName('Booking')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                           <button class="slds-button  slds-button--brand slds-m-top--x-small">External Booking Form</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].External_Booking_Form__c" ng-options="record.value as record.label for record in PageNames| filter : filterPageName('Booking')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent">
+                                        <td class="slds-size--1-of-4" data-label="">
+                                           <button class="slds-button  slds-button--brand slds-m-top--x-small">Manage Tasks</button><br/>
+                                        </td>
+                                        <td>
+                                            <div class="slds-form-element__control">
+                                                <select  class="slds-select" ng-required="true" ng-model="customSettingValue[0].Manage_Tasks__c" ng-options="record.value as record.label for record in PageNames| filter : filterPageName('Task')">
+                                                    <option value="" label="-- Select --"></option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                            <br/>
+                            <br/>
+                        </div>
+                    </div>  
+                    <div class="slds-modal__footer slds-modal__footer" style="position: fixed;bottom: 0px;width: 100%;">
+                        <div class="slds-x-small-buttons--horizontal">
+                             <button class="slds-button  slds-button--brand" ng-click="saveCustomSetting('')">Save</button>
+                             &nbsp;&nbsp;<button class="slds-button  slds-button--brand" ng-click="saveCustomSetting ('close')">Save &amp; Close</button>
+                             <button  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" > Back</button>
+                       </div>
+                    </div>
+                  </div>
+             </div>   
+         </body>
+    </html>
+</apex:page>

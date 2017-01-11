@@ -1,0 +1,152 @@
+<apex:page showHeader="false" sidebar="false">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <title>Google Books Embedded Viewer API Example</title>
+        
+        <style>
+            .textContainer {
+                width: 559px;
+                height: 842px;
+                flow-from: page-content;
+                margin:30px auto;
+                /* EDIT: I'm throwing in some styles that will look like the page break */
+                /* play with it how you like */
+                border: 1px solid #999999 /* dat grey border */
+                padding: 15px; /* give the white space some padding */
+                box-shadow: 1px 1px 3px #333 /* a little drop shadow */
+    
+            }
+    
+            .text {
+                width: 320px;
+                float: left;
+            }
+        </style>
+        <script type="text/javascript">
+            function getCaretPosition(editableDiv) {
+                if (editableDiv.offsetHeight < editableDiv.scrollHeight ||
+                    editableDiv.offsetWidth < editableDiv.scrollWidth) {
+                    return true;
+                } else {
+                   return false;
+                }
+            }  
+            function getSelectionTextInfo(el) {
+                var atStart = false, atEnd = false;
+                var selRange, testRange;
+                if (window.getSelection) {
+                    var sel = window.getSelection();
+                    if (sel.rangeCount) {
+                        selRange = sel.getRangeAt(0);
+                        testRange = selRange.cloneRange();
+    
+                        testRange.selectNodeContents(el);
+                        testRange.setEnd(selRange.startContainer, selRange.startOffset);
+                        atStart = (testRange.toString() == "");
+    
+                        testRange.selectNodeContents(el);
+                        testRange.setStart(selRange.endContainer, selRange.endOffset);
+                        atEnd = (testRange.toString() == "");
+                    }
+                } else if (document.selection && document.selection.type != "Control") {
+                    selRange = document.selection.createRange();
+                    testRange = selRange.duplicate();
+                    
+                    testRange.moveToElementText(el);
+                    testRange.setEndPoint("EndToStart", selRange);
+                    atStart = (testRange.text == "");
+    
+                    testRange.moveToElementText(el);
+                    testRange.setEndPoint("StartToEnd", selRange);
+                    atEnd = (testRange.text == "");
+                }
+    
+                return { atStart: atStart, atEnd: atEnd };
+            }
+    
+    
+            $(document).ready(function() {
+                setAction();    
+            });
+            function setAction(){
+                var update = function() {
+                  var selInfo = getSelectionTextInfo(this);
+                  if(selInfo.atEnd && getCaretPosition(this) && $(this).next('div').length == 0){
+                    var node = document.createElement("div");    
+                    node.className = 'textContainer' ;
+                    node.contentEditable  = true;
+                    var textnode = document.createElement("div");         // Create a text node
+                    textnode.className = 'text' ;
+                    node.appendChild(textnode);                              // Append the text to <li>
+                    document.getElementById("body").appendChild(node); 
+                    $(node).focus();
+                    setAction();
+                  }
+                  else if(selInfo.atEnd && getCaretPosition(this)){
+                    $(this).next('div').focus();
+                  }
+                  else if(selInfo.atStart){
+                    setCursorToEnd($(this).prev().get(0));
+                  }
+                };
+                $('.textContainer').on("mousedown mouseup keydown keyup", update);
+    
+            }
+        </script>
+      </head>
+      <body id="body">
+        <div class="textContainer" contenteditable="true">
+            <div class="text">
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                v
+    
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+    
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+    
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+                append your text here -
+    
+                append your text here -
+                append your text here -
+            </div>
+        </div>
+        <div class="textContainer" contenteditable="true">
+            <div class="text">
+                 <!-- append your text here -->
+            </div>
+        </div>
+      </body>
+    </html>
+</apex:page>

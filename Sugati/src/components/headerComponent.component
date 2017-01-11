@@ -1,0 +1,11 @@
+<apex:component >
+    <apex:attribute id="pageType" name="page" type="String" description="page Name"/>
+    <div class="page-top" style="width:80%;">
+        <!--<a class="y-logo" href="#">Original Travel</a> -->
+        <div class="y-title" style="text-align: center;float : none;    font-size: 20px;
+            font-weight: lighter;
+            font-family: Century Gothic,CenturyGothic,AppleGothic,museo_sans300,sans-serif;">
+            <span>{!page}</span>
+        </div>
+    </div>
+</apex:component>

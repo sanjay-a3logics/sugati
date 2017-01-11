@@ -1,0 +1,18 @@
+<apex:page standardController="Opportunity" standardStylesheets="false" extensions="PreviewAsPDFController" 
+    sidebar="false" showHeader="false" action="{!checkCGs}"  applyBodyTag="false">
+    <script>
+        function changeClientGroup(selectedCGID){
+            document.getElementById("pdfSrc").src="/apex/{!nameSpacePrefix}ItineraryPDFA4?id={!opp.Id}&cgId="+selectedCGID;
+        }
+    </script>
+    <apex:form id="formid1">  
+        <div style="float:right;">
+            Preview As &nbsp;
+            <apex:selectList value="{!selectedClientGroup}" onclick="changeClientGroup(this.value)" style="width:180px;height:20px;" size="1">
+                <apex:selectOptions value="{!ClientGroup}"/>
+            </apex:selectList>
+            <br/>
+        </div>
+        <apex:iframe id="pdfSrc" src="/apex/{!nameSpacePrefix}ItineraryPDFA4?id={!opp.Id}&cgId={!selectedClientGroup}"/>
+    </apex:form>      
+</apex:page>

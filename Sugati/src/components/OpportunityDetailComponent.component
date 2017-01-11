@@ -1,0 +1,140 @@
+<apex:component controller="OpportunityDetailController">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <head>
+            <c:BasicResources ></c:BasicResources>
+            
+            <style>
+                
+            </style>
+            <script>
+                $(document).ready(function(){
+                    if(window.top.location.href.indexOf("ItineraryBuilder") > -1){
+                        $('#movetoHE').show();
+                        $('#noMove').hide();
+                    }
+                });
+                
+                
+          </script>
+        </head>
+        <body>
+            <apex:form >
+                <apex:actionFunction status="loading" name="jsrefreshComponent" action="{!refreshComponent}" reRender="detailbody"/>
+            </apex:form>
+            <apex:outputPanel id="detailbody"> 
+                    <!-- <div class="slds-grid slds-wrap">
+                         <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">    
+                            <center class="summary-label ">Opportunity Summary</center>
+                         </div>
+                         
+                         <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">    
+                            <span class=" slds-large-size--1-of-3"><span class="summary-field-title">Opportunity name:&nbsp;</span><a href="/{!OppD.Id}" target="_blank" style="text-decoration: underline;" >{!OppD.name}</a></span>
+                            <span class="slds-col slds-size--1-of-3"><span class="summary-field-title">Reference Number:&nbsp;</span><a href="/{!OppD.Id}" target="_blank" style="text-decoration: underline;" >{!OppD.O_Reference_Number__c}</a></span>
+                            <span class="slds-col slds-size--1-of-3"><span class="summary-field-title">Account:&nbsp;</span> <a href="/{!OppD.Account.Id}" target="_blank" style="text-decoration: underline;" >{!OppD.Account.name}</a></span>
+                         </div>
+                         <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">    
+                        
+                            <span class="slds-col slds-size--1-of-2" ><span class="summary-field-title ">Date:&nbsp;</span><div class="departureDate" style="display: inherit; ">
+                            <apex:outputText value="{0, date, EEE MMMM d','  yyyy}"><apex:param value="{!OppD.O_Departure_Date__c}" /></apex:outputText>
+                            </div> - &nbsp;<apex:outputText value="{0, date, EEE MMMM d','  yyyy}"><apex:param value="{!OppD.O_Return_Date__c}" /></apex:outputText>
+                            </span>
+                            <span class="slds-col slds-size--1-of-2"><span class="summary-field-title">PAX:&nbsp;</span> <apex:outputText value="{!OppD.O_Pax__c}"/></span>
+                         </div>
+                    </div> -->
+                    <br/>
+                    
+                 <div class="slds-page-header" role="banner" style="padding:5px;">
+                     <div class="slds-grid">
+                         <div class="slds-col">
+                             <div class="slds-media">
+                                 <div class="slds-media__figure">
+                                     <svg aria-hidden="true" class="slds-icon slds-icon-standard-opportunity slds-icon--large" style="width: 30px !important;height: 30px !important;">
+                                         <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#opportunity')}" ></use>
+                                     </svg>
+                                 </div>
+                                 
+                                 <div class="slds-media__body">
+                                     
+                                        <div class="slds-grid slds-grid--align-left" >
+                                            <div class="slds-col--padd"><h4 class="slds-text-heading--small"><a id="noMove" onclick="redirect('/apex/{!nameSpacePrefix}HolidayEnquiry?id={!$CurrentPage.parameters.id}')"> {!OppD.Name} </a> <a id="movetoHE" style="display:none"  onclick="redirect('/apex/{!nameSpacePrefix}HolidayEnquiry?id={!$CurrentPage.parameters.id}')"> {!OppD.Name} </a> </h4></div>
+                                        </div>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="slds-col slds-no-flex slds-align-middle">
+                          <!--   <a class="slds-button slds-button--neutral" href="{!URLFOR($Action.Opportunity.Edit, OppD.id )}">Edit</a >
+                             <div class="slds-dropdown-trigger">
+                                 <button class="slds-button slds-button--icon-border-filled ">
+                                     <svg aria-hidden="true" class="slds-button__icon">
+                                         <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                     </svg>
+                                     <span class="slds-assistive-text">Show More</span>
+                                 </button>
+                                 <div class="slds-dropdown slds-dropdown--right slds-dropdown--actions slds-dropdown--menu" style="padding-top: 1%;">
+                                     <ul class="slds-dropdown__list" role="menu">
+                                         <li id="menu-14-1" href="#" class="slds-dropdown__item"><a href="{!URLFOR($Action.Opportunity.Delete, OppD.id )}" class="slds-truncate" role="menuitem">Delete</a></li>
+                                         <li id="menu-15-2" href="#" class="slds-dropdown__item"><a href="{!URLFOR($Action.Opportunity.view, OppD.id )}" class="slds-truncate" role="menuitem">Clone</a></li>
+                                     </ul>
+                                 </div>
+                             </div> -->
+                         </div>
+                     </div>
+                     <div class="slds-grid slds-wrap slds-page-header__detail-row" style="margin:5px;">
+                         <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--2-of-12" style="margin-bottom:10px">
+                            <dl>
+                                <dt>
+                                    <p class="slds-text-heading--label">Reference Number</p>
+                                </dt>
+                                <dd>
+                                    <p class="slds-text-body--regular"><a href="/{!OppD.Id}" target="_blank" >{!OppD.O_Reference_Number__c}</a></p>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--2-of-12" style="margin-bottom:10px">
+                            <dl>
+                                <dt>
+                                    <p class="slds-text-heading--label">Account</p>
+                                </dt>
+                                <dd>
+                                    <p class="slds-text-body--regular"><a href="/{!OppD.Account.Id}" target="_blank" >{!OppD.Account.name}</a></p>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--3-of-12" style="margin-bottom:10px">
+                            <dl>
+                                <dt>
+                                    <p class="slds-text-heading--label">Date</p>
+                                </dt>
+                                <dd>
+                                    <p class="slds-text-body--regular"><apex:outputText value="{0, date, EEE MMMM d','  yyyy}"><apex:param value="{!OppD.O_Departure_Date__c}" /></apex:outputText>
+                                      - &nbsp;<apex:outputText value="{0, date, EEE MMMM d','  yyyy}"><apex:param value="{!OppD.O_Return_Date__c}" /></apex:outputText></p>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-12" style="margin-bottom:10px">
+                            <dl>
+                                <dt>
+                                    <p class="slds-text-heading--label">PAX</p>
+                                </dt>
+                                <dd>
+                                    <p class="slds-text-body--regular">{!OppD.O_Pax__c}</p>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--2-of-12" style="margin-bottom:10px">
+                            <dl>
+                                <dt>
+                                    <p class="slds-text-heading--label">Total Credit Memo</p>
+                                </dt>
+                                <dd>
+                                    <p class="slds-text-body--regular">{!OppD.Account.Total_Credit_Memo__c}</p>
+                                </dd>
+                            </dl>
+                        </div>
+                        
+                    </div>
+                 </div>
+             </apex:outputPanel>
+        </body>
+    </html>
+</apex:component>

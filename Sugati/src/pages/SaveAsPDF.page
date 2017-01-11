@@ -1,0 +1,81 @@
+<apex:page title="Saving Itinerary PDF"  showHeader="false" sidebar="false"  standardController="Opportunity" extensions="SavePDF">
+    <meta charset="utf-8"/>
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+                <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+                <c:BasicResources ></c:BasicResources>
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+                <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+                <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+                <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+    
+    <apex:actionStatus id="loading" onstart="loading(true)" onstop="loading(false)" />
+    <div id="contentLoading" style="display:none;">
+        <apex:image id="contentLoading1" url="{!$Resource.loading}" width="100" height="100" style="margin-top : 100px;" alt="Loading graphic"/>
+        <div>   Saving PDF...</div>
+    </div>
+    <apex:form >
+        <apex:outputPanel id="msg"></apex:outputPanel>
+        <apex:actionFunction status="loading" name="save" action="{!savePDF}" reRender="msg" oncomplete="Saved();"/>
+    </apex:form>
+    <style>
+        #contentLoading{
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+            position: fixed;
+            display: block;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 10001;
+            text-align: center;
+        }
+        
+        #contentLoading1{
+            position: absolute;
+            top:350px;
+            z-index: 10001;
+        }
+    </style>
+    <script>
+        function loading(val){
+            if (val) {
+                document.getElementById('contentLoading').style.display = 'inline-block';
+                document.getElementById('contentLoaded').style.display = 'none';
+            }
+            else {
+                document.getElementById('contentLoading').style.display = 'none';
+                document.getElementById('contentLoaded').style.display = 'inline-block';
+            }
+        } 
+        
+        $(document).ready(function(){ save();});
+        function Saved(){
+            $('<div></div>').appendTo('body')
+            .html('Itinerary PDF has been saved.')
+            .dialog({
+                modal: true,
+                title: 'Saved',
+                zIndex: 10000,
+                autoOpen: true,
+                width: '415px',
+                resizable: false,
+                buttons: {
+                    OK: function () {
+                        window.close();
+                    }
+                },
+                close: function (event, ui) {
+                    window.close();
+                }
+            });
+            
+        }
+    </script>
+</apex:page>

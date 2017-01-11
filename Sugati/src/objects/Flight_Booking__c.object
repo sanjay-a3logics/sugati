@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>FB_Base_Cost_in_Local_Currency__c</fullName>
+        <externalId>false</externalId>
+        <label>Base Cost in Local Currency</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>FB_Exchange_Rate_Look_Up__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Exchange Rate Look Up</label>
+        <referenceTo>Exchange_Rate__c</referenceTo>
+        <relationshipLabel>Flight Bookings</relationshipLabel>
+        <relationshipName>Flight_Bookings</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>FB_Group_Member__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Group Member</label>
+        <referenceTo>Group_Member__c</referenceTo>
+        <relationshipLabel>Flight Bookings</relationshipLabel>
+        <relationshipName>Flight_Bookings</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>FB_MarkedUp_Cost__c</fullName>
+        <externalId>false</externalId>
+        <label>MarkedUp Cost</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>FB_Net_Cost_in_GBP__c</fullName>
+        <externalId>false</externalId>
+        <formula>FB_Base_Cost_in_Local_Currency__c /  FB_Exchange_Rate_Look_Up__r.ER_Exchange_Rate__c</formula>
+        <label>Net Cost in GBP</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>FB_Seat_No__c</fullName>
+        <externalId>false</externalId>
+        <label>Seat No</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>FB_Supplier_Booking__c</fullName>
+        <externalId>false</externalId>
+        <label>Supplier Booking</label>
+        <referenceTo>Supplier_Booking__c</referenceTo>
+        <relationshipLabel>Flight Bookings</relationshipLabel>
+        <relationshipName>Flight_Bookings1</relationshipName>
+        <relationshipOrder>0</relationshipOrder>
+        <reparentableMasterDetail>false</reparentableMasterDetail>
+        <trackTrending>false</trackTrending>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    </fields>
+    <label>Flight Booking</label>
+    <nameField>
+        <displayFormat>FB-{0000000000}</displayFormat>
+        <label>Flight Booking ID</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Flight Bookings</pluralLabel>
+    <recordTypes>
+        <fullName>Dom_Flight</fullName>
+        <active>true</active>
+        <description>Domestic Flights</description>
+        <label>Dom Flight</label>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Int_Flight</fullName>
+        <active>true</active>
+        <description>International Flight</description>
+        <label>Int Flight</label>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Light_Aircraft</fullName>
+        <active>true</active>
+        <label>Light Aircraft</label>
+    </recordTypes>
+    <searchLayouts/>
+    <sharingModel>ControlledByParent</sharingModel>
+</CustomObject>

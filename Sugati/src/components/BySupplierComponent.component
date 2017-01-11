@@ -1,0 +1,76 @@
+<apex:component controller="BySupplierComponent">
+    <apex:form >
+        <apex:actionFunction status="loading" name="jsrefreshComponent" action="{!refreshComponent}" reRender="detailbody"/>
+    </apex:form>
+    <apex:outputPanel id="detailbody">
+        <div class="slds-card">
+            <div class="slds-card__header slds-grid">
+                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                    <div class="slds-media__figure">
+                        <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                    </div>
+                    <div class="slds-media__body">
+                        <h2 class="slds-text-heading--small slds-truncate">Supplier Cost(s) By Supplier</h2>
+                    </div>
+                </div>
+                <div class="slds-no-flex">
+                    <div class="slds-button-group">
+                        <img ng-show="toggleSupplier==false" ng-click="collapse('Supplier')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        <img ng-show="toggleSupplier==true" ng-click="collapse('Supplier')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                    </div>
+                </div>
+            </div>
+            <div class="slds-card__body" ng-show="toggleSupplier">
+                <div class="slds-scrollable--x">
+                    <table class="SBTable slds-table slds-table--bordered"> 
+                        <tr>
+                         <th class="headerRow" style="width:30%">Supplier Name</th>                         
+                         <th class="headerRow">Payment Currency</th>
+                         <th class="headerRow numberTD">Total Cost</th>
+                         <th class="headerRow numberTD">Total Paid</th>
+                         <th class="headerRow numberTD">Outstanding</th>
+                         <th class="headerRow">ROE</th>
+                         <th class="headerRow">Booking Currency</th>
+                         <th class="headerRow numberTD">Booking Currency Equivalent</th>
+                         <th style="width:50px"/>
+                        </tr>
+                        
+                        <apex:repeat value="{!SBCostWrapper}" var="item">
+                            <tr >
+                                <td>{!item.sccv.SCP_Supplier__r.Name}</td>
+                                <td>{!item.sccv.currencyISOCOde}</td>
+                                <td class="numberTD">
+                                    <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                        <apex:param value="{!item.sccv.SCP_Total__c}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="numberTD">
+                                    <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                        <apex:param value="{!item.sccv.SCP_Total_Payment__c}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="numberTD">
+                                    <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                        <apex:param value="{!item.sccv.SCP_Outstanding_Amount__c}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td>
+                                    {!item.sccv.SCP_Exchange_Rate__r.ER_Exchange_Rate__c}
+                                </td>
+                                <td>{!item.sccv.SCP_Opportunity__r.CurrencyISOCode}</td>
+                                <td class="numberTD">
+                                    <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                        <apex:param value="{!ROUND(item.sccv.SCP_Total__c/item.sccv.SCP_Exchange_Rate__r.ER_Exchange_Rate__c,2)}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td class="numberTD" style="width:50px"/>
+                                
+                            </tr> 
+                        </apex:repeat>
+                        
+                    </table>
+                </div>   
+            </div>   
+        </div> 
+    </apex:outputPanel>  
+</apex:component>

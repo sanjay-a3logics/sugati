@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>true</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>CI_Account__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Account</label>
+        <referenceTo>Account</referenceTo>
+        <relationshipLabel>Client Invoices</relationshipLabel>
+        <relationshipName>Client_Invoices</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>CI_Amount_to_be_Paid__c</fullName>
+        <description>IF( RecordType.DeveloperName &lt;&gt; &quot;Credit Note&quot;, IF (AND(ATOF__I_Opportunity__r.ATOF__O_Booking_to_Departure__c &lt;= 70, ATOF__I_Opportunity__r.ATOF__O_Outstanding__c &gt; 0),  IF(ISBLANK( ATOF__CI_Client_Group__r.Id ), ATOF__I_Opportunity__r.Amount, ATOF__CI_Client_Group__r.ATOF__CG_Selling_Price__c) ,  IF(ISBLANK( ATOF__CI_Client_Group__r.Id ),  ATOF__I_Opportunity__r.ATOF__O_Deposit_Required__c ,  ATOF__I_Total_Price_CG__c ) ), 0)</description>
+        <externalId>false</externalId>
+        <formula>IF( RecordType.DeveloperName &lt;&gt; &quot;Credit Note&quot;, IF (AND(I_Opportunity__r.O_Booking_to_Departure__c &lt;= 70, I_Opportunity__r.O_Outstanding__c &gt; 0), IF(ISBLANK( CI_Client_Group__r.Id ), I_Opportunity__r.Amount, CI_Client_Group__r.CG_Selling_Price__c) , IF(ISBLANK( CI_Client_Group__r.Id ), I_Opportunity__r.O_Deposit_Required1__c , I_Total_Price_CG__c ) ), 0)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Amount to be Paid</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CI_Client_Group__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Client Group</label>
+        <lookupFilter>
+            <active>true</active>
+            <filterItems>
+                <field>Client_Group__c.CG_Opportunity__r.Id</field>
+                <operation>equals</operation>
+                <valueField>$Source.I_Opportunity__c</valueField>
+            </filterItems>
+            <isOptional>false</isOptional>
+        </lookupFilter>
+        <referenceTo>Client_Group__c</referenceTo>
+        <relationshipLabel>Client Invoices</relationshipLabel>
+        <relationshipName>Client_Invoices</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>CI_Client_Invoice__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <description>If this is a credit note, this field must be filled in.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>If this is a credit note, this field must be filled in.</inlineHelpText>
+        <label>Client Invoice</label>
+        <lookupFilter>
+            <active>true</active>
+            <filterItems>
+                <field>Client_Invoice__c.I_Opportunity__r.Id</field>
+                <operation>equals</operation>
+                <valueField>$Source.I_Opportunity__c</valueField>
+            </filterItems>
+            <isOptional>false</isOptional>
+        </lookupFilter>
+        <referenceTo>Client_Invoice__c</referenceTo>
+        <relationshipLabel>Client Invoices</relationshipLabel>
+        <relationshipName>Client_Invoices</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>CI_Credit_Note_Amount__c</fullName>
+        <externalId>false</externalId>
+        <label>Credit Note Amount</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CI_Deposit_Overwrite__c</fullName>
+        <externalId>false</externalId>
+        <formula>CI_Client_Group__r.CG_Deposit_Overwrite__c</formula>
+        <label>Deposit Overwrite</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CI_Invoice_Number__c</fullName>
+        <externalId>false</externalId>
+        <label>Invoice Number</label>
+        <length>30</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CI_Payment_Rule__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Payment Rule</label>
+        <referenceTo>Rule__c</referenceTo>
+        <relationshipLabel>Client Invoices</relationshipLabel>
+        <relationshipName>Client_Invoices</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>CI_Proforma_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Proforma Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Committed</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Deposit</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>CI_Supplier__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Supplier</label>
+        <referenceTo>Supplier__c</referenceTo>
+        <relationshipLabel>Client Invoices</relationshipLabel>
+        <relationshipName>Client_Invoices</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>CL_Opportunity_Locked__c</fullName>
+        <externalId>false</externalId>
+        <formula>I_Opportunity__r.O_Lock__c</formula>
+        <label>Opportunity Locked</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>I_Balance_Outstanding__c</fullName>
+        <description>IF(RecordType.DeveloperName &lt;&gt; &quot;Credit Note&quot;, IF(ISBLANK( ATOF__CI_Client_Group__r.Id ), ATOF__I_Opportunity__r.ATOF__O_Outstanding__c, ATOF__I_Total_Price__c -  ATOF__I_Payment_Received__c ), 0)</description>
+        <externalId>false</externalId>
+        <formula>IF(RecordType.DeveloperName &lt;&gt; &quot;Credit Note&quot;, IF(ISBLANK( CI_Client_Group__r.Id ), I_Opportunity__r.O_Outstanding__c, I_Total_Price__c - I_Payment_Received__c ), 0)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Balance Outstanding</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>I_Description__c</fullName>
+        <externalId>false</externalId>
+        <label>Description</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>I_Final_Payment_Due__c</fullName>
+        <externalId>false</externalId>
+        <formula>I_Opportunity__r.O_Due_Date__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Final Payment Due</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>I_Invoice_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Invoice Date</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>I_Invoice_Number__c</fullName>
+        <externalId>false</externalId>
+        <label>Invoice Number</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>I_Opportunity__c</fullName>
+        <externalId>false</externalId>
+        <label>Opportunity</label>
+        <referenceTo>Opportunity</referenceTo>
+        <relationshipLabel>Client Invoices</relationshipLabel>
+        <relationshipName>Client_Invoices</relationshipName>
+        <relationshipOrder>0</relationshipOrder>
+        <reparentableMasterDetail>false</reparentableMasterDetail>
+        <trackTrending>false</trackTrending>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    </fields>
+    <fields>
+        <fullName>I_Payment_Received_CG__c</fullName>
+        <externalId>false</externalId>
+        <label>Payment Received CG</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>I_Payment_Received__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(ISBLANK( CI_Client_Group__r.Id ), I_Opportunity__r.O_Total_Payment1__c-I_Opportunity__r.O_Total_Credit_Card_Charges__c,  I_Payment_Received_CG__c )</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Payment Received</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>I_Total_Price_CG__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Price CG</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>I_Total_Price__c</fullName>
+        <description>IF(RecordType.Name != &apos;Deposit&apos;,IF(ISBLANK( ATOF__CI_Client_Group__r.Id ), ATOF__I_Opportunity__r.Amount, ATOF__CI_Client_Group__r.ATOF__CG_Selling_Price__c), IF(ISBLANK( ATOF__CI_Client_Group__r.Id ),  ATOF__I_Opportunity__r.ATOF__O_Deposit_Required__c ,  ATOF__I_Total_Price_CG__c ))</description>
+        <externalId>false</externalId>
+        <formula>IF(AND(RecordType.Name != &apos;Deposit&apos;,OR(TEXT(CI_Proforma_Type__c)=&apos;Committed&apos;,ISBLANK(TEXT(CI_Proforma_Type__c)))) ,IF(ISBLANK( CI_Client_Group__r.Id ), I_Opportunity__r.Amount, CI_Client_Group__r.CG_Selling_Price__c), IF(ISBLANK( CI_Client_Group__r.Id ), I_Opportunity__r.O_Deposit_Required1__c , I_Total_Price_CG__c ))</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Total Price</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <label>Client Invoice</label>
+    <listViews>
+        <fullName>All</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
+    <nameField>
+        <displayFormat>INV-{000000}</displayFormat>
+        <label>Client Invoice No</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Client Invoices</pluralLabel>
+    <recordTypes>
+        <fullName>Committed</fullName>
+        <active>true</active>
+        <description>Committed Invoice</description>
+        <label>Committed</label>
+        <picklistValues>
+            <picklist>CI_Proforma_Type__c</picklist>
+            <values>
+                <fullName>Committed</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Deposit</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Credit_Note</fullName>
+        <active>true</active>
+        <description>Credit Note</description>
+        <label>Credit Note</label>
+        <picklistValues>
+            <picklist>CI_Proforma_Type__c</picklist>
+            <values>
+                <fullName>Committed</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Deposit</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Deposit</fullName>
+        <active>true</active>
+        <description>Deposit</description>
+        <label>Deposit</label>
+        <picklistValues>
+            <picklist>CI_Proforma_Type__c</picklist>
+            <values>
+                <fullName>Committed</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Deposit</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Proforma</fullName>
+        <active>true</active>
+        <description>This is a Proforma Invoice</description>
+        <label>Proforma Invoice</label>
+        <picklistValues>
+            <picklist>CI_Proforma_Type__c</picklist>
+            <values>
+                <fullName>Committed</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Deposit</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <searchLayouts/>
+    <sharingModel>ControlledByParent</sharingModel>
+    <validationRules>
+        <fullName>Client_Invoice_Locked</fullName>
+        <active>false</active>
+        <description>AND( 
+OR(NOT($Profile.Name = &quot;System Administrator&quot;),NOT($Profile.Name = &quot;LF Management Team&quot;)), PRIORVALUE( ATOF__CL_Opportunity_Locked__c) = true 
+)</description>
+        <errorConditionFormula>AND( 
+NOT($Profile.Name = &quot;System Administrator&quot;),NOT($Profile.Name = &quot;LF Management Team&quot;), PRIORVALUE( CL_Opportunity_Locked__c) = true 
+)</errorConditionFormula>
+        <errorMessage>Opportunity has been locked please contact to system admin</errorMessage>
+    </validationRules>
+    <validationRules>
+        <fullName>Validation_for_deposit_invoice</fullName>
+        <active>true</active>
+        <errorConditionFormula>AND(RecordType.DeveloperName = &apos;Deposit&apos;, !I_Opportunity__r.O_Payment_Rule__r.R_Deposit_Only__c)</errorConditionFormula>
+        <errorMessage>You can&apos;t create deposit invoice for this opportunity, please contact to your admin.</errorMessage>
+    </validationRules>
+    <webLinks>
+        <fullName>Edit</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <encodingKey>UTF-8</encodingKey>
+        <height>600</height>
+        <linkType>url</linkType>
+        <masterLabel>Edit</masterLabel>
+        <openType>noSidebar</openType>
+        <protected>false</protected>
+        <url>/apex/ATOF__EditInvoice?id={!Client_Invoice__c.Id}</url>
+    </webLinks>
+    <webLinks>
+        <fullName>View_Invoice</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>View Invoice</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/ClientInvoice?id={!Client_Invoice__c.Id}&amp;OppId={!Opportunity.Id}&apos;,&apos;_blank&apos;)</url>
+    </webLinks>
+</CustomObject>

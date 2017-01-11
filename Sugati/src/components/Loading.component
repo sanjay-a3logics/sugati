@@ -1,0 +1,45 @@
+<apex:component layout="none">
+
+    <style>
+        #contentLoading{
+                    width: 100%;
+                    height: 100%;
+                    top: 0px;
+                    left: 0px;
+                    position: fixed;
+                    display: block;
+                    opacity: 0.7;
+                    background-color: #fff;
+                    z-index: 11111111;
+                    text-align: center;
+                }
+                
+                #contentLoading1{
+                    position: absolute;
+                    top:350px;
+                    z-index: 100;
+                }
+    </style>
+    
+    <script>
+    var __isLoadingVisible = false;
+    function loading(val){
+                   if (val) {
+                        document.getElementById('contentLoading').style.display = 'inline-block';
+                        document.getElementById('contentLoaded').style.display = 'none';
+                        __isLoadingVisible = true;
+                    }
+                    else {
+                        document.getElementById('contentLoading').style.display = 'none';
+                        document.getElementById('contentLoaded').style.display = 'inline-block';
+                        __isLoadingVisible = false;
+                    }
+                }
+    </script>            
+    <apex:actionStatus id="loading" onstart="loading(true)" onstop="loading(false)" />
+        <div id="contentLoaded"/>
+        <div id="contentLoading" style="display:none; ">
+           <!-- <img id="contentLoading1" src="/img/loading32.gif" alt="Loading graphic" /> src="/assets/images/spinners/slds_spinner_brand.gif" alt="Loading..."-->
+            <apex:image id="contentLoading1" styleclass="slds-spinner--medium" url="{!URLFOR($Resource.SLDS011, '/assets/images/spinners/slds_spinner_brand.gif')}" width="100" height="100" style="top: 50%; position: fixed;" alt="Loading graphic"/>
+        </div>
+</apex:component>

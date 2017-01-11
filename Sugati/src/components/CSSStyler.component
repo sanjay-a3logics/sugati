@@ -1,0 +1,6 @@
+<apex:component controller="CSSStyler">
+    <apex:attribute name="Page" type="String" description="CSS for page" assignTo="{!pagename}"/>
+    <style>
+        {!css}
+    </style>
+</apex:component>

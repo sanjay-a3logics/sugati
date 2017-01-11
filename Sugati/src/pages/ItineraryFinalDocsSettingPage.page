@@ -1,0 +1,357 @@
+<apex:page standardController="Opportunity" title="Final Docs Setting" cache="false" extensions="ItineraryFinalDocsSettingController" showHeader="true"  sidebar="false">
+    <!--
+    *    Update - 24-02-2016
+    *    Authore -Veer Singh
+    *-->
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <head>
+            <meta charset="utf-8" />
+            <title>Itinerary Final Docs Setting Page</title>
+            
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <c:BasicResources ></c:BasicResources>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+            
+            
+            
+            <style>
+                .field-title{
+                    font-weight: bolder;
+                    padding-left:5px;
+                }
+                .ckedit{
+                    border: 0.5px dotted;
+                }
+                .slds:not(html), .slds body{
+                    font-size: 14px !important;
+                }
+                .field-title{
+                    cursor : pointer;
+                }
+                .cke_editable {
+                    background-color: white !important;
+                    padding : 10px
+                }
+            </style>
+            <script>
+                var app = angular.module('FinalDoc', ['ui.sortable','ui.bootstrap']);
+                var contrl = app.controller('FinalDocController' ,function($scope,$http,$filter){
+                    $scope.SICCORecords = [];
+                    $scope.lstForget = [];
+                    $scope.SICCORecords = {!lstSICCOStr};     
+                    $scope.lstForget = {!lstForgetstr}; 
+                    $scope.letterStr = {!letterStr};
+                    $scope.ErrorMessages = JSON.parse('{!HEPageErrorMessage}');
+                    $scope.backButton= ((typeof sforce != 'undefined') && (sforce != null));
+                    
+                    if('{!errorMsg}' != ''){
+                        alert('{!errorMsg}','error');
+                    }
+                    $scope.saveRecords = function(){
+                        $scope.loading("show");
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.ItineraryFinalDocsSettingController.saveICCO}',removeHashKey($scope.lstForget),'{!$CurrentPage.parameters.id}',$scope.letterStr,removeHashKey($scope.SICCORecords),
+                             function(result, event){
+                                if (event.status && result == 'Ok') {
+                                //Result contains list of account names and account id
+                                   $scope.loading("hide");
+                                   location.reload();
+                                }
+                                else if (event.type === 'exception'){
+                                    alert(event.message,'error');
+                                    $scope.loading("hide");
+                                }
+                                if (result  != 'Ok'){
+                                    alert($scope.ErrorMessages['FinalDoc_IC_Error'],'error');
+                                    $scope.loading("hide");
+                                }
+                                console.log(result  );
+                            }, 
+                            {escape: false}
+                        );      
+                    }
+                    
+                    $scope.loading = function(action){
+                        if(action == "show"){
+                            $('#contentLoading').css("display","block");
+                        }
+                        else{
+                            $('#contentLoading').css("display","none");
+                        }
+                    }
+                    
+                    
+                    $scope.contentIndex;
+                    $scope.refresh = function(rec, index){
+                        $('.refreshDes').toggle('show');
+                        $scope.contentIndex = index; 
+                    }
+                    
+                    $scope.refreshContentFun = function(){
+                        console.log($scope.contentIndex);
+                        console.log($scope.SICCORecords[$scope.contentIndex]);
+                        $scope.SICCORecords[$scope.contentIndex].SICCO_Description = $scope.SICCORecords[$scope.contentIndex].Original_Description;    
+                        $('.refreshDes').toggle('hide');
+                    }
+                    
+                    
+                    //Darg and Drop Table
+                    $scope.sortableOptions = {
+                        stop: function(e, ui) {
+                            console.log('Dropped')
+                            var hsOrder = [];
+                            angular.forEach($scope.SICCORecords, function(rec,index) {
+                                rec.SICCO_Order= index+1; 
+                            });
+                            
+                        },
+                        axis: 'y'
+                    };
+                    
+                    $scope.toggle = function(){
+                        var oldVal = $scope.sortableOptions.disabled;
+                        $scope.sortableOptions.disabled = !oldVal;
+                    }
+                    $scope.toggle();
+                });                 
+                //CKEditor 
+                app.directive('ckEditor', [function () {
+                    return {
+                        require: '?ngModel',
+                        link: function ($scope, element, attr, ngModel) {
+                            var ck = CKEDITOR.inline(element[0]);
+                            ck.on('instanceReady', function () {
+                                ck.setData(ngModel.$viewValue);
+                            });
+                            ck.on('pasteState', function () {
+                                $scope.$apply(function () {
+                                    ngModel.$setViewValue(ck.getData());
+                                });
+                            });
+                            ngModel.$render = function (value) {
+                                ck.setData(ngModel.$viewValue);
+                            };
+                        }
+                    };
+                }]);
+                
+                
+                
+                function removeHashKey(data) {
+                    for (var key in data) {
+                        var item = data[key]; 
+                        if (typeof item != "object") {
+                            delete data['$$hashKey']; 
+                        } else if (typeof item == "object") {
+                            delete data['$$hashKey'];
+                            removeHashKey(item);
+                        }
+                    } return data;   
+                }
+                
+                //back button
+                
+                function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+                  }
+            </script>
+        </head>
+        
+        <body >
+            <div ng-app="FinalDoc" >
+                <div class="slds" id="FinalDocController" ng-controller="FinalDocController" >
+                    <c:Loading />
+                    <c:AlertBox />
+                    <apex:outputPanel id="oppDetail">
+                        <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                    </apex:outputPanel>
+                    <div class="slds-card" ng-form="IBForm">
+                        <div class="slds-card__header slds-grid">
+                            <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                <div class="slds-media__figure">
+                                    <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                                </div>
+                                <div class="slds-media__body">
+                                    <h2 class="slds-text-heading--small slds-truncate">Final Doc/Confirmation Category Page</h2>
+                                    &nbsp;
+                                    
+                                </div>
+                            </div>
+                            <div class="slds-no-flex">
+                                <div class="slds-button-group">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-card__body" ng-class="{toggle : toggleIB}">
+                            <div >
+                                <h1 class="field-title" style="margin:5px;font-size: 15px;font-weight: bold;">Please Don&#39;t Forget</h1>&nbsp; 
+                                <br/>
+                                <div ui-sortable="sortableOptions" ng-model="SICCORecords" ng-class="unsortable">
+                                    <div ng-repeat="rec in SICCORecords | orderBy : ['SICCO_Order']">
+                                        <div ng-if="false">
+                                            <label  class="field-title">Order No:</label>
+                                            {{rec.SICCO_Order}}
+                                            &nbsp;&nbsp;
+                                        </div>
+                                        <label  class="field-title">Component:</label>
+                                        {{rec.SICCO_Title}}
+                                        &nbsp;&nbsp;
+                                        
+                                        <div ng-if="rec.SICCO_Country != undefined && rec.SICCO_Country!=NULL">
+                                            <label  class="field-title">Country:</label>
+                                            {{rec.SICCO_Country}}
+                                            &nbsp;&nbsp;
+                                        </div>
+                                        
+                                        <label  class="field-title">Confirmation Letter:</label>
+                                        <label class="slds-checkbox">
+                                            <input ng-disabled="false" name="Selected{{$index}}" type="checkbox"  ng-model="rec.SICCO_Confirmation_Letter"/>
+                                            <span class="slds-checkbox--faux" ></span>
+                                            <span class="slds-form-element__label"></span>
+                                        </label>
+                                        &nbsp;&nbsp;
+                                        
+                                        <label  class="field-title">Final Doc:</label>
+                                        <label class="slds-checkbox">
+                                            <input ng-disabled="false" name="Selected{{$index}}" type="checkbox"  ng-model="rec.SICCO_FinalDoc"/>
+                                            <span class="slds-checkbox--faux" ></span>
+                                            <span class="slds-form-element__label"></span>
+                                        </label>
+                                        
+                                        <a title="Refresh" ng-click="refresh(rec,$index)" style=" cursor: pointer;refresh_60">
+                                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/refresh_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                                        </a>
+                                        
+                                        &nbsp;&nbsp;
+                                        
+                                        <br />
+                                        <div style="width: 100%; height: auto ;" >
+                                            <div  data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="rec.SICCO_Description" />
+                                        </div>
+                                        <br />    
+                                    </div>    
+                                </div>    
+                                
+                                <!-- Conformation Latter -->
+                                <div ng-if="lstForget.length>0">
+                                    <div ng-if="SICCORecords.length == 0">
+                                        <label  class="field-title">Confirmation Letter Intro:</label>
+                                        <div data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="letterStr.CLetterIntro" />
+                                        <br />
+                                        
+                                        <label  class="field-title">Final Letter Intro:</label>
+                                        <div data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="letterStr.FLetterIntro" />
+                                        <br />
+                                    </div>
+                                    
+                                    <div ng-repeat="rec in lstForget">
+                                        <div ng-if="false">
+                                            <label  class="field-title">Order No:</label>
+                                            {{rec.SICCO_Order}}
+                                            &nbsp;&nbsp;
+                                        </div>
+                                        
+                                        <label  class="field-title">Component:</label>
+                                        {{rec.SICCO_Title}}
+                                        &nbsp;&nbsp;
+                                        
+                                        <div ng-if="rec.SICCO_Country != undefined && rec.SICCO_Country!=NULL">
+                                            <label  class="field-title">Country:</label>
+                                            {{rec.SICCO_Country}}
+                                            &nbsp;&nbsp;
+                                        </div>
+                                        
+                                        <label  class="field-title">Confirmation Letter:</label>
+                                        <label class="slds-checkbox">
+                                            <input ng-disabled="false" name="Selected{{$index}}" type="checkbox"  ng-model="rec.SICCO_Confirmation_Letter"/>
+                                            <span class="slds-checkbox--faux" ></span>
+                                            <span class="slds-form-element__label"></span>
+                                        </label>
+                                        &nbsp;&nbsp;
+                                        
+                                        <label  class="field-title">Final Doc:</label>
+                                        <label class="slds-checkbox">
+                                            <input ng-disabled="false" name="Selected{{$index}}" type="checkbox"  ng-model="rec.SICCO_FinalDoc"/>
+                                            <span class="slds-checkbox--faux" ></span>
+                                            <span class="slds-form-element__label"></span>
+                                        </label>
+                                        &nbsp;&nbsp;
+                                        
+                                        <br />
+                                        <div style="width: 100%; height: auto ;">
+                                            <div data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="rec.SICCO_Description" />
+                                        </div>
+                                        <br />
+                                    </div>
+                               
+                                    <div ng-if="SICCORecords.length == 0">
+                                        <label  class="field-title">Confirmation Letter Closing:</label>
+                                        <div data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="letterStr.CLetterEnd" />            
+                                        <br />
+                                        
+                                        
+                                        <label  class="field-title">Final Letter Closing:</label>
+                                        <div data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="letterStr.FLetterEnd" />            
+                                    </div>
+                                </div>    
+                            </div>
+                        </div>
+                        <div class="slds-card__footer">
+                            <div class="slds-x-small-buttons--horizontal" style="text-align: right;">
+                                <span class="input-group-addon">
+                                    <button class="slds-button slds-button--brand" type="button" ng-click="toggle()">
+                                      <span ng-show="sortableOptions.disabled">Enable Sorting</span>
+                                      <span ng-show="!sortableOptions.disabled">Disable Sorting</span>
+                                    </button>
+                                    <input type="button" id="btnSave" ng-click="saveRecords()" class="slds-button slds-button--brand"   value="Save All" />
+                                    <input type="button" id="btnclose" onClick="window.close()" class="slds-button slds-button--brand" value="Close" />
+                                    <input type="button"  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" value="Back" />
+
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <!--- Refresh Confirmation -->
+                            
+                     <div class="refreshDes" style="display: none;">
+                        <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--prompt slds-fade-in-open" style="z-index:1111111">
+                            <div class="slds-modal__container slds-modal--prompt">
+                                <div class="slds-modal__header slds-modal__header slds-theme--success">
+                                    <h2 class="slds-text-heading--small">Are you sure?</h2>
+                                    <button class="slds-button slds-button--icon-inverse slds-modal__close">
+                                    <svg aria-hidden="true" class="slds-button__icon slds-button__icon--medium">
+                                        <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                    </svg>
+                                    <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                </div>
+                                <div class="slds-modal__content"> 
+                                    Are you sure that you want to refresh this component data with intial state.    
+                                </div>
+                                <div class="slds-modal__footer slds-theme--default">
+                                    <div class="slds-x-small-buttons--horizontal">
+                                        
+                                        <button ng-click="refreshContentFun()" class="slds-button slds-button--brand">Refresh</button>
+                                        <button onclick="$('.refreshDes').hide();" class="slds-button slds-button--brand">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-backdrop slds-backdrop--open" style="z-index:1111110"></div>
+                    </div> 
+                </div>
+                
+            </div>
+        </body>
+    </html>
+</apex:page>

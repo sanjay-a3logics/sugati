@@ -1,0 +1,3 @@
+<apex:page title="CSS Styler" showHeader="true" sidebar="false" standardController="CSS_Styler__c" standardStylesheets="false" cache="false">
+    <c:CSSComponent ></c:CSSComponent>
+</apex:page>

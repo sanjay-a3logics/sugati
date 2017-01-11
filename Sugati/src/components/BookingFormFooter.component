@@ -1,0 +1,36 @@
+<apex:component >
+    <div id="footer">
+        <div class="row">
+            <div class="col-sm-4">
+                <h3>ORIGINAL TRAVEL COMPANY LTD.</h3>
+                <address>
+                    Ransome's Dock, 35-37 Parkgate Road,<br />
+                    London, SW11 4NP
+                </address>
+            </div>
+            <div class="col-sm-4">
+                <h3>CONTACT US</h3>
+                <div class="contact">
+                    Speak to us: <a class="black" href="tel:+44 020 7978 7333">+44 020 7978 7333</a><br />
+                    Email us: <a class="black" href="mailto:ask@originaltravel.co.uk">ask@originaltravel.co.uk</a>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h3>100% FINANCIAL PROTECTION</h3>
+                <div class="logos">
+                    <a class="abta" href="http://www.originaltravel.co.uk/faqs?faq=6082" target="_blank">ABTA</a>
+                    <a class="atol" href="http://www.originaltravel.co.uk/faqs?faq=6092" target="_blank">ATOL</a>
+                    <a class="aito" href=" http://www.originaltravel.co.uk/faqs?faq=6094" target="_blank">AITO</a>
+                </div>
+            </div>
+        </div>
+        <div class="line"></div>
+        <div class="left">
+            <a href="http://www.originaltravel.co.uk/terms-and-conditions">TERMS &amp; CONDITIONS</a> &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="http://www.originaltravel.co.uk/privacy-policy/">PRIVACY POLICY</a>
+        </div>
+        <div class="copyright right">
+            &copy; 2014 Original Travel 
+        </div>
+    </div>
+</apex:component>

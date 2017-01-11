@@ -1,0 +1,378 @@
+<apex:page standardController="Client_Invoice__c" standardStylesheets="false"  extensions="InvoiceController,CSSStyler" 
+sidebar="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderAs="pdf">
+<head>
+    
+    <style type="text/css">
+    @page {
+        size: A4 landscape;
+        margin: 20mm 10mm 20mm;
+        @top-center {
+            content: element(header);
+        }
+        @bottom-left {
+            content: element(footer);
+        }
+    }
+    body {
+        font-size:9pt;
+        font-family: sans-serif;
+        color:#8b8a8f;
+    }
+    .header {
+        position: running(header);
+        padding-bottom:20px;
+        font-size:8pt;
+        text-transform:uppercase;
+        border-bottom:1px solid #cecec7;
+        
+    }
+    .footer {
+        position: running(footer);
+        line-height:1.5em;
+        font-size:8pt;
+        text-align:center;
+        color:#92928a;
+        border-top:1px dashed #afaeb0;
+    }
+    .footer .inner{
+        display:inline-block;
+        margin-top:-20px;
+        padding:0 20px;
+        background:#ffffff;
+    }
+    .pagenumber:before {
+        content: counter(page);
+    }
+    .pagecount:before {
+        content: counter(pages);
+    }
+    .divider{
+        padding-left:20px;
+        border-left:1px solid #cecec7;
+    }
+    h1{
+        margin-bottom:5px;
+        font-size:18pt;
+        font-weight:normal;
+        color:#45729a;
+    }
+    h3{
+        margin:0 0 5px;
+        font-size:12pt;
+        font-weight:normal;
+        color:#9b646b;
+    }
+    .heading{
+        font-size:12pt;
+        text-align:center;
+    }
+    .lbl{
+        font-size:12pt;
+        text-transform:uppercase;
+        color:#45729a;
+    }
+    .payment-method{
+        line-height:1.5em;
+        color:#aaaaaa;
+    }
+    .payment-method th{
+        font-weight:normal;
+        color:#69686e;
+    }
+    .table-payment{
+        font-size:10pt;
+    }
+    .table-payment td{
+        padding:8px 10px;
+    }
+    .final-payment{
+        color:#ffffff;
+        background:#9b646b
+    }
+    .row2 td{
+        border-left:1px dashed #9b646b;
+        border-top:1px dashed #9b646b;
+    }
+    .row2.first-row td{
+        border-top:0;
+    }
+    .row2 td.first-col{
+        border-left:0;
+    }
+    .total-price td{
+        font-size:12pt;
+        color:#9b646b;
+        border-top:1px solid #9b646b;
+    }
+    .total-price1 td{
+        border-top:1px solid #9b646b;
+        border-bottom:1px solid #9b646b;
+    }
+    .verticalLine {
+        border-right:1px dashed #9b646b;
+    }
+    </style>
+    <style>
+        {!css}
+    </style>
+    
+</head>
+<body style="background-color:{!cssObj.Backgroundcolor__c};font-family:{!cssObj.Font_Family__c};font-style:{!cssObj.Font_Style__c};font-size:{!cssObj.Font_Size__c}px;">
+
+    <!-- HEADER & FOOTER -->
+    <div class="header">
+        <table class="table-header" width="100%" border="0" cellpadding="0" cellspacing="0" style="font-family:{!cssObj.Font_Family__c};font-style:{!cssObj.Font_Style__c};font-size:{!cssObj.Font_Size__c}px;">
+        <tr>
+            <td width="110">
+                <apex:image url="/servlet/servlet.ImageServer?id={!lstHF[0].imageId}&oid={!$Organization.Id}" alt="Logo" width="65" height="40" />
+            </td>
+            <td class="divider">
+                <div class="header-text1"><strong><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></strong></div>
+                <div class="header-text2">
+                    <apex:outputText value="{!Opp.Name}"></apex:outputText><br />
+                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                        <apex:param value="{!Opp.O_Departure_Date__c}" />
+                    </apex:outputText>
+                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                        <apex:param value="{!Opp.O_Return_Date__c}" />
+                    </apex:outputText>&nbsp;| QUOTE REFERENCE :&nbsp;
+                    <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}">
+                    </apex:outputText>
+                </div>
+            </td>
+        </tr>
+        </table>
+    </div>
+    <!--<div class="footer">
+        <div class="inner">
+            start:<![CDATA[<sender>John Smith</sender>]]>:end
+            <apex:outputLabel escape="true"> {!objPaymentMethods.footer.PM_Description__c}</apex:outputLabel>
+        </div>
+    </div>-->
+    <!-- /HEADER & FOOTER -->
+    
+    <!--- Confirmation Invoice ---------------->
+    <div class="heading">
+        
+        <h1 style="color:{!cssObj.H1color__c};">
+            <apex:outputText rendered="{!if(ClientInv.recordType.Name == 'Credit Note',true,false)}" value="CREDIT NOTE"></apex:outputText>
+            <apex:outputText rendered="{!if(ClientInv.recordType.Name == 'Committed',true,false)}" value="CONFIRMATION INVOICE"></apex:outputText>
+            <apex:outputText rendered="{!if(ClientInv.recordType.Name == 'Deposit',true,false)}" value="DEPOSIT INVOICE"></apex:outputText>
+            
+            <apex:outputText rendered="{!ClientInv.recordType.Name == 'Committed'}" value="{!IF(ROUND(if(ClientInv.CI_Client_Group__c != null, if(ClientInv.CI_Client_Group__r.CG_Selling_Price__c != null,
+                        ClientInv.CI_Client_Group__r.CG_Selling_Price__c-totalClientPayment,0),ClientInv.I_Balance_Outstanding__c),2) <=  0,' (PAID)','')}"></apex:outputText>
+                        
+            <apex:outputText rendered="{!ClientInv.recordType.Name = 'Deposit'}" value="{!IF(ROUND(if(ClientInv.CI_Deposit_Overwrite__c != null,ClientInv.CI_Deposit_Overwrite__c-totalClientPayment, if(ClientInv.CI_Client_Group__c != null, 
+                            depositRequired-totalClientPayment,ClientInv.I_Balance_Outstanding__c)),2) <= 0,' (PAID)','')}"></apex:outputText>
+        
+            
+        </h1>
+        <div>
+            Reference:&nbsp;{!ClientInv.CI_Invoice_Number__c} &nbsp; | &nbsp;
+            Invoice Date:&nbsp;
+            <apex:outputText escape="false" value="{0,date,dd' 'MMMMM' 'YYYY}" styleClass="label">
+                <apex:param value="{!ClientInv.I_Invoice_Date__c}" />
+            </apex:outputText>
+        </div>
+    </div>
+    <br />
+    <br />
+    <br />
+    <!---  Address Section  ---->
+    
+    <apex:outputPanel layout="block" style="padding-left:10px;" rendered="{!GroupMemberContact != null && (GroupMemberContact.LastName != null || GroupMemberContact.mailingStreet != null || GroupMemberContact.MailingCity != null || GroupMemberContact.MailingState != null || GroupMemberContact.MailingCountry != null)}">
+        <span class="lbl" style="color:{!cssObj.H2color__c};"> Invoice To:</span> <br/>
+        <apex:outputText > <strong> {!GroupMemberContact.Salutation} {!GroupMemberContact.FirstName} {!GroupMemberContact.LastName} </strong></apex:outputText> <br/>
+        <apex:variable value="false" var="flagVal"/>
+        <apex:outputText rendered="{!GroupMemberContact.mailingStreet != null}"> {!GroupMemberContact.mailingStreet} <apex:variable value="true" var="flagVal"/></apex:outputText>
+        <apex:outputText rendered="{!GroupMemberContact.mailingStreet != null && GroupMemberContact.MailingCity != null}">,</apex:outputText> 
+        <apex:outputText rendered="{!GroupMemberContact.MailingCity != null}"> {!GroupMemberContact.MailingCity} <apex:variable value="true" var="flagVal"/> </apex:outputText>
+        <apex:outputText rendered="{!flagVal}"><br/></apex:outputText>
+        <apex:variable value="false" var="flagVal"/>
+        <apex:outputText rendered="{!GroupMemberContact.MailingState != null}"> {!GroupMemberContact.MailingState} <apex:variable value="true" var="flagVal"/></apex:outputText>
+        <apex:outputText rendered="{!GroupMemberContact.MailingCountry!= null && GroupMemberContact.MailingState != null}">,</apex:outputText>
+        <apex:outputText rendered="{!GroupMemberContact.MailingCountry != null}"> {!GroupMemberContact.MailingCountry} <apex:variable value="true" var="flagVal"/></apex:outputText>
+        <apex:outputText rendered="{!flagVal='true' && (GroupMemberContact.MailingPostalCode != null)}">-</apex:outputText>
+        <apex:outputText rendered="{!GroupMemberContact.MailingPostalCode != null}"> {!GroupMemberContact.MailingPostalCode} </apex:outputText>
+        <br/>
+        <apex:outputText rendered="{!flagVal}"> <br/> </apex:outputText>
+    </apex:outputPanel>
+    
+    <!-- Payment Section -->
+    <div class="payment">
+        <apex:outputPanel rendered="{!ClientInv.recordType.Name != 'Credit Note'}">
+            <table class="table-payment" width="100%" cellspacing="0" cellpadding="0" style="background-color:{!cssObj.Table_Backgroundcolor__c};font-family:{!cssObj.Table_Font_Family__c};font-style:{!cssObj.Table_Font_Style__c};font-size:{!cssObj.Table_Font_Size__c}px;">
+                
+                <tr class="total-price1" style="background:{!cssObj.Table_Header_Backgroundcolor__c};color:{!cssObj.Table_Header_Text_Color__c}">
+                    
+                    <!-- SGD Info ----------->
+                    <td align="left" style="border-top-color:{!cssObj.Table_Border_Color__c};border-bottom-color:{!cssObj.Table_Border_Color__c}">
+                        <div class="label">
+                            <apex:outputText rendered="{!IF(ClientInv.recordType.Name == 'Deposit',true,false)}" value="Total Deposit"></apex:outputText>
+                            <apex:outputText rendered="{!IF(ClientInv.recordType.Name != 'Deposit',true,false)}" value="Total Price"></apex:outputText>
+                        </div>
+                    </td>
+                    <td align="right" width="190" style="border-top-color:{!cssObj.Table_Border_Color__c};border-bottom-color:{!cssObj.Table_Border_Color__c}">
+                        <apex:outputText value="{!opp.currencyISOCode}"></apex:outputText>
+                        &nbsp;
+                        <apex:outputText rendered="{!IF(ClientInv.recordType.Name == 'Deposit',true,false)}" value="{!ROUND(IF(ClientInv.CI_Deposit_Overwrite__c != null,ClientInv.CI_Deposit_Overwrite__c,IF(ClientInv.CI_Client_Group__c != null,depositRequired,Opp.O_Deposit_Required1__c)),2)}"></apex:outputText>
+                        <apex:outputText rendered="{!IF(ClientInv.recordType.Name != 'Deposit',true,false)}" value="{!ROUND(IF(ClientInv.CI_Client_Group__c != null,ClientInv.CI_Client_Group__r.CG_Selling_Price__c,Opp.amount),2)}"></apex:outputText>
+                    </td>
+                    
+                    
+                </tr>
+                
+                
+                
+                <tr class="row2 first-row">
+                    <td align="left"  class="first-col" style="border-top-color:{!cssObj.Table_Border_Color__c};border-bottom-color:{!cssObj.Table_Border_Color__c}">
+                        Payment received
+                    </td>
+                    <td align="right" style="border-left-color:{!cssObj.Table_Border_Color__c};border-top-color:{!cssObj.Table_Border_Color__c};border-bottom-color:{!cssObj.Table_Border_Color__c}">
+                        {!opp.currencyISOCode}
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'DXB',Opp.O_Booking_Currency__c == 'AED'),true,false)}" value="AED"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'DXB',Opp.O_Booking_Currency__c == 'USD'),true,false)}" value="USD"></apex:outputText>
+                        
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'HKD'),true,false)}" value="HKD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'GBP'),true,false)}" value="GBP"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'USD'),true,false)}" value="USD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'AED'),true,false)}" value="AED"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'SGD'),true,false)}" value="SGD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'EUR'),true,false)}" value="EUR"></apex:outputText>
+                        
+                        
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'HKD'),true,false)}" value="HKD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'GBP'),true,false)}" value="GBP"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'USD'),true,false)}" value="USD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'AED'),true,false)}" value="AED"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'SGD'),true,false)}" value="SGD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'EUR'),true,false)}" value="EUR"></apex:outputText>
+                        
+                        &nbsp;
+                        <apex:outputText value="{!ROUND(if(ClientInv.CI_Client_Group__c != null, totalClientPayment,ClientInv.I_Payment_Received__c),2)}"></apex:outputText>
+                    </td>
+                </tr>
+                <tr class="row2">
+                    <td align="left" class="first-col" style="border-top-color:{!cssObj.Table_Border_Color__c};border-bottom-color:{!cssObj.Table_Border_Color__c}">
+                        Balance outstanding
+                    </td>
+                    <td align="right" style="border-left-color:{!cssObj.Table_Border_Color__c};border-top-color:{!cssObj.Table_Border_Color__c};border-bottom-color:{!cssObj.Table_Border_Color__c}">
+                        {!opp.currencyISOCode}
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'DXB',Opp.O_Booking_Currency__c == 'AED'),true,false)}" value="AED"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'DXB',Opp.O_Booking_Currency__c == 'USD'),true,false)}" value="USD"></apex:outputText>
+                        
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'HKD'),true,false)}" value="HKD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'GBP'),true,false)}" value="GBP"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'USD'),true,false)}" value="USD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'AED'),true,false)}" value="AED"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'SGD'),true,false)}" value="SGD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'SG',Opp.O_Booking_Currency__c == 'EUR'),true,false)}" value="EUR"></apex:outputText>
+                        
+                        
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'HKD'),true,false)}" value="HKD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'GBP'),true,false)}" value="GBP"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'USD'),true,false)}" value="USD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'AED'),true,false)}" value="AED"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'SGD'),true,false)}" value="SGD"></apex:outputText>
+                        <apex:outputText rendered="{!if(AND(Opp.Name == 'HK',Opp.O_Booking_Currency__c == 'EUR'),true,false)}" value="EUR"></apex:outputText>
+                        
+                        &nbsp;
+                        <apex:outputText rendered="{!ClientInv.recordType.Name != 'Deposit'}" value="{!ROUND(if(ClientInv.CI_Client_Group__c != null, if(ClientInv.CI_Client_Group__r.CG_Selling_Price__c != null,
+                        ClientInv.CI_Client_Group__r.CG_Selling_Price__c-totalClientPayment,0),ClientInv.I_Balance_Outstanding__c),2)}"></apex:outputText>
+                        <apex:outputText rendered="{!ClientInv.recordType.Name = 'Deposit'}" value="{!ROUND( if(ClientInv.CI_Client_Group__c != null, 
+                            ClientInv.CI_Client_Group__r.CG_Selling_Price__c-totalClientPayment,ClientInv.I_Balance_Outstanding__c),2)}"></apex:outputText>
+                    </td>
+                </tr>
+                <tr class="final-payment" style="background:{!cssObj.Table_Footer_Backgroundcolor__c};color:{!cssObj.Table_Footer_Text_Color__c}">
+                    <td align="left">
+                        <div class="label">Final Payment Due</div>
+                    </td>
+                    <td align="right">
+                        <apex:outputText escape="false" value="{0,date,dd' 'MMMMM' 'YYYY}">
+                            <apex:param value="{!ClientInv.I_Final_Payment_Due__c}" /></apex:outputText>
+                    </td>
+                </tr>
+            </table>
+        </apex:outputPanel>
+        
+        <apex:outputPanel rendered="{!ClientInv.recordType.Name == 'Credit Note'}">
+            <table class="table-payment" width="100%" cellspacing="0" cellpadding="0">
+                <tr class="final-payment" style="background:{!cssObj.Table_Footer_Backgroundcolor__c};color:{!cssObj.Table_Footer_Text_Color__c}">
+                    <td align="left">
+                        <div class="label">Credit Note Amount</div>
+                    </td>
+                    <td align="right">
+                        <apex:outputText rendered="{!if(Opp.Name == 'SG',true,false)}" value="SGD"></apex:outputText>
+                        <apex:outputText rendered="{!if(Opp.Name == 'HK',true,false)}" value="HKD"></apex:outputText>
+                        <apex:outputText rendered="{!if(Opp.Name == 'DXB',true,false)}" value="AED"></apex:outputText>
+                        &nbsp;
+                        <apex:outputText value="{!ClientInv.CI_Credit_Note_Amount__c}">
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+        </apex:outputPanel>
+    </div>
+    <br /><br />
+     <div style="display:{!If(ClientInv.recordType.Name != 'Credit Note','block','none')}">
+        <div class="lbl" style="margin-bottom:10px;color:{!cssObj.H3color__c};">Payment Methods</div>
+        <table class="payment-method" width="100%" cellspacing="0" cellpadding="20">
+            <tr>
+                <apex:variable value="{!0}" var="count"/>
+                <apex:repeat value="{!objPaymentMethods.lstMethods}" var="method">
+                    <apex:variable value="{!count+1}" var="count"/>
+                    <td valign="top" width="35%" bgcolor="#f7f6f5" >
+                        <h3 style="color:{!cssObj.H3color__c};">
+                            {!method.currencyISOCode} Bank Transfer ({!method.currencyISOCode} - {!ROUND((Opp.amount/mapExchangeRate[method.currencyISOCode].ER_Exchange_Rate__c),2)})<br/>
+                        </h3>
+                            <apex:outputText escape="false" value="{!method.PM_Description__c}"/>
+                            
+                    </td>
+                    <td width="1%" bgcolor="#f7f6f5">
+                        <apex:outputPanel rendered="{!count != objPaymentMethods.lstMethods.size}">
+                            <div class="verticalLine" style="height:200px;margin-top:-18px;margin-left:-20px;width:1px;border-right:1px dashed {!cssObj.Table_Border_Color__c};"></div>
+                        </apex:outputPanel>
+                    </td>
+                </apex:repeat>
+                
+                    <td width="1%" style="padding:10px">&nbsp;</td>
+                    <td valign="top" width="33%" bgcolor="#ffffff" style="border:1px dashed #e1e1e2;">
+                        <apex:outputPanel rendered="{!objPaymentMethods.imprtantNotes.Id != null}">
+                            <h3 style="color:{!cssObj.H3color__c};">Important Note</h3>
+                            <p><apex:outputText escape="false" value="{!objPaymentMethods.imprtantNotes.PM_Description__c}"/></p>
+                            <br/>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!objPaymentMethods.ChequesNotes.Id != null}">
+                            <h3 style="color:{!cssObj.H3color__c};">Cheques</h3>
+                            <p><apex:outputText escape="false" value="{!objPaymentMethods.ChequesNotes.PM_Description__c}"/></p>
+                        </apex:outputPanel>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+    <div style="display:{!If(ClientInv.recordType.Name == 'Credit Note','block','none')}">
+        <table class="payment-method" width="100%" cellspacing="0" cellpadding="20">
+            <tr>
+                <td valign="top" width="{!if(opp.CurrencyISOCode == 'USD','34%','66%')}" bgcolor="#ffffff" style="border:1px dashed #e1e1e2">
+                    <apex:outputPanel rendered="{!objPaymentMethods.imprtantNotes.Id != null}">
+                        <h3 style="color:{!cssObj.H3color__c};">Important Note</h3>
+                        <p><apex:outputText escape="false" value="{!objPaymentMethods.imprtantNotes.PM_Description__c}"/></p>
+                        <br/>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!objPaymentMethods.ChequesNotes.Id != null}">
+                        <h3 style="color:{!cssObj.H3color__c};">Cheques</h3>
+                        <p><apex:outputText escape="false" value="{!objPaymentMethods.ChequesNotes.PM_Description__c}"/></p>
+                    </apex:outputPanel>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div>
+        <div class="inner" style="font-family:{!cssObj.Font_Family__c};font-style:{!cssObj.Font_Style__c};font-size:{!cssObj.Font_Size__c}px;bottom:0;position: fixed;">
+            <apex:outputText escape="false" value="{!objPaymentMethods.footer.PM_Description__c}" ></apex:outputText>    
+        </div>
+    </div>
+</body>
+</apex:page>

@@ -1,0 +1,789 @@
+<apex:page standardController="Opportunity" standardStylesheets="false" extensions="ItineraryPdfClass" 
+    sidebar="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderAs="pdf">
+    <head>
+        <style>
+            ol[Attributes Style]{
+              list-style-type: upper-alpha !important;
+            }
+            @page {
+                size: A4 landscape; 
+                margin-top: 25mm;
+                margin-left: 0mm;
+                margin-right: 0mm;
+                margin-bottom: 17mm;
+                
+                counter-increment: pagecounter;
+                @bottom-left {
+                    content: element(footer);
+                    font-size: 20px;
+                }
+                 @top-left {
+                    content: element(header);
+                 
+                }
+            }
+            @page :first {
+                size: A4 landscape;
+                margin: 0mm;
+                padding: 0mm;
+                @bottom-left {
+                    content: element(footer);
+                    font-size: 10px;
+                }
+                 @top-left {
+                    content: element(header);
+                 
+                }
+            }
+            @page enddiv {
+                size: A4 landscape;
+                margin: 0mm;
+                padding:0;
+            }
+            div.enddiv {
+                page: enddiv;
+                margin:0;
+                padding: 0mm;
+            }
+            @page nomargin {
+                size: A4 landscape;
+                margin-top: 0mm;
+                margin-left: 0mm;
+                margin-right: 0mm;
+                margin-bottom: 0mm;
+            }
+            div.no-margin {
+                page: nomargin;
+            }
+            @page pagewithheading {
+                margin-top: 35mm;
+                margin-left: 0mm;
+                margin-right: 0mm;
+                margin-bottom: 19mm;
+            }
+            div.page-with-heading{
+                page:pagewithheading;
+            }
+            div.header {
+                position: running(header);
+                margin-left: 10px;
+                margin-right: 0;
+                margin-top: 5mm;
+                margin-bottom: 5mm;
+                font-size:10pt;
+                text-transform:uppercase;
+            }
+            div.footer {
+                position: running(footer);
+                margin-left: 40px;
+                margin-right: 40px;
+                margin-top: 20pt;
+                margin-bottom: 5mm;
+                font-size:10pt;
+                text-align:center;
+                border-top:1px solid #959484;            
+            }
+            .footer .inner{
+                display:inline-block;
+                margin-top:-19pt;
+                padding:0 20pt;
+                text-align:center;
+                letter-spacing:3pt;
+                color:#959484;
+                background:#ffffff;
+            }
+            .page-break {
+                display: block;
+                page-break-after: always;
+            }
+            body {
+                margin: 0px;
+                padding: 0px;
+                font-family: sans-serif;
+                color: #565655;
+            }
+            .page-title {
+                display: inline-block;
+                padding-bottom: 8px;
+                font-size: 14pt;
+            }
+            hr {
+                margin-top: 0px;
+                padding-top: 0px;
+                height: 0;
+                border: 0;
+                border-top: 0.5px solid;
+                border-color: rgb(110, 110, 110);
+            }
+            .label {
+                font-weight: bold;
+                font-size: 10pt;
+                color: #000;
+            }
+            .TOC a:after {
+                /* add page number to the table of contents */
+                content: leader(space)" " target-counter(attr(href, url), page);
+            }
+            .TOC ul {
+                list-style: none;
+                margin: 0;
+                padding: 0
+            }
+            .TOC li {
+                margin-bottom: 10px;
+            }
+            .TOC a {
+                color: #ffffff;
+                font-size: 9pt;
+                text-decoration: none;
+            }   
+            .pagenumber:before {
+                content: counter(page);
+                display:inline-block;
+                padding-left:10px;
+                width:60px;
+                line-height:25px;
+                font-weight:bold;
+                text-align:left;
+                color:#ffffff;
+                background:#bec0c2;
+            }
+            .pagecount:after {
+                content: counter(pages);
+            }
+            .divider{
+                padding-left:15px;
+                border-left:1pt solid #b26062;
+            }
+            .lbl1{
+                margin-top:-4pt;
+                line-height:1.4em;
+                font-size:11pt;
+                font-weight:bold;
+                text-transform:uppercase;
+            }
+            .text1{
+                text-transform:uppercase;
+                font-size:11pt;
+                font-weight:300;
+                color:#919191;
+            }
+            .logo{
+                display:inline-block;
+                margin-left:30px;
+            }
+            .header-text1{
+                margin-top:-3pt;
+                line-height:1.5em;
+                font-weight:bold;
+            }
+            .header-text2{
+                line-height:1.5em;
+                color:#919191;
+            }
+            .intro-images{
+                overflow:hidden;
+                margin:0 5px;
+            }
+            .intro-images .img-wrap{
+                float:left;
+                width:33.3%;
+            }
+            .intro-images .img-wrap div{
+                margin:0 5px;
+            }
+            .itinerary-details{
+                margin:0 40px;
+            }
+            .day-details{
+                overflow:hidden;
+            }
+            .day-details .img{
+                float:left;
+                width:35%;
+            }
+            .day-details .img img{
+                width:100%;
+            }
+            .day-details .right{
+                float:right;
+                width:62%;
+            }
+            .itinerary-details .day{
+                margin-bottom:40pt;
+                font-size:20pt;
+                text-transform:uppercase;
+            }
+            .itinerary-details .title{
+                margin-bottom:15px;
+                font-size:18pt;
+                text-transform:uppercase;
+                color:#447198;
+            }
+            .day-detail{
+                margin-bottom:30px;
+            }
+            .day-detail .table{
+                font-size:12px;
+            }
+            .table{
+                width:100%;
+                border-bottom:1pt solid #b26062;
+            }
+            .table th{
+                padding:10px;
+                font-weight:normal;
+                vertical-align:bottom;
+                border-bottom:1pt solid #b26062;
+            }
+            .table td{
+                padding:10px;
+                border-left:1px dotted #b26062;
+            }
+            .table td.first{
+                border-left:0;
+            }
+            .table .title1{
+                font-weight:bold;
+            }
+            .table .even{
+                background:#e6e7e8
+            }
+            .page-container{
+                overflow:hidden;
+                margin:0 40px;
+            }
+            .table1{
+                font-size:12pt;
+            }
+            .table1 td{
+                vertical-align:top
+            }
+            .quotation-lbl{
+                font-size:12pt;
+                text-transform:uppercase;
+                color:#447198;
+            }
+            .quotation-text{
+                font-size:11pt;
+            }
+            body:last-child {
+                page-break-after: auto
+            }
+            ol .orderList{ 
+                list-style-type : upper-alpha;
+            }
+            table {
+                -fs-table-paginate: paginate;
+            }
+            .ExpMsg span{
+                font-family: sans-serif !important;
+                font-size: 11pt !important;
+            }
+            .ExpMsg span span{
+                font-family: sans-serif !important;
+                font-size: 11pt !important;
+            }
+            .leaf{
+                padding-top:5px;
+            }
+        </style>
+    </head>
+    <body>
+        <!--FIRST PAGE  -->
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'COVER'),mapSelected['COVER'], true)}">
+            <apex:image URL="/servlet/servlet.FileDownload?file={!FileId}" width="100%" height="700"  />
+            <div style="padding:15px 10px">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="18%" height="63" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                        <td width="34%" valign="top" class="divider">
+                            <div class="lbl1">ITINERARY:</div>
+                            <div class="text1"><apex:outputText escape="false" value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}" /></div>
+                        </td>
+                        <td width="20%" valign="top" class="divider">
+                            <div class="lbl1">PREPARED FOR:</div>
+                            <div class="text1"><apex:outputText escape="false" value="{!Opp.Account.Name}" /></div>
+                        </td>
+                        <td width="35%" valign="top" class="divider">
+                            <div class="lbl1">
+                                <apex:outputText escape="false" value="{!Opp.O_No_of_Nights__c+1}" rendered="{!IF(Opp.O_No_of_Nights__c != NULL, true, false)}"/> DAYS / 
+                                <apex:outputText escape="false" value="{!Opp.O_No_of_Nights__c}" rendered="{!IF(Opp.O_No_of_Nights__c != NULL, true, false)}"/> NIGHTS
+                            </div>
+                            <div class="text1">
+                                <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                    <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                </apex:outputText>
+                                <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                    <apex:param value="{!Opp.O_Return_Date__c}" />
+                                </apex:outputText>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <apex:outputPanel layout="block" style="page-break-after:always;"/>
+        </apex:outputPanel>     
+               
+        <!-- Header/Footer Part -->
+        <apex:outputPanel >
+             <div class="header">
+                <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+                    <tr>
+                        <td width="200" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                        <td valign="top" >
+                            <div class="divider" >
+                                <div class="header-text1"><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></div>
+                                <div class="header-text2">
+                                    <apex:outputText value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}"></apex:outputText><br />
+                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                        <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                    </apex:outputText>
+                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                        <apex:param value="{!Opp.O_Return_Date__c}" />
+                                    </apex:outputText>&nbsp;| QUOTE REFERENCE |&nbsp;
+                                    <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}">
+                                    </apex:outputText>
+                                </div>
+                            </div>
+                        </td>
+                        <td valign="top" align="right">
+                            <span class="pagenumber" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="footer">
+                <div class="inner">WWW.SUGATI.COM<br />United Kingdom • India <br /></div>
+            </div>
+        </apex:outputPanel>
+                
+             
+        <!--INTRODUCTION PAGE  -->
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'INTRODUCTION'),mapSelected['INTRODUCTION'], false)}">
+            <div class="intro-images">
+                <div>
+                    <apex:variable value="{!0}" var="IntroImgCount"/>
+                    <apex:repeat value="{!IntroImgsIds}" var="Img">
+                        
+                        <div class="img-wrap">
+                            <div>
+                                <apex:outputPanel rendered="{!IF(IntroImgCount < 3,true,false)}">
+                                    <apex:image URL="/servlet/servlet.FileDownload?file={!Img}" width="100%" height="250"/>
+                                </apex:outputPanel>
+                            </div>
+                        </div>
+                        
+                        <apex:variable value="{!IntroImgCount + 1}" var="IntroImgCount"/>
+                    </apex:repeat>
+                </div>
+            </div>  
+            <div style="margin-top:30px;height:220px;background:url({!URLFOR($Resource.Itinerary,'LF_Images/Intro.png')}) no-repeat center top"/>
+            <apex:outputPanel layout="block" style="page-break-after:always; "/>>
+        </apex:outputPanel>    
+   
+   
+        <!--BOOKING PROCESS PAGE  -->
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'BOOKING PROCESS'),mapSelected['BOOKING PROCESS'], true)}">
+            <div style="width:100%; height:100%;">
+               <apex:image rendered="{!opp.stageName ='Enquiry'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Enquiry.jpg')}" style="width:100%;"/>
+                <apex:image rendered="{!opp.stageName ='Quoted to client'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Quote.jpg')}" style="width:100%;"/>
+                <apex:image rendered="{!opp.stageName ='Feedback'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Feedback.jpg')}" style="width:100%;"/>
+                <apex:image rendered="{!opp.stageName ='Booked'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Book.jpg')}" style="width:100%;"/>
+                <apex:image rendered="{!opp.stageName ='Refine'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Refine.jpg')}" style="width:100%;"/>
+            </div>
+            <apex:outputPanel layout="block" style="page-break-after:always;"/>
+        </apex:outputPanel>
+            
+            
+        <!--TRAVEL DESIGNER PAGE  -->
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'A NOTE FROM YOUR DESIGNER'),mapSelected['A NOTE FROM YOUR DESIGNER'], true)}">
+            <div style="padding:20px 40px;font-size: 20pt;color:#447198;">
+                A NOTE FROM YOUR TRAVEL DESIGNER
+            </div>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="510" rowspan="2">
+                    <apex:image url="/servlet/servlet.ImageServer?id={!UserPhoto}" width="510" height="300px"/>
+                </td>
+                <td valign="top" bgcolor="#e6e7e8" height="180px">
+                    <div style="padding:15px 15px 0">
+                        <div style="font-size: 20pt;color:#457098;">{!UserDet.FirstName} {!UserDet.LastName}</div>
+                        <div style="color:#58595b;">
+                            <p>
+                               <apex:outputText style="font-family: sans-serif;" styleClass="ExpMsg" escape="false" value="{!userDet.U_Our_Expertise__c}"></apex:outputText>
+                            </p>
+                        </div>       
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td valign="middle" bgcolor="#959484" height="67px">
+                    <div style="padding:15px;color:#ffffff;">
+                       <div>{!UserDet.FirstName} {!UserDet.LastName}</div>
+                       <div style="margin-top: 10px;"/>
+                       <div>{!UserDet.Title}</div>
+                       <div>{!UserDet.Phone}</div>
+                       <div>{!UserDet.Email}</div>
+                   </div>
+                </td> 
+            </tr>
+            </table>
+           
+            <div style="margin:15px 40px">
+                <apex:outputText escape="false" value="{!tailorDescription}"></apex:outputText> 
+            </div>
+            <apex:outputPanel layout="block" style="page-break-after:always; "></apex:outputPanel>
+        </apex:outputPanel>  
+               
+        <!--YOUR TRAVEL ITINERARY PAGE  -->
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'YOUR ITINERARY'),mapSelected['YOUR ITINERARY'], true)}">
+           <div class="enddiv" style="background:#457096;">
+               <div style="display:none" class="footer"/>
+               <apex:image url="{!URLFOR($Resource.Framework,'PDFLogos/YourItinerary.png')}" style="border:0" width="100.5%" height="790"/>
+           </div>
+           <apex:outputPanel layout="block" style="page-break-after:always; "></apex:outputPanel>
+        </apex:outputPanel>   
+           
+           
+        <!--Destination Map PAGE IF Map type Multiple 
+        <apex:outputPanel rendered="{!Opp.O_Map_Type__c =='Multiple'}">
+           <apex:outputPanel rendered="{!IF(contains(mapContains,'HOLIDAY OVERVIEW'), mapSelected['HOLIDAY OVERVIEW'], true)}">
+               <apex:repeat value="{!CountryQuote}" var="cval">
+                   <div class="page-container" style="margin-top:10pt;">
+                       <div style="float:left;width:450px;">
+                           <apex:image value="/servlet/servlet.FileDownload?file={!cval.imageId }" width="100%" />
+                       </div>
+                       <div style="float:right;width:530px;">
+                           <div style="margin-bottom:10px;text-align:right;font-size:20pt;color:#457098;">DESTINATION MAP</div>
+                           <div style="text-align:right;">Whether It's a multi-stop tour or a single<br/>destination escape, here we map out<br/>exactly where you're travelling to</div>
+                           <br/>
+                           <br/>
+                           <br />
+                           <strong style="color:#457098;"><apex:outputText escape="false" value="{!cval.objCountry.name}" /></strong>
+                           <br/>
+                           <apex:outputPanel rendered="{!IF(Contains(Countrieslst,cval.objCountry.name) && cval.accommodationRegion =='Region',true,false)}">
+                               <ol style="list-style:upper-alpha">
+                                   <apex:variable value="{!0}" var="countWT"/>
+                                   <apex:variable value="" var="countWT1"/>
+                                   <apex:repeat value="{!WTGMap[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <apex:variable value="{!cval.objCountry.name+WTGlst}" var="countWT1"/>    
+                                       </apex:repeat>
+                                   </apex:repeat>
+                                   <apex:repeat value="{!WTGMap[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <li>
+                                               <table border="0" cellspacing="0" cellpadding="0" class="destinationTable">
+                                                   <tr><td width="10" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}">&nbsp;</td><td class="divider" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}"> {!WTG} </td></tr>
+                                               </table>
+                                           </li>
+                                       </apex:repeat>
+                                   </apex:repeat>
+                               </ol>
+                           </apex:outputPanel>
+                           <apex:outputPanel rendered="{!IF(Contains(CountryListAcc,cval.objCountry.name) && cval.accommodationRegion =='Accommodation',true,false)}">
+                               <ol style="list-style:upper-alpha">
+                                   <apex:variable value="{!0}" var="countWT"/>
+                                   <apex:variable value="" var="countWT1"/>
+                                   <apex:repeat value="{!mapCountryToAccom[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <apex:variable value="{!cval.objCountry.name+WTGlst}" var="countWT1"/>    
+                                       </apex:repeat>
+                                   </apex:repeat>
+                                   <apex:repeat value="{!mapCountryToAccom[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <li>
+                                               <table border="0" cellspacing="0" cellpadding="0" class="destinationTable">
+                                                   <tr><td width="10" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}">&nbsp;</td><td class="divider" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}"> {!WTG} </td></tr>
+                                               </table>
+                                           </li>
+                                       </apex:repeat>
+                                   </apex:repeat>
+                               </ol>
+                           </apex:outputPanel>
+                       </div>
+                   </div>
+                   <apex:outputPanel layout="block" style="page-break-after:always; ">
+                   </apex:outputPanel>
+               </apex:repeat>
+           </apex:outputPanel>  
+        </apex:outputPanel>  
+        -->
+        <!---- Destination Map if map type is Single 
+        <apex:outputPanel rendered="{!Opp.O_Map_Type__c=='Single'}">
+           <apex:outputPanel layout="block" styleClass="page-container" rendered="{!IF(contains(mapContains,'HOLIDAY OVERVIEW'), mapSelected['HOLIDAY OVERVIEW'], true)}">
+               <div style="float:left;width:550px; height:450px;margin-top:10pt;">
+                   <apex:image value="/servlet/servlet.FileDownload?file={!opp.O_Destination_Map_Image_ID__c}" width="500px;" height="400px;" />
+               </div>
+               <div style="margin-bottom:0px;text-align:right;font-size:20pt;color:#457098;">DESTINATION MAP</div>
+               <div style="text-align:right;">Whether It's a multi-stop tour or a single<br/>destination escape, here we map out<br/>exactly where you're travelling to</div>
+               
+               <div style="margin-top:10pt; width:450px;float:right;">
+                   
+                   <apex:repeat value="{!CountryQuote}" var="cval">
+                   
+                       <div style="width:405px; float:left;">
+                           <strong style="color:#457098;"><apex:outputText escape="false" value="{!cval.objCountry.name}" /></strong>
+                           <br/>
+                           <apex:outputPanel rendered="{!IF(Contains(Countrieslst,cval.objCountry.name) && cval.accommodationRegion =='Region',true,false)}">
+                               
+                               <ol style="list-style:upper-alpha">
+                                   <apex:variable value="{!0}" var="countWT"/>
+                                   <apex:variable value="" var="countWT1"/>
+                                   <apex:repeat value="{!WTGMap[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <apex:variable value="{!cval.objCountry.name+WTGlst}" var="countWT1"/>    
+                                       </apex:repeat>
+                                   </apex:repeat>
+                                   <apex:repeat value="{!WTGMap[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <li>
+                                               <table border="0" cellspacing="0" cellpadding="0" class="destinationTable">
+                                                   <tr><td width="10" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}">&nbsp;</td><td class="divider" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}"> {!WTG} </td></tr>
+                                               </table>
+                                           </li>
+                                       </apex:repeat>
+                                   </apex:repeat>
+                               </ol>
+                           </apex:outputPanel>
+                           <apex:outputPanel rendered="{!IF(Contains(CountryListAcc,cval.objCountry.name) && cval.accommodationRegion =='Accommodation',true,false)}">
+                               
+                               <ol style="list-style:upper-alpha">
+                                   <apex:variable value="{!0}" var="countWT"/>
+                                   <apex:variable value="" var="countWT1"/>
+                                   <apex:repeat value="{!mapCountryToAccom[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <apex:variable value="{!cval.objCountry.name+WTGlst}" var="countWT1"/>    
+                                       </apex:repeat>
+                                   </apex:repeat>
+                                   <apex:repeat value="{!mapCountryToAccom[cval.objCountry.name]}" var="WTGlst">
+                                       <apex:repeat value="{!WTGlst}" var="WTG">
+                                           <li>
+                                               <table border="0" cellspacing="0" cellpadding="0" class="destinationTable">
+                                                   <tr><td width="10" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}">&nbsp;</td><td class="divider" style="{!IF(cval.objCountry.name+WTGlst != countWT1,'padding-bottom:10px','')}"> {!WTG} </td></tr>
+                                               </table>
+                                           </li>
+                                       </apex:repeat>
+                                   </apex:repeat>
+                               </ol>
+                           </apex:outputPanel>
+                       
+                       </div>
+                   
+               
+                   </apex:repeat>
+               </div>
+               <apex:outputPanel layout="block" style="page-break-after:always; ">
+               </apex:outputPanel>
+           </apex:outputPanel>  
+        </apex:outputPanel>
+       -->
+        
+       <apex:outputPanel rendered="{!IF(contains(mapContains,'HOLIDAY OVERVIEW'), mapSelected['HOLIDAY OVERVIEW'], true)}">
+           <c:DestinationMap opp="{!opp}"> </c:DestinationMap>
+       </apex:outputPanel>  
+    
+        <!-- Travel Summary PAGE  -->
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'TRAVEL SUMMARY'),mapSelected['TRAVEL SUMMARY'], true)}">
+            <apex:variable value="{!1}" var="flag"/>
+            <div class="page-with-heading">
+                <div class="header">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td width="200" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                            <td valign="top" class="divider">
+                                <div class="header-text1"><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></div>
+                                <div class="header-text2">
+                                    <apex:outputText value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}"></apex:outputText><br />
+                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                        <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                    </apex:outputText>
+                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                        <apex:param value="{!Opp.O_Return_Date__c}" />
+                                    </apex:outputText>&nbsp;| QUOTE REFERENCE |&nbsp;
+                                    <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}"/>
+                                </div>
+                            </td>
+                            <td valign="top" align="right">
+                            <span class="pagenumber" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="margin:20px 0 0 30px;font-size: 25px;color:#457098;">TRAVEL SUMMARY</div>
+                </div>
+                <div class="page-container">
+                    <table class="table table1" border="0" cellspacing="0" cellpadding="0" style="font-size: 12px;">
+                        <THEAD>  
+                            <tr>
+                                <th align="center" width="5%">DAY</th>
+                                <th align="center" width="10%">DATE</th>
+                                <th align="center" width="10%">LOCATION / ROUTE</th>
+                                <th align="center" width="10%">SERVICES</th>
+                                <th align="center" style="min-width:14px;">DETAILS</th>
+                                <th align="center" width="10%">ROOM TYPE</th>
+                                <th align="center" width="5%">QUANTITY</th>
+                                <th align="center" width="5%">NIGHTS</th>
+                                <th align="center" style="max-width:14px;">CLASS / BOARD</th>
+                                <th align="center" style="max-width:8px; display:{!IF(opp.StageName = 'Booked','','none;')}">EMERGENCY CONTACT</th>
+                                <th align="center" style="max-width:8px; display:{!IF(opp.StageName = 'Booked','','none;')}">REFERENCE NO.</th>
+                            </tr>
+                        </THEAD> 
+                        <apex:variable value="{!0}" var="RowCount"/>
+                        <apex:repeat value="{!SupplierBookings}" var="SB">
+                            <TBODY>
+                               <tr class="{!IF( MOD(flag,2) != 0,'','even')}" style="font-size: 11px;">
+                                   <td class="first" align="center">{!SB.SB_Day__c}</td>
+                                   <td align="center"> 
+                                       <apex:outputText escape="false" value="{0,date,dd' 'MMMMM' 'yyyy}">
+                                           <apex:param value="{!SB.SB_From_Date__c}"/>    
+                                       </apex:outputText>
+                                   </td>
+                                   <td align="center">{!SB.SB_From_Place__c} <apex:outputpanel rendered="{!IF(SB.SB_From_Place__c!=null && SB.SB_To_Place__c != null,true,false)}">&nbsp; - &nbsp; </apex:outputpanel>{!SB.SB_To_Place__c}</td>
+                                   <apex:variable value="{!SB.recordtypeId}" var="RTID"/>
+                                   <td align="center">{!SUBSTITUTE(IF(contains(mapContainsIds,RTID),lstRecordTypeIds[RTID], ''),'Int Flight','International Flight')}</td>
+                                   <td align="center"><apex:outputText value="{!SB.SB_Notes__c}" escape="false"> </apex:outputText></td>
+                                   <td align="center">{!if(lstRecordTypeIds[RTID] = 'Accommodation',SB.SB_Room_Type__c,'')}</td>
+                                   <td align="center">{!if(lstRecordTypeIds[RTID] = 'Accommodation',SB.SB_No_of_Rooms__c,'')}</td>
+                                   <td align="center">{!if(SB.SB_Night__c != null && SB.SB_Night__c > 0,SB.SB_Night__c,'')}</td>
+                                   <td align="center">{!if((lstRecordTypeIds[RTID] = 'Int Flight' || lstRecordTypeIds[RTID] = 'Domestic Flight' || lstRecordTypeIds[RTID] = 'Light Aircraft' || lstRecordTypeIds[RTID] = 'Rail'),SB.SB_Class__c,'')}{!IF(lstRecordTypeIds[RTID] = 'Accommodation', SB.SB_Meal_Basis__c,'')}</td>
+                                   <td style="display:{!IF(opp.StageName = 'Booked','','none;')}" align="center">{!IF((lstRecordTypeIds[RTID] = 'Notes' || lstRecordTypeIds[RTID] = 'Bulk Cost' || lstRecordTypeIds[RTID] = 'Description' || lstRecordTypeIds[RTID] = 'Own arrangement'),'', SB.SB_Supplier__r.S_Emergency_Phone__c)}</td>
+                                   <td style="display:{!IF(opp.StageName = 'Booked','','none;')}" align="center">{!IF((lstRecordTypeIds[RTID] = 'Int Flight' || lstRecordTypeIds[RTID] = 'Domestic Flight' || lstRecordTypeIds[RTID] = 'Light Aircraft' || lstRecordTypeIds[RTID] = 'Rail' || lstRecordTypeIds[RTID] = 'Ferry' || lstRecordTypeIds[RTID] = 'Meet & Greet' || lstRecordTypeIds[RTID] = 'Private Jet' || lstRecordTypeIds[RTID] = 'Private Road Transfer' || lstRecordTypeIds[RTID] = 'Private Speed Boat Transfer' || lstRecordTypeIds[RTID] = 'Private Transfer with Excursion' || lstRecordTypeIds[RTID] = 'Sea Plane' || lstRecordTypeIds[RTID] = 'Sea Plane'),SB.SB_Reservation_Ref__c,'')}{!IF((lstRecordTypeIds[RTID] = 'Accommodation' || lstRecordTypeIds[RTID] = 'Transfer'),SB.SB_Booking_Ref__c,'')}</td>
+                               </tr>
+                           </TBODY>
+                           <apex:variable value="{!flag+1}" var="flag"/>
+                           <apex:variable value="{!RowCount+1}" var="RowCount"/>
+                       </apex:repeat>
+                   </table>
+               </div>
+               <apex:outputPanel layout="block" style="page-break-after:always; "/>
+           </div>
+       </apex:outputPanel>
+   
+   
+        <!-- QUOTATION PAGE  --------------->
+        <apex:outputPanel rendered="{!IF(Opp.StageName != 'Booked',true,false)}">
+            <apex:outputPanel rendered="{!IF(contains(mapContains,'QUOTATION'),mapSelected['QUOTATION'], true)}">
+                <div class="header">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td width="200" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                        <td valign="top" class="divider">
+                            <div class="header-text1"><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></div>
+                            <div class="header-text2">
+                                <apex:outputText value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}"></apex:outputText><br />
+                                <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                    <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                </apex:outputText>
+                                <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                    <apex:param value="{!Opp.O_Return_Date__c}" />
+                                </apex:outputText>&nbsp;| QUOTE REFERENCE |&nbsp;
+                                <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}">
+                                </apex:outputText>
+                            </div>
+                        </td>
+                        <td valign="top" align="right">
+                            <span class="pagenumber" />
+                        </td>
+                    </tr>
+                    </table>
+                </div>
+                
+                <div class="page-container">
+                    <div style="margin-bottom:10px;font-size:20pt;color:#457098;">QUOTATION</div>
+                   
+                    <div>
+                        <table width="100%" cellpadding="5" cellspacing="1" border="0">
+                            <tr style="background-color: #B16162;color: white;">
+                                <td align="Left">
+                                    <strong>TOTAL PRICE</strong>
+                                </td>
+                                
+                                <td style="text-align:right;" align="right">
+                                    <apex:outputPanel rendered="{!opp.O_Itinerary_Display_Price__c == null}">
+                                        <strong>&nbsp;{!Opp.CurrencyISOCode}&nbsp;
+                                        <apex:outputText value="{0, number, #,##0.00}">
+                                            <apex:param value="{!opp.Amount}"/>
+                                        </apex:outputText>      </strong>
+                                    </apex:outputPanel>
+                                    <strong><apex:outputText value="{!opp.O_Itinerary_Display_Price__c }" rendered="{!opp.O_Itinerary_Display_Price__c != null}" />
+                                  </strong>
+                                </td>
+                            </tr>
+                            
+                        </table>
+                        <br />
+                            <div style="font-size:12px;">
+                                <apex:outputText escape="false" value="{!costDescription}"/>
+                            </div>
+                            
+                       
+                   </div>
+               </div>
+               <apex:outputPanel layout="block" style="page-break-after:always; ">
+               </apex:outputPanel>
+           </apex:outputPanel>
+        </apex:outputPanel>
+   
+        <!-- QUOTATION PAGE  --------------->
+        <apex:outputPanel rendered="{!IF(Opp.StageName == 'Booked',true,false)}">
+            <apex:outputPanel rendered="{!IF(contains(mapContains,'QUOTATION'),mapSelected['QUOTATION'], true)}">
+                <div class="header">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td width="200" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                            <td valign="top" class="divider">
+                                <div class="header-text1"><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></div>
+                                <div class="header-text2">
+                                    <apex:outputText value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}"></apex:outputText><br />
+                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                        <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                    </apex:outputText>
+                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                        <apex:param value="{!Opp.O_Return_Date__c}" />
+                                    </apex:outputText>&nbsp;| QUOTE REFERENCE |&nbsp;
+                                    <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}">
+                                    </apex:outputText>
+                                </div>
+                            </td>
+                            <td valign="top" align="right">
+                                <span class="pagenumber" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="page-container">
+                    <div style="margin-bottom:10px;font-size:20pt;color:#457098;">INCLUSIONS &amp; EXCLUSIONS</div>
+                    <div>
+                        <div style="font-size:12px;">
+                            <apex:outputText escape="false" value="{!costDescription}"/>
+                        </div>
+                    </div>
+                </div>
+                <apex:outputPanel layout="block" style="page-break-after:always;"/>
+            </apex:outputPanel>
+        </apex:outputPanel>
+   
+   
+        <!-- Detailed Itinerary PAGE  -->
+        <apex:outputPanel rendered="true">
+            <div class="page-container">
+                <apex:include pageName="PreviewPdf"/>
+            </div>
+        </apex:outputPanel>
+        <!-- ITINERARY END PAGE  --> 
+           
+    
+    
+        <!--YOUR TRAVEL ITINERARY PAGE  -->
+       <apex:outputPanel layout="none" rendered="{!IF(contains(mapContains,'ITINERARY END'),mapSelected['ITINERARY END'], true)}">
+           <apex:outputPanel layout="block" style="page-break-after:always; "></apex:outputPanel>
+           <div class="enddiv" style="background:#457096">
+               <div style="display:none" class="footer"/>
+               <apex:image url="{!URLFOR($Resource.Framework,'PDFLogos/EndOfItinerary.png')}" style="border:0" width="100.5%" height="790"/>
+           </div>
+      </apex:outputPanel>   
+
+    </body>
+</apex:page>

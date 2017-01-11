@@ -1,0 +1,225 @@
+<apex:page standardController="Opportunity" extensions="CategoryController" sidebar="false" showHeader="false" title="Itinerary Category">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+         <head>
+             <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <c:BasicResources ></c:BasicResources>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+            <apex:stylesheet value="https://appssential-sf.s3.amazonaws.com/sugati/css/slds-appssential.css" />
+            <apex:includescript value="https://appssential-sf.s3.amazonaws.com/sugati/js/slds-appssential.js" />
+             
+             <script>
+                    var myApp = angular.module('MyApp', []);
+                    
+                    var contrl = myApp.controller('myController' ,function($scope){
+                        $scope.contentCategory =  {!contentcategoty};
+                        $scope.mastercheckbox = false;
+                        $scope.type = 'Categories';
+                        $scope.PageMessage = {!PageMessage}
+                        console.log($scope.contentCategory);
+                        $scope.backButton= ((typeof sforce != 'undefined') && (sforce != null));
+                   
+                    
+                        $scope.selectCheckboxes = function(){
+                        
+                            angular.forEach($scope.contentCategory, function(item){
+                                item.selected = $scope.mastercheckbox ;
+                            });
+                            
+                        }
+                        
+                        $scope.changeCat = function(){
+                            $scope.loading("show");
+                            Visualforce.remoting.Manager.invokeAction(
+                                   '{!$RemoteAction.CategoryController.changeCategories}',$scope.type,'{!opp.id}',
+                                    function(result, event){
+                                        if (event.status) {
+                                            console.log(result);
+                                            $scope.contentCategory = result;
+                                            $scope.$apply();
+                                            $scope.loading("hide");
+                                        }else if (event.type === 'exception'){ 
+                                            alert(event.message, 'error');
+                                            $scope.loading("hide");
+                                        }
+                                    }, 
+                                    {escape: false}
+                           );
+                        }
+                        
+                        $scope.saveCategoty = function(type){
+                           Visualforce.remoting.Manager.invokeAction(
+                                   '{!$RemoteAction.CategoryController.Save}',removeProperty(filterJSON($scope.contentCategory),'attributes'),'{!opp.id}',$scope.type,
+                                    function(result, event){
+                                        if (event.status) {
+                                         alert($scope.PageMessage['IC_Records_Updated_Success']);
+                                         if(type != ''){
+                                             window.open('', '_self', '');
+                                             window.close();
+                                             location.href = '/'+ '{!opp.Id}';
+                                         }
+                                        //Result contains list of account names and account id
+                                        }else if (event.type === 'exception') 
+                                            alert(event.message, 'error');
+                                    }, 
+                                    {escape: false}
+                           );      
+                        }
+                        
+                        $scope.loading = function(action){
+                            if(action == "show"){
+                                $('#contentLoading').css("display","block");
+                            }
+                            else{
+                                $('#contentLoading').css("display","none");
+                            }
+                        }
+                    });
+                    
+                    function removeProperty(data, prop) {
+                        for (var key in data) {
+                            var item = data[key]; 
+                            
+                            if (typeof item != "object") {
+                                delete data[prop]; 
+                            } else if (typeof item == "object") {
+                                delete data[prop]; 
+                                removeProperty(item,prop);
+                            }
+                        } return data;   
+                    }
+                    //Filter the SObject JSON
+                    function filterJSON(data) {
+                        var ele = data;
+                          
+                        for (var i in ele) {
+                                           
+                            var ele1 = ele[i];
+                            if(ele[i] != null && ele[i].hasOwnProperty('$$hashKey')){
+                                delete ele[i]['$$hashKey']
+                            }
+                            for (var j in ele1) {
+                                
+                                if(typeof(ele1[j]) == 'object'){
+                                    if(ele[i][j] != null &&  ele[i][j].hasOwnProperty('$$hashKey')){
+                                        delete ele[i][j]['$$hashKey']
+                                    }
+                                    for (var k in ele1[j]) {
+                                        for (var l in ele1[j][k]) {
+                                            if(ele[i][j][k][l] != null && ele[i][j][k][l].hasOwnProperty('$$hashKey')){
+                                                delete ele[i][j][k][l]['$$hashKey']
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(ele.length === undefined){
+                            delete  ele['$$hashKey'];        
+                        }
+                        return ele;
+                    }
+                    
+                     function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+                      }
+                    
+                    
+             </script>       
+             
+         </head>    
+         <body >
+           <div ng-app="MyApp" ng-cloak="ng-cloak">  
+            <br/>
+             <div class="slds" id="mycontroller" ng-controller="myController"   >
+                 <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                 <c:AlertBox />
+                 <c:Loading />
+             
+                 <div class="slds-card slds-page-header__detail-row" style="margin: 10px;">
+                      <div class="slds-card__body " style="padding : 0px">
+                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                            <div class="slds-form--horizontal" style="text-align: inherit;padding-left: 27px;">
+                                <div class="slds-form-element slds-float--right slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3" >
+                                    <label class="slds-form-element__label" for="inputNameSample1" ><strong>Type</strong></label>
+                                    <div class="slds-form-element__control slds-float--right slds-p-horizontal--large">
+                                        <select ng-change="changeCat()" ng-model="type" class="slds-input" >
+                                            <option  selected="selected" value="">--Select--</option>    
+                                            <option  value="Categories">Print</option>    
+                                            <option  value="Web">Web</option>    
+                                            <option  value="FinalDoc">Final Doc</option>    
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal slds-no-row-hover">
+                          <thead>
+                            <tr style="background-color: #f4f6f9;">
+                              <th class="slds-text-heading--label slds-size--1-of-4" scope="col">Content Category Name</th>
+                              <th class="slds-row-action" scope="col">
+                                <div class="slds-form-element">
+                                      <label class="slds-checkbox" for="checkboxSample1">
+                                        <input name="checkbox" type="checkbox" id="checkboxSample1" ng-model="mastercheckbox" ng-click="selectCheckboxes();" />
+                                        <span class="slds-checkbox--faux"></span>
+                                      </label>
+                                 </div>
+                              </th>
+                              <th class="slds-text-heading--label slds-size--1-of-4" scope="col">Order</th>
+                              <th class="slds-text-heading--label slds-size--1-of-4" scope="col">Page No.</th>
+                              
+                            </tr>
+                          </thead>
+                          <tbody >
+                            <tr class="slds-hint-parent" ng-repeat="cat in contentCategory">
+                              <td class="slds-size--1-of-4" data-label="Content Category Name">{{cat.category.Name}}</td>
+                              
+                              <td class="slds-size--1-of-4" data-label="">
+                                  <div class="slds-form-element">
+                                      <label class="slds-checkbox" for="{{cat.category.Id}}">
+                                        <input name="checkbox" type="checkbox" id="{{cat.category.Id}}" ng-model="cat.selected" />
+                                        <span class="slds-checkbox--faux"></span>
+                                      </label>
+                                   </div>
+                              </td>
+                              
+                              <td class="slds-size--1-of-4" data-label="Order">{{$index}}
+                              </td>
+                              
+                              <td class="slds-size--1-of-4" data-label="Page No.">
+                                  <div class="slds-form-element">
+                                      <div class="slds-form-element__control">
+                                        <input id="sample1" class="slds-input" type="text" ng-model="cat.PageNo"  />
+                                      </div>
+                                  </div>
+                               </td>
+                               
+                            </tr>
+                          </tbody>
+                        </table>
+                        <br/>
+                        <br/>
+                        <br/>
+                      </div>
+                   </div>  
+                    <div class="slds-modal__footer slds-modal__footer" style="position: fixed;bottom: 0px;width: 100%;">
+                        <div class="slds-x-small-buttons--horizontal">
+                             <button class="slds-button  slds-button--brand" ng-click="saveCategoty('')">Save</button>
+                             &nbsp;&nbsp;<button class="slds-button  slds-button--brand" ng-click="saveCategoty('close')">Save &amp; Close</button>
+                             <button  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" > Back</button>
+                       </div>
+                    </div>
+                  </div>
+             </div>   
+         </body>
+    </html>
+</apex:page>

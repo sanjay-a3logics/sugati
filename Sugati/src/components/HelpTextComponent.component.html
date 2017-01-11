@@ -1,0 +1,136 @@
+<!-----------------------------------------------------------------------------------------------------
+ Visualforce component which contains a angular directive to show help text from a field  
+Example : <i class="fa fa-question-circle fa-lg" tooltip="{!$ObjectType.LightningApps__Help_Text__c.fields.LightningApps__H_Field_API_Name__c.inlineHelpText}" tooltip-position="right"/>
+------------------------------------------------------------------------------------------------------>
+<apex:component layout="block">
+    <style>
+        .tooltip {
+          display: none;
+          position: absolute;
+          background-color: #222;
+          padding: 7px 10px;
+          max-width: 250px;
+          color: #fff;
+        }
+        
+        .tooltip-show {
+            display: inherit;
+        }
+        
+        .tooltip-arrow {
+            position: absolute;
+            width: 0;
+            height: 0; 
+        }
+        
+        .tooltip-down .tooltip-arrow {
+            top: -5px;
+            left: 50%;
+            margin-left: -5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 5px solid #222;
+        }
+        
+        .tooltip-up .tooltip-arrow {
+            bottom: -5px;
+            left: 50%;
+            margin-left: -5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #222;
+         }
+        
+        .tooltip-right .tooltip-arrow {
+            left: -5px;
+            top: 50%;
+            margin-top: -3px;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-right: 5px solid #222;
+        }
+        
+        .tooltip-left .tooltip-arrow {
+            right: -5px;
+            top: 50%;
+            margin-top: -3px;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 5px solid #222;
+        }
+    </style>
+    <script>
+         myApp.directive('ngtooltip', function ($document, $compile) {
+          return {
+            restrict: 'A',
+            scope: true,
+            link: function (scope, element, attrs) {
+              var tip = $compile('<div ng-class="tipClass">{{ tooltipTemplate }}<div class="tooltip-arrow"></div></div>')(scope),
+                  tipClassName = 'tooltip',
+                  tipActiveClassName = 'tooltip-show';
+              scope.tipClass = [tipClassName];
+              scope.tooltipTemplate = attrs.ngtooltip;
+              if(attrs.tooltipPosition) {
+                scope.tipClass.push('tooltip-' + attrs.tooltipPosition);
+              }
+              else {
+               scope.tipClass.push('tooltip-down'); 
+              }
+              $document.find('body').append(tip);
+              //console.log(element.position());
+              element.bind('mouseover', function (e) {
+                 tip.addClass(tipActiveClassName);
+                 //console.log(e);
+                 var pos = {top:e.pageY, left: e.pageX, height: e.target.offsetHeight, width: e.target.offsetWidth},
+                 offset = tip.offset(),
+                 tipHeight = tip.outerHeight(),
+                 tipWidth = tip.outerWidth(),
+                 elWidth = pos.width || pos.right - pos.left,
+                 elHeight = pos.height || pos.bottom - pos.top,
+                 tipOffset = 10;
+                 pos.right = pos.left + elWidth;
+                 pos.bottom = pos.top + elHeight;
+                 //console.log(pos );
+                 //console.log(offset);
+  
+                if(tip.hasClass('tooltip-right')) {
+                    //console.log(pos.top);
+                    //console.log(tipOffset);
+                    //console.log(tipHeight );
+                    //console.log((tipHeight / 2) );
+                    //console.log((parseInt(elHeight) / 2) );
+                    offset.top = pos.top - (tipHeight / 2) + (elHeight / 2);
+                    offset.left = pos.right + tipOffset;
+                }
+                else if(tip.hasClass('tooltip-left')) {
+                  offset.top = pos.top - (tipHeight / 2) + (elHeight / 2);
+                  offset.left = pos.left - tipWidth - tipOffset;
+                }
+                else if(tip.hasClass('tooltip-down')) {
+                  offset.top = pos.top + elHeight + tipOffset;
+                  offset.left = pos.left - (tipWidth / 2) + (elWidth / 2);
+                }
+                else {
+                  offset.top = pos.top - tipHeight - tipOffset;
+                  offset.left = pos.left - (tipWidth / 2) + (elWidth / 2);
+                }
+                ////console.log(offset);
+                tip.offset(offset);
+              });
+              
+              element.bind('mouseout', function () {
+                tip.removeClass(tipActiveClassName);
+              });
+        
+              tip.bind('mouseover', function () {
+                 tip.addClass(tipActiveClassName);
+              });
+        
+              tip.bind('mouseout', function () {
+                tip.removeClass(tipActiveClassName);
+              });
+            }
+          }
+        });
+    </script>
+</apex:component>

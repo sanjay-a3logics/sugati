@@ -1,0 +1,48 @@
+<apex:component controller="BookingDetailsController" layout="none">
+    <apex:attribute name="page" type="String" description="TODO: Describe me"/>
+    <style>
+        .dataCol{
+            max-width: 180px;    
+        }
+    </style>
+    <apex:image URL="/servlet/servlet.FileDownload?file={!FileId}" width="100%"/>
+    <div style="margin:10px; margin-top:12px;">
+        <apex:outputLabel value="{!opp.name}" style="color: #457098;"></apex:outputLabel>
+        <hr/>
+        Departure Date: <strong><apex:outputField label="Departure Date:" value="{!opp.O_Departure_Date__c}"/></strong> <br/>
+        Booking No: <strong><apex:outputField label="Booking no:" value="{!opp.O_Reference_Number__c}"/></strong> <br/>
+        Travel Designer: <strong><apex:outputField label="Consultant:" value="{!opp.Owner.Name}"/></strong>
+        <hr/>
+        <apex:outputPanel rendered="{!page = 'Confirmation'}">
+            Insurance Provider: <strong><apex:outputField label="Consultant:" value="{!opp.O_Insurance_Company__c}"/></strong>
+            <hr/>
+            Lead Guest: <strong>{!leadGuest.firstName} {!leadGuest.lastName}&nbsp;&nbsp;<apex:outputfield value="{!leadGuest.birthDate}"/></strong><br/>
+            <apex:variable value="{!1}" var="count"/>
+            <apex:repeat value="{!otherGuests}" var="c">
+                Guest {!count}: <strong>{!c.firstName} {!c.lastName}&nbsp;&nbsp;<apex:outputfield value="{!c.birthDate}"/></strong><br/>
+                <apex:variable value="{!count+1}" var="count"/>
+            </apex:repeat>
+            <hr/>
+        </apex:outputPanel>    
+        Total Holiday Cost: <strong>{!Opp.currencyISOCode} 
+            <apex:outputText label="Consultant:" value="{0, number, ###,###,###.##}"  >
+                <apex:param value="{!opp.Amount}" />
+            </apex:outputText></strong><br/>
+        {!if(daysToDeparture,'Deposit Due','Outstanding Amount')}: <strong>{!opp.currencyISOCode}&nbsp;
+            <apex:outputText label="Consultant:" value="{0, number, ###,###,###.##}"  >
+                <apex:param value="{!ROUND(paymentDue,2)}" />
+            </apex:outputText>
+        </strong><br/>
+        Deposit Amount: <strong>{!Opp.currencyISOCode} 
+            <apex:outputText label="Consultant:" value="{0, number, ###,###,##0.00}"  >
+                <apex:param value="{!opp.O_Deposit_Required1__c}" />
+            </apex:outputText></strong><br/>
+        Paid Amount: <strong>{!Opp.currencyISOCode} 
+        <apex:outputText label="Consultant:" value="{0, number, ###,###,##0.00}"  >
+            <apex:param value="{!opp.O_Total_Payment_Without_CC__c}" />
+        </apex:outputText></strong>
+    </div>
+    
+        
+    
+</apex:component>

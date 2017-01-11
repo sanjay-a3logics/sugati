@@ -1,0 +1,243 @@
+<apex:component controller="JSRemotingFileUploadController" layout="inline">
+    <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <apex:attribute name="recordId" type="string" description="Record Id"/>
+  <apex:attribute name="RecordName" type="string" description="Record Name"/>
+  <apex:attribute name="NameSpacePrefix" required="true" type="string" description="Namespace used for managed package"/>
+  <script>
+    var maxStringSize = 6000000;    //Maximum String size is 6,000,000 characters
+    var maxFileSize = 4350000;      //After Base64 Encoding, this is the max file size
+    var chunkSize = 950000;         //Maximum Javascript Remoting message size is 1,000,000 characters
+    var attachment;
+    var attachmentName;
+    var fileSize;
+    var positionIndex; 
+    var attachmentParentName;
+    var attachmentParentId;
+    var fieldError = {!HEPageErrorMessage};
+    
+    $(document).ready(function(){
+        $('.popupUpload .closeButtonUpload').on('click', function(){
+            $('.popupUpload').toggle('hide');    
+        });
+    });
+    
+    var contrl = myApp.controller('FileUpload' ,function($scope){
+        $scope.attachments = [];
+        $scope.selectedFile;
+        $scope.disableAdd = true;
+        $scope.isClientPayment = false;
+        
+        $scope.uploadFile = function() {
+          var file = document.getElementById('attachmentFile').files[0];
+          console.log(file);
+          if(file != undefined) {
+            loading(true);
+            if(file.size <= maxFileSize) {
+              attachmentName = file.name;
+              var fileReader = new FileReader();
+              fileReader.onloadend = function(e) {
+                attachment = window.btoa(this.result);  //Base 64 encode the file before sending it
+                positionIndex=0;
+                fileSize = attachment.length;
+                console.log("Total Attachment Length: " + fileSize);
+                doneUploading = false;
+                if(fileSize < maxStringSize) {
+                  $scope.uploadAttachment(null);
+                } else {
+                  loading(false);
+                  alert("Base 64 Encoded file is too large.  Maximum size is " + maxStringSize + " your file is " + fileSize + ".");
+                }
+                 
+              }
+              fileReader.onerror = function(e) {
+                loading(false);
+                alert("There was an error reading the file.  Please try again.");
+              }
+              fileReader.onabort = function(e) {
+                loading(false);
+                alert("There was an error reading the file.  Please try again.");
+              }
+             
+              fileReader.readAsBinaryString(file);  //Read the body of the file
+             
+            } else {
+              loading(false);
+              alert("File must be under 4.3 MB in size.  Your file is too large.  Please try again.");
+            }
+          } 
+          else {
+            loading(false);
+            alert("You must choose a file before trying to upload it.");
+          }
+        }
+         
+        //Method to send a file to be attached to the record bound to the page by the remoteActions
+        //Sends parameters: Account Id, Attachment (body), Attachment Name, and the Id of the Attachment if it exists to the controller   
+        $scope.uploadAttachment = function(fileId) {
+          var attachmentBody = "";
+          if(fileSize <= positionIndex + chunkSize) {
+            attachmentBody = attachment.substring(positionIndex);
+            doneUploading = true;
+          } else {
+            attachmentBody = attachment.substring(positionIndex, positionIndex + chunkSize);
+          }
+          console.log("Uploading " + attachmentBody.length + " chars of " + fileSize);
+          console.log(attachmentParentId);
+          Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.JSRemotingFileUploadController.doUploadAttachment}',
+           attachmentParentId, attachmentBody, attachmentName, fileId, 
+            function(result, event) {
+              console.log(result);
+              if(event.type === 'exception') {
+                console.log("exception");
+                console.log(event);
+              } else if(event.status) {
+                if(result.substring(0,3) == '00P') {
+                  if(doneUploading == true) {
+                    //window.open("/{!recordId}", "_blank");
+                    //window.location.reload();
+                    loading(false);
+                    var newAtt = {};
+                    newAtt.Id = result.substring(0, result.indexOf(':::'));
+                    newAtt.Name = result.substring(result.indexOf(':::')+3)
+                    newAtt.isSelected = true;
+                    $scope.attachments.unshift(newAtt);
+                    $scope.$apply();
+                  } else {
+                    positionIndex += chunkSize;
+                    $scope.uploadAttachment(result.substring(0, result.indexOf(':::')));
+                  }
+                }
+              } else {
+                console.log(event.message);
+              }
+            },
+            {buffer: true, timeout: 120000}
+          );
+        }
+        
+        $scope.addToEmail = function(){
+            var counterFile = 1;
+            $('#attachedFiles').empty();
+            console.log($('#attachedFiles'));
+            angular.forEach($scope.attachments, function(file){
+                if(file.isSelected){
+                    console.log('Selected  '+ file.Id);
+                    var elementNew = $('<br/><label id="'+ file.Id +'">' + counterFile + '.  ' + file.Name + '</label>');
+                    elementNew.appendTo('#attachedFiles');
+                    counterFile++;
+                }
+            });
+            $('.popupUpload').toggle('hide');
+        }
+        
+        $scope.showToAtt = function(){
+            var counterFile = 1;
+            $('#attachedFiles').empty();
+            console.log($('#attachedFiles'));
+            angular.forEach($scope.attachments, function(file){
+                var elementNew = $('<br/><label id="'+ file.Id +'">' + counterFile + '.  ' + file.Name + '</label>');
+                elementNew.appendTo('#attachedFiles');
+                counterFile++;
+            });
+        }
+        
+        //Watch on Attachment list to track the change and enable/disable add button
+        $scope.$watch('attachments', function(newVal,oldVal){
+            $scope.disableAdd = true; 
+            angular.forEach(newVal, function(item){
+                if(item.isSelected !== undefined && item.isSelected){
+                    $scope.disableAdd = false; 
+                }
+                
+            });
+            
+        }, true);
+        
+        
+        $scope.getAttchments = function(){
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.JSRemotingFileUploadController.getAttchments}', attachmentParentId,
+                function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                        $scope.attachments = result;  
+                        console.log(result);
+                        angular.forEach($scope.attachments, function(att){
+                            att.isSelected = false;
+                        });
+                        if($scope.isClientPayment){
+                            $scope.showToAtt();
+                        }
+                    }else if (event.type === 'exception') 
+                        alert(event.message,'error');
+                    if(lastSetBy == 'getContact' || lastSetBy == '')
+                        loading(false);
+                    $scope.$apply();
+                }, 
+                {escape: false}
+            );
+        }
+        
+        //add file to email as attachment
+        //$scope.getAttchments();
+    });
+    
+    //Directive for onchange on file
+    myApp.directive('customOnChange', function() {
+      return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+          var onChangeHandler = scope.$eval(attrs.customOnChange);
+          element.bind('change', onChangeHandler);
+        }
+      };
+    });
+    
+  </script>
+  
+  <div ng-controller="FileUpload" id="FileUpload" class="slds popupUpload" style="display: none;">
+    <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--prompt slds-fade-in-open" style="z-index:1111111">
+        <div class="slds-modal__container slds-modal--prompt">
+            <div class="slds-modal__header slds-modal__header slds-theme--success" style="padding: 12px 8px;">
+                <h2 class="slds-text-heading--small">Upload Email Attachment</h2>
+                <button class="btn slds-modal__close">
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+            </div>
+            <div class="slds-modal__content"> 
+                <div class="slds-grid slds-wrap"> 
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--4-of-12 slds-large-size--3-of-12">
+                        <div class="slds-modal__content">
+                            <button class="slds-button slds-button--brand" title="Click here to upload attachment" onclick="$('#attachmentFile').trigger('click');return false;" style="float:left;">
+                                <span style="padding-left:25px; padding-right:25px;"> 
+                                    <i class=" fa fa-2x fa-upload"></i> 
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--8-of-12 slds-large-size--9-of-12" style="border-left: 2px solid #807F70;">
+                        <h2 style="font-size: 14px; margin-left: 10px; font-weight:bold;" id="attachmentParent">  </h2>
+                        <div class="slds-modal__content" style="max-height: 200px; overflow-x: auto !important;">
+                            <div class="slds-form-element" ng-repeat="att in attachments">
+                                <input type="checkbox" class="AttachFile" ng-model="att.isSelected" id="{{att.Id}}"> <label for="{{att.Id}}"> {{att.Name}} </label> </input>
+                            </div> 
+                        </div> 
+                    </div>
+                </div>
+                <div class="slds-form--horizontal" style="width: 100%; display:none;">
+                    <input type="file" custom-on-change="uploadFile" ng-model="selectedFile" class="slds-input"  id="attachmentFile"/> <br />
+                </div>  
+            </div>
+            <div class="slds-modal__footer slds-theme--default">
+                <div class="slds-x-small-buttons--horizontal" style="margin-top: 10px;"> 
+                    <button class="slds-button slds-button--brand" ng-disabled="disableAdd" onclick="return false;" ng-click="addToEmail();">Add</button>
+                    <button class="closeButtonUpload slds-button slds-button--brand" onclick="return false;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slds-backdrop slds-backdrop--open" style="z-index:1111110"></div>
+</div>
+
+</apex:component>

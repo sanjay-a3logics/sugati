@@ -1,0 +1,40 @@
+<apex:component layout="none">
+    <script>
+         function redirect() {
+                var nameSpace = $('.nameSpace').html();
+                var oppId = $('.oppId').html();
+                if ( (typeof sforce != 'undefined') && (sforce != null) ) {
+                    sforce.one.navigateToURL('/apex/'+nameSpace+'ItineraryBuilder?id='+oppId);
+                }
+                else {
+                    location.href = '/apex/'+nameSpace+'ItineraryBuilder?id='+oppId;
+                }
+            };
+    </script>
+    <div ng-if="account.Id != undefined" class="slds-page-header" role="banner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <div class="slds-grid">
+        <div class="slds-col slds-has-flexi-truncate">
+          <div class="slds-media">
+            <div class="slds-media__figure">
+              <svg aria-hidden="true" class="slds-icon slds-icon-standard-user">
+                <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/standard-sprite/svg/symbols.svg#user')}"></use>
+              </svg>
+            </div>
+            <div class="slds-media__body">
+              <p class="slds-text-heading--label">Client Name</p>
+              <div class="slds-grid">
+                <h1 class="slds-page-header__title slds-m-right--small slds-truncate slds-align-middle" title="Client Name">{{account.Name}}</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slds-col slds-no-flex slds-align-bottom">
+          <div ng-if="opportunity.Id != undefined" class="slds-button-group" role="group">
+              Opportunity - &nbsp;<a target="_blank" onclick="redirect()">{{opportunity.Name}}</a>
+              <div class="oppId" style="display:none">{{opportunity.Id}}</div>
+              <div class="nameSpace" style="display:none">{{nameSpacePrefix}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+</apex:component>

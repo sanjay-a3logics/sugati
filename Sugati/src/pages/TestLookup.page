@@ -1,0 +1,136 @@
+<apex:page showHeader="false" sidebar="false">
+<c:BasicResources ></c:BasicResources>
+
+<div ng-app="app1">
+    <div class="slds">    
+    <div ng-controller="ItemCtrl" class="container"> 
+
+        Angular Lookup : <div style="width:200px;">
+                                    <typeahead 
+                                       label="label" value="value"
+                                       modelret="valRet" modeldisplay="valDis"
+                                       />
+                         </div> <br />
+                        <b> Value Selected</b>  {{valDis}}  <br />
+                        <b> Selected Id (Hidden) </b> {{valRet}}
+    </div>
+    </div>
+</div>
+
+<script>
+
+var myApp = angular.module('app1', []);
+
+
+    var contrl = myApp.controller('ItemCtrl' ,function($scope,$templateCache,$http){
+    
+    });
+ 
+
+   myApp.directive('typeahead', function($timeout,$http) {
+   return {
+    restrict: 'AEC',
+    scope: {
+      value: '@',
+      label:'@',
+      modeldisplay:'=',
+      modelret: '='
+    },
+
+    link: function(scope, elem, attrs) {
+        scope.current = 0;
+        scope.selected = false; 
+
+      scope.da  = function(txt){
+          
+          scope.ajaxClass = 'loadImage';
+          $http({method: 'Get', url: '/apex/SObject_JSON?AccName='+txt}).
+                success(function(data, status) {
+                  scope.TypeAheadData = data;
+                  scope.ajaxClass = '';
+                }) ;  
+
+      }
+
+      scope.handleSelection = function(key,val) {
+        scope.modelret = key;
+        scope.modeldisplay = val;
+        scope.current = 0;
+        scope.selected = true;
+      }
+
+      scope.isCurrent = function(index) {
+        return scope.current == index;
+      }
+
+      scope.setCurrent = function(index) {
+        scope.current = index;
+      }
+
+    },
+    template: '<div class="slds"><input type="text" ng-model="modeldisplay" ng-KeyPress="da(modeldisplay)" ng-keydown="selected=false"'+
+                'style="width: 240px;" class="slds-input">'+
+                '<div class="slds-scrollable--y overlap" style="overflow-y:auto; height:280px; width: 240px !important;" ng-hide="!modeldisplay.length || selected">'+
+                   '<ul class="dropdown-menu1 ng-isolate-scope">'+
+                   '<li class="list-group-item noTopBottomPad ListItem" style="list-style-type: none; width: 300px;" ng-repeat="item in TypeAheadData|filter:model  track by $index" '+
+                       'ng-click="handleSelection(item[value],item[label])" style="cursor:pointer" '+
+                       'ng-class="{active:isCurrent($index)}" '+
+                       'ng-mouseenter="setCurrent($index)">'+
+                         ' '+
+                         '<i>{{item[label]}} <br /></i>'+   
+                    '</li> '+ 
+                    '</ul> '+                                    
+                '</div>'+
+                '</input></div>' 
+  };
+});
+
+</script>
+<style>
+     .noTopBottomPad
+            {
+                padding-top : 2px !important;
+                padding-bottom : 2px !important;
+            }
+        .overlap {position: absolute !important;
+                z-index: 900 !important; width: inherit  !important ;}
+        .loadImage { background: white url('') right center no-repeat; }
+        
+            
+        .ListItem:hover{
+            color: #ffffff;
+            text-decoration: none;
+            background-color: #0081c2;
+            background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+            cursor: pointer;
+        }
+        
+        .ListItem:focus{
+            color: #ffffff;
+            text-decoration: none;
+            background-color: #0081c2;
+            background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+            cursor: pointer;
+        }
+        .dropdown-menu1 {
+            position: absolute;
+            z-index: 1000;
+            float: left;
+            min-width: 160px;
+            list-style: none;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            -webkit-border-radius: 6px;
+            -moz-border-radius: 6px;
+            border-radius: 6px;
+            -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            -webkit-background-clip: padding-box;
+            -moz-background-clip: padding;
+            background-clip: padding-box;
+        }
+
+</style>
+</apex:page>

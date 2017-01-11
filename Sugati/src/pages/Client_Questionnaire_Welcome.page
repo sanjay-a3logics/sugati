@@ -1,0 +1,120 @@
+<apex:page sidebar="false" title="Vintage Travel | Client Questionnaire Welcome"  controller="QuestionnaireWelcomeController" 
+    showHeader="false" action="{!VerifyExisitingUser}" cache="false" >    
+    
+   
+    <c:BasicResources ></c:BasicResources>
+    <c:QuestionnaireCSS />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/css/bootstrap.min.css')}"/>
+    <body style="background-color: lightgray;">     
+    <apex:form >       
+        <style>
+            .QuestionnaireInfo{
+                background-color: white;
+            }
+            .col1{
+                  float: left;
+                  margin-left: 22%;
+            }
+           
+            .form-control{
+                width: 50%;
+            }
+        </style>
+        <!--
+        <div id="MainHeading" align="center" style="margin-top: 30px;">
+            <h1 style="font-size: 344%;color: purple;">Vintage Travel</h1>
+        </div>
+        -->
+        <br/><br/>
+        <apex:outputPanel rendered="{!IF(verifyClientProperty == 'opp',true,false)}">
+            <div id="HolidayQuestionnaireMainPanel" style="width:75%;margin:0 auto;">
+              <div id = "Heading" style="background-color: rgb(247,149,36);padding: 2%;">
+                  <h1 align="center" style="  color: white;font-size: 21px;">Holiday Questionnaire</h1>
+              </div>
+              <div class = "QuestionnaireInfo" >
+                  <br/>
+                 <div class="row">
+                    <div class="col-xs-9 col-xs-offset-4">
+                        <apex:selectRadio layout="pageDirection" styleClass="CharityOptions"  value="{!oppCharityValue}">
+                            <apex:selectOptions value="{!charityLst}"></apex:selectOptions>
+                        </apex:selectRadio>
+                    </div>
+                </div><br/>
+                  <div class ="row">
+                         <div class="col-xs-3 col-xs-offset-1">Name:</div>
+                         <div class="col-xs-6"><apex:inputText value="{!oppAccName}" disabled="true" styleClass="form-control" /></div>
+                  </div><br/>
+                  <div class ="row">
+                      <div class="col-xs-3  col-xs-offset-1">Booking Ref:</div>
+                      <div class="col-xs-6"><apex:inputText value="{!oppReferenceNo}" disabled="true" styleClass="form-control" /></div>
+                  </div><br/>
+                  <div class ="row">
+                      <div class="col-xs-3 col-xs-offset-1">Destination:</div>
+                      <div class="col-xs-6"><apex:inputText value="{!oppDestination}" disabled="true" styleClass="form-control" /></div>
+                  </div><br/>
+               <!--   <tr>
+                      <td>Destination:</td>
+                     <td><apex:inputText value="" disabled="true"/></td>
+                  </tr> -->
+                  <div class ="row">
+                      <div class="col-xs-3 col-xs-offset-1">Property Name:</div>
+                      <div class="col-xs-6"><apex:inputText value="{!oppPropertyName}" disabled="true" styleClass="form-control" /></div>
+                  </div><br/>
+                  <div class ="row">
+                      <div class="col-xs-3 col-xs-offset-1">Date of Holiday:</div >
+                      <div class="col-xs-6"><apex:inputText value="{!oppDepDate1}" disabled="true" styleClass="form-control" /></div>
+                  </div><br/><br/>
+                  <div class="BeginSection" align="center">
+                      <apex:pageMessages id="msg"></apex:pageMessages>
+                      <apex:outputPanel id="ssss"></apex:outputPanel>
+                      <apex:commandButton value="Begin" reRender="ssss,msg" action="{!BeginQuesionnaire}" styleClass="btn btn-primary" />
+                  </div>
+                  <br/><br/><br/>
+              </div>
+            </div>
+        </apex:outputPanel>
+        <!-- <apex:outputPanel rendered="{!IF(verifyClientProperty == 'property',true,false)}">
+            <div id="HolidayQuestionnaireMainPanel" style="width: 64%;margin: 0 auto">
+              <div id = "Heading" align="center" style="padding: 2%;background-color: purple;">
+                  <h1 style="  color: white;font-size: 21px;">Safety Audit</h1>
+              </div>
+              <div class = "QuestionnaireInfo" >
+                  <br/>
+                  <br/>
+                      <div class ="row">
+                             <div class="col-xs-3 col-xs-offset-2">Actioned by:</div>
+                             <div class="col-xs-6"><apex:inputText value="{!userName}" disabled="true"/></div>
+                      </div><br/>
+                      <div class ="row">
+                             <div class="col-xs-3 col-xs-offset-2">Audit by:</div>
+                             <div class="col-xs-6"><apex:inputText value="{!auditByName}"/></div>
+                      </div><br/>
+                      <div class ="row">
+                          <div class ="col-xs-3 col-xs-offset-2">Date of visit:</div>
+                          <div class="col-xs-6"><apex:inputField value="{!NewQuestionnaire.Q_Date_of_visit__c}" /></div>
+                      </div><br/>   
+                      <div class ="row">
+                          <div class ="col-xs-3 col-xs-offset-2">Completed Date:</div>
+                          <div class="col-xs-6"><apex:inputField value="{!NewQuestionnaire.Q_Completed_Date__c}" /></div>
+                      </div><br/>       
+                      <div class ="row">
+                          <div class="col-xs-3 col-xs-offset-2">Area:</div>
+                          <div class="col-xs-6"><apex:inputText value="{!propertyRegion}" disabled="true"  /></div>
+                      </div><br/>
+                      <div class ="row">
+                          <div class="col-xs-3 col-xs-offset-2">Property name:</div >
+                          <div class="col-xs-6"><apex:inputText value="{!objProperty.Name}" disabled="true"  /></div>
+                      </div><br/><br/>
+                  
+                  <div class="BeginSection" align="center">
+                      <apex:commandButton style="padding-left:5px; padding-right:5px;" value=" Begin " action="{!BeginQuesionnaire}" styleClass="btn btn-primary" />
+                  </div>
+              
+                  <br/><br/><br/>
+              </div>
+            </div>
+          </apex:outputPanel> -->
+    </apex:form>
+    
+  </body>
+</apex:page>

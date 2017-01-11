@@ -1,0 +1,1002 @@
+<apex:page showHeader="false" title="Itinerary PDF Setting" sidebar="false" standardController="Opportunity" standardStylesheets="true" docType="html-5.0" 
+    extensions="ItinerarySetting,DestinationMapController" cache="false">
+    <head>
+        <meta charset="utf-8"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.js"></script>
+        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.7.0.js"></script>
+        <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+        <c:BasicResources ></c:BasicResources>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+        <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+        <apex:includeScript value="//code.jquery.com/ui/1.11.0/jquery-ui.js" />
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        
+        <apex:stylesheet value="{!URLFOR($Resource.Framework,'AutoSuggest/autoSuggest.css')}"/>  
+        <apex:includeScript value="{!URLFOR($Resource.Framework,'AutoSuggest/jquery.autoSuggest.js')}"/>  
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/> 
+  
+        
+        <style>
+        hr {
+             margin-top: 0px !important;
+             margin-bottom: 0px !important;
+         }
+        .actions-bottom {
+            position: fixed;
+            z-index: 99;
+            margin: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #f1f1f1;
+        }
+        
+        .cke_editable {
+            border-color: rgba(54, 160, 254, 0.25);
+            border-style: solid;
+            border-width: thin;
+        }
+       .preview-overlay{
+          position: fixed;
+          z-index: 999;
+          top:0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.8);
+        }
+        .preview-opened .preview-overlay{
+          display: block;
+        }
+        .preview-opened body{
+          overflow: hidden !important;
+        }
+        .preview-wrap{
+          margin:0 auto;
+          width: 100%;
+          height: 100%;
+          overflow-y:auto;
+        }
+               .page {
+            position: relative;
+            width: 559px;
+            flow-from: page-content;
+            margin:30px auto;
+            line-height: 16px;
+            font-size: 13px;
+            background:#fff;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        
+        /*html {
+             off-white, so body edge is visible in browser 
+            background: #eee;
+            margin-left: 30%;
+        }
+        
+        body {
+            
+            height: 210mm;
+            width: 148.5mm;
+        
+            margin: 0;
+        }*/
+        
+        /* fill half the height with each face */
+        .face {
+            height: 50%;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* the back face */
+        .face-back {
+            background: #f6f6f6;
+        }
+        
+        /* the front face */
+        .face-front {
+            background: #fff;
+        }
+        
+        /* an image that fills the whole of the front face */
+        .face-front img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .page-break {
+            display: block;
+            page-break-after: always;
+        }
+        body {
+            line-height: 1em;
+            font-family: sans-serif;
+            color: #555
+        }
+        .img {
+               height:150px;
+            }
+            .inline-div{
+                display:inline;
+            }
+            ul.as-selections{
+                margin:0 !important;
+            }
+            .as-results{
+                margin:0 !important;
+            }
+            .image-div{
+                float: left;
+                background: #fff;
+                overflow: hidden;
+                border: 2px solid #fff;
+                box-shadow: 0 0 2px 0 #d3cbb8;
+            }
+            .img-class{   
+                border-color: #08E0EA !important;
+                border: dashed;
+            }
+            .tooltip.bottom .tooltip-arrow {
+              top: 0 !impoartant;
+              left: 50% !impoartant;
+              margin-left: -5px !impoartant;
+              border-bottom-color: #000000 !impoartant; /* black */
+              border-width: 0 5px 5px !impoartant;
+            }
+            #devSlide {
+                z-index: 100000;
+            }
+           .opportunity-table .btn {
+               padding: 8px 11px !important;
+           }
+           
+           .ui-dialog{
+               z-index: 11111111 !improtant;
+           }
+           .displayNone{
+               display : none;
+           }
+        </style>
+        
+    </head>
+    <script>
+        var app = angular.module('MyApp', ['ui.bootstrap','ngRoute']);
+        var sortingOrder = 'name';
+        var contrl = app.controller('myController' ,function($scope,$modal,$filter,$timeout,$route,productService,$http){
+            $scope.supplierBookings = {!Data};
+            $scope.whereWillYouStay = {!dataStay};
+            $scope.recordTypes = {!recordType};
+            $scope.isOTUK = {!isOTUK};
+            $scope.opportunity = {!oppStr};
+            $scope.pickList = {!pickLists};
+            $scope.destinationMap = {!DestinationImgs};
+            $scope.images = [];
+            $scope.DatesShow = {};
+            $scope.Dates = [];
+            $scope.MapTravellingCountry = {!strForSettingPage};
+            $scope.mapCountryToAccom = {!strmapCountryToAccom};
+            $scope.MapCountryToWTGList = {!strMapCountryToWTGList};
+            
+            
+            //Google Map
+            $scope.getStaticMap = function(type,country) {
+              var type = $scope.opportunity.O_Map_Type__c
+              var markerString = ''; 
+              if(type == 'Single'){
+                  angular.forEach($scope.MapTravellingCountry,function(value,index){
+                      if(value.TC_Accommodation_Region__c =='Region'){
+                          angular.forEach($scope.MapCountryToWTGList[value.TC_Country__r.Name],function(wtg,index){
+                              markerString += '&markers='+encodeURIComponent('color:orange|'+'label:'+String.fromCharCode(index+65)+'|'+wtg.replace(/##/g,','))+'+'+value.TC_Country__r.Name;    
+                          });
+                      }
+                      else{
+                          angular.forEach($scope.mapCountryToAccom[value.TC_Country__r.Name],function(wtg,index){
+                              markerString += '&markers='+encodeURIComponent('color:orange|'+'label:'+String.fromCharCode(index+65)+'|'+wtg.replace(/##/g,','))+'+'+value.TC_Country__r.Name;    
+                          });
+                      }
+                  });
+              }  
+              else{
+                  angular.forEach($scope.MapTravellingCountry,function(value,index){
+                      if(value.TC_Accommodation_Region__c =='Region'){
+                          angular.forEach($scope.MapCountryToWTGList[country],function(wtg,index){
+                              markerString += '&markers='+encodeURIComponent('color:orange|'+'label:'+String.fromCharCode(index+65)+'|'+wtg.replace(/##/g,','))+'+'+value.TC_Country__r.Name;    
+                          });
+                      }
+                      else{
+                          angular.forEach($scope.mapCountryToAccom[country],function(wtg,index){
+                              markerString += '&markers='+encodeURIComponent('color:orange|'+'label:'+String.fromCharCode(index+65)+'|'+wtg.replace(/##/g,','))+'+'+value.TC_Country__r.Name;    
+                          });
+                      }
+                  });    
+              }
+              console.log(markerString );
+              var src = "http://maps.googleapis.com/maps/api/staticmap?size=550x450&maptype=roadmap"+markerString;
+              console.log(src );
+              return src;
+            }
+            
+            
+            angular.forEach($scope.supplierBookings,function(value,index){
+                if($scope.Dates.indexOf(value.SB_From_Date__c+'-'+value.SB_To_Date__c) == -1){
+                    $scope.DatesShow[value.Id] = true;   
+                    $scope.Dates.push(value.SB_From_Date__c+'-'+value.SB_To_Date__c); 
+                }
+                else{
+                    $scope.DatesShow[value.Id] = false;       
+                }
+            });
+            
+            console.log('Supplier Bookings');
+            console.log($scope.supplierBookings);
+            console.log('Where Will You Stay');
+            console.log($scope.whereWillYouStay);
+            
+            $scope.saveSB = function(){
+               $scope.imagesForSave = [];
+               angular.forEach($scope.supplierBookings, function(value,index){
+                   if($scope.supplierBookings[index].SupplierBookingImages__r !== undefined){
+                       angular.forEach($scope.supplierBookings[index].SupplierBookingImages__r.records, function(value1,index1){
+                           $scope.imagesForSave.push($scope.supplierBookings[index].SupplierBookingImages__r.records[index1]);
+                       });
+                   }
+               });
+               console.log($scope.imagesForSave);
+               Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItinerarySetting.saveSBS}',JSON.stringify(filterJSON($scope.supplierBookings)),JSON.stringify(filterJSON($scope.imagesForSave)),JSON.stringify($scope.opportunity),JSON.stringify($scope.destinationMap),
+                    function(result, event){
+                        console.log(result);
+                        if (event.status) {
+                            //Result contains list of account names and account id
+                            alert('Your changes have been successfully saved.');
+                            //window.open('/apex/IframePDF?id={!$CurrentPage.parameters.Id}','_blank');
+                            var iframe = document.getElementById('pdfId');
+                            iframe.src = iframe.src;
+                        }else if (event.type === 'exception'){
+                            alert(event.message,'Error');
+                        }
+                    }
+                );
+            }
+            
+            //Model popup open function
+            $scope.open = function (size, index, stay) {
+                console.log('aa gaya be');
+                var modalInstance = $modal.open({
+                    templateUrl: 'myModalContent.html',
+                    controller: 'ModalInstanceCtrl',
+                    size: size,
+                    resolve: {
+                        //return clicked Supplier booking information using index
+                        items : function(){
+                            if(!stay){//**** for detail section  ****//
+                                if($scope.supplierBookings[index].SupplierBookingImages__r === undefined){
+                                    var SupplierBookingImages__r =  {records:[{SBI_Attachement_Id__c:'',SBI_Supplier_Booking__c:''+$scope.supplierBookings[index].Id},
+                                              {SBI_Attachement_Id__c:'',SBI_Supplier_Booking__c:''+$scope.supplierBookings[index].Id}]};
+                                    $scope.supplierBookings[index].SupplierBookingImages__r = SupplierBookingImages__r;
+                                    return $scope.supplierBookings[index].SupplierBookingImages__r;
+                                }
+                                else{
+                                    return $scope.supplierBookings[index].SupplierBookingImages__r;
+                                }
+                            }
+                            else{ //**** for where you will stay section  ****//
+                                if($scope.whereWillYouStay[index].sb.SupplierBookingImages__r === undefined){
+                                    var SupplierBookingImages__r =  {records:[{SBI_Attachement_Id__c:'',SBI_Supplier_Booking__c:''+$scope.whereWillYouStay[index].sb.Id},
+                                              {SBI_Attachement_Id__c:'',SBI_Supplier_Booking__c:''+$scope.whereWillYouStay[index].sb.Id}]};
+                                    $scope.whereWillYouStay[index].sb.SupplierBookingImages__r = SupplierBookingImages__r;
+                                    return $scope.whereWillYouStay[index].sb.SupplierBookingImages__r;
+                                }
+                                else{
+                                    return $scope.whereWillYouStay[index].sb.SupplierBookingImages__r;
+                                }    
+                            }
+                        },
+                        searchedImages : function(){
+                            return $scope.images;
+                        },
+                        stay : function(){
+                            return stay;
+                        }
+                    },
+                    
+                });
+                
+                modalInstance.result.then(function () {
+                      alert('Modal success at:' + new Date());
+                },
+                function () {
+                      if(!stay){
+                          Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.ItinerarySetting.saveSBI}',JSON.stringify($scope.supplierBookings[index].Id),JSON.stringify(filterJSON($scope.supplierBookings[index].SupplierBookingImages__r.records)),'{!opp.Id}',stay,
+                            function(result, event){
+                                if (event.status) {
+                                    //Result contains list of account names and account id
+                                    alert('Your changes have been successfully saved.','Message');
+                                    var iframe = document.getElementById('pdfId');
+                                    iframe.src = iframe.src;
+                                    console.log(result);
+                                }else if (event.type === 'exception'){
+                                    alert(event.message,'Error');
+                                }
+                                $route.reload();
+                            }
+                             );
+                        }
+                        else{
+                            Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.ItinerarySetting.saveSBI}',JSON.stringify($scope.whereWillYouStay[index].sb.Id),JSON.stringify(filterJSON($scope.whereWillYouStay[index].sb.SupplierBookingImages__r.records)),'{!opp.Id}',stay,
+                            function(result, event){
+                                console.log(result);
+                                $route.reload();
+                            },{escape: false}
+                            );  
+                        }
+                   
+                }
+                );
+                $timeout(function (){
+                    var element = document.getElementById('searchBox');       
+                    $(element).autoSuggest('/apex/ContextSearch', {selectedItemProp: "name", searchObjProps: "name,Country",formatList: function(data,elem){ return elem.html(data.name +"&nbsp;" +"&nbsp;"+ data.Country + "&nbsp;" + data.type);  }});    
+                }, 300);
+            }
+                
+            $scope.openDestinationMap = function (size,index,single) {
+                console.log('aa gaya be');
+                var modalInstance = $modal.open({
+                    templateUrl: 'DestinationContent.html',
+                    controller: 'DestinationCtrl',
+                    size: size,
+                    resolve: {
+                        //return clicked Supplier booking information using index
+                        items : function(){
+                            var images = [];
+                            if(single){
+                               return $scope.opportunity;
+                            }
+                            else{
+                                return  $scope.destinationMap[index];
+                            }
+                            
+                        },
+                        searchedImages : function(){
+                            return $scope.images;
+                        },
+                        single : function(){
+                            return single;
+                        }
+                    },
+                    
+                });
+                
+                modalInstance.result.then(function () {
+                      alert('Modal success at:' + new Date());
+                    },
+                    function () {
+                    
+                    }
+                );
+                        
+                $timeout(function (){
+                    var element = document.getElementById('searchBox');       
+                    $(element).autoSuggest('/apex/ContextSearch', {selectedItemProp: "name", searchObjProps: "name,Country",formatList: function(data,elem){ return elem.html(data.name +"&nbsp;" +"&nbsp;"+ data.Country + "&nbsp;" + data.type);  }});    
+                }, 300);
+            }
+            
+            //Load searched images
+            $scope.search = function(searcContext){
+               Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItinerarySetting.search}',searcContext,
+                    function(result, event){
+                        $scope.images = result;
+                        productService.addProduct(result);
+                        $scope.$apply();
+                    }
+                );
+            }
+            
+        });
+        
+        
+        
+        //Service 
+        app.service('productService', function($rootScope) {
+          var productList = [];
+        
+          var addProduct = function(newObj) {
+              productList = newObj;
+              $rootScope.$broadcast("myEvent", 'Veer');
+          };
+          
+        
+          var getProducts = function(){
+              return productList;
+          };
+        
+          return {
+            addProduct: addProduct,
+            getProducts: getProducts
+          };
+        
+        });
+        
+        //Controller for modal popup
+        contrl.controller('ModalInstanceCtrl', function ($scope, $modalInstance,items,searchedImages,productService,stay) {
+            
+            //Initialize clicked supplier booking
+            $scope.items = items ;
+            $scope.images = [];
+            $scope.selectedImages = [];
+            $scope.imgStr = '';
+            $scope.stay = stay;
+            
+            
+            
+            $scope.$on("myEvent", function (event, args) {
+                $scope.images = productService.getProducts();
+                console.log('In My Event Function');
+                console.log($scope.images);
+                $scope.$apply();
+                
+                
+                angular.forEach($scope.images, function(value,index) {
+                    $scope.imgStr += ' '+value.Id;    
+                });
+                angular.forEach($scope.items.records, function(value,index) {
+                  if($scope.imgStr.indexOf(value.SBI_Attachement_Id__c) == -1 && value.SBI_Attachement_Id__c != '' && value.SBI_Attachement_Id__c !== undefined){
+                      $scope.images.push({Id:value.SBI_Attachement_Id__c});
+                      $scope.imgStr += ' '+value.SBI_Attachement_Id__c;
+                  }
+                  if($scope.selectedImages.indexOf(value.SBI_Attachement_Id__c) == -1 && value.SBI_Attachement_Id__c != '' && value.SBI_Attachement_Id__c !== undefined){
+                      $scope.selectedImages.push(value.SBI_Attachement_Id__c);
+                  }
+                });
+                console.log('Item');
+                
+                //Remove already selected images from search
+                angular.forEach($scope.images, function(value,index) {
+                    angular.forEach($scope.items.records  , function(value1,index1) {
+                        if(value.Id == value1.SBI_Attachement_Id__c){
+                            $scope.images.splice(index,1);    
+                        }
+                    });
+                });
+                $scope.$apply();
+            });
+            
+            console.log('In Default function Before');
+            console.log($scope.images);
+            console.log($scope.selectedImages);
+            
+            angular.forEach($scope.items.records, function(value,index) {
+              if($scope.imgStr.indexOf(value.SBI_Attachement_Id__c) == -1  && value.SBI_Attachement_Id__c != "" && value.SBI_Attachement_Id__c !== undefined){
+                  //$scope.images.push({Id : value.SBI_Attachement_Id__c});
+              }
+              if($scope.selectedImages.indexOf(value.SBI_Attachement_Id__c) == -1 && value.SBI_Attachement_Id__c != "" && value.SBI_Attachement_Id__c !== undefined){
+                  $scope.selectedImages.push(value.SBI_Attachement_Id__c);
+              }
+            });
+            console.log('In Default function');
+            console.log($scope.images);
+            console.log($scope.selectedImages);
+           
+            
+            
+            $scope.selectImageDetail = function(imageId){
+                if(imageId != ''){
+                    if($scope.selectedImages.indexOf(imageId) == -1){
+                        if($scope.selectedImages.length < 2 && imageId != ''){
+                            $scope.selectedImages.push(imageId);
+                        }
+                        else{
+                            alert('You can only select maximum two images','Alert');
+                        }
+                    }
+                    else{
+                        var index = $scope.selectedImages.indexOf(imageId);
+                        $scope.selectedImages.splice(index,1);
+                    }
+                    
+                    console.log('In Select function');
+                    console.log($scope.selectedImages);
+                    $scope.updatePage();
+                }
+            }
+            
+            $scope.updatePage = function(){
+                console.log('In Update Function');
+                console.log($scope.items.records);
+                angular.forEach($scope.items.records, function(value,index){
+                    value.SBI_Attachement_Id__c = $scope.selectedImages[index];            
+                });
+                    
+            }    
+            
+                        
+            $scope.checkImg = function(imageId){
+                return ($scope.selectedImages.indexOf(imageId) > -1)
+            }
+            
+            $scope.ok = function () {
+                $modalInstance.close($scope.selected.item);
+            };
+            
+            //Cancel the popup 
+            $scope.cancel = function () {
+                $modalInstance.dismiss('cancel');
+            };
+            
+            
+        });
+        
+        
+        
+        //Controller for DestinationCtrl popup
+        contrl.controller('DestinationCtrl', function ($scope, $modalInstance,items,searchedImages,productService,single) {
+            
+            //Initialize clicked supplier booking
+            $scope.items = items ;
+            $scope.images = [];
+            $scope.selectedImages = [];
+            $scope.imgStr = '';
+            $scope.single = single;
+            console.log('Controller');
+            console.log(items);
+            
+            $scope.$on("myEvent", function (event, args) {
+                $scope.images = productService.getProducts();
+                console.log('In My Event Function');
+                console.log($scope.images);
+                $scope.$apply();
+                
+                
+                angular.forEach($scope.images, function(value,index) {
+                    $scope.imgStr += ' '+value.Id;    
+                });
+                angular.forEach($scope.items.records, function(value,index) {
+                  if($scope.imgStr.indexOf(value.SBI_Attachement_Id__c) == -1 && value.SBI_Attachement_Id__c != '' && value.SBI_Attachement_Id__c !== undefined){
+                      $scope.images.push({Id:value.SBI_Attachement_Id__c});
+                      $scope.imgStr += ' '+value.SBI_Attachement_Id__c;
+                  }
+                  if($scope.selectedImages.indexOf(value.SBI_Attachement_Id__c) == -1 && value.SBI_Attachement_Id__c != '' && value.SBI_Attachement_Id__c !== undefined){
+                      $scope.selectedImages.push(value.SBI_Attachement_Id__c);
+                  }
+                });
+                console.log('Item');
+                
+                //Remove already selected images from search
+                angular.forEach($scope.images, function(value,index) {
+                    angular.forEach($scope.items.records  , function(value1,index1) {
+                        if(value.Id == value1.SBI_Attachement_Id__c){
+                            $scope.images.splice(index,1);    
+                        }
+                    });
+                });
+                $scope.$apply();
+            });
+            
+            console.log('In Default function Before');
+            console.log($scope.images);
+            console.log($scope.selectedImages);
+            
+            angular.forEach($scope.items.records, function(value,index) {
+              if($scope.imgStr.indexOf(value.SBI_Attachement_Id__c) == -1  && value.SBI_Attachement_Id__c != "" && value.SBI_Attachement_Id__c !== undefined){
+                  //$scope.images.push({Id : value.SBI_Attachement_Id__c});
+              }
+              if($scope.selectedImages.indexOf(value.SBI_Attachement_Id__c) == -1 && value.SBI_Attachement_Id__c != "" && value.SBI_Attachement_Id__c !== undefined){
+                  $scope.selectedImages.push(value.SBI_Attachement_Id__c);
+              }
+            });
+            console.log('In Default function');
+            console.log($scope.images);
+            console.log($scope.selectedImages);
+           
+            
+            
+            $scope.selectImage = function(imageId){
+                if(imageId != ''){
+                    if($scope.selectedImages.indexOf(imageId) == -1){
+                        if($scope.selectedImages.length < 1 && imageId != ''){
+                            $scope.selectedImages.push(imageId);
+                        }
+                        else{
+                            alert('You can only select maximum one images','Error');
+                        }
+                    }
+                    else{
+                        var index = $scope.selectedImages.indexOf(imageId);
+                        $scope.selectedImages.splice(index,1);
+                    }
+                    
+                    console.log('In Select function');
+                    console.log($scope.selectedImages);
+                    $scope.updatePage();
+                }
+            }
+            
+            $scope.updatePage = function(){
+                if(single){
+                    $scope.items.O_Destination_Map_Image_ID__c = $scope.selectedImages[0];
+                }
+                else{
+                    $scope.items.tc.TC_DestinationMap_Image_ID__c = $scope.selectedImages[0];
+                }
+                    
+            }    
+            
+                        
+            $scope.checkImg = function(imageId){
+                return ($scope.selectedImages.indexOf(imageId) > -1)
+            }
+            
+            $scope.ok = function () {
+                $modalInstance.close($scope.selected.item);
+            };
+            
+            //Cancel the popup 
+            $scope.cancel = function () {
+                $modalInstance.dismiss('cancel');
+            };
+            
+            
+        });
+        
+        
+        //CKEditor 
+        app.directive('ckEditor', [function () {
+            return {
+                require: '?ngModel',
+                link: function ($scope, element, attr, ngModel) {
+                    var ck = CKEDITOR.inline(element[0]);
+                    ck.on('instanceReady', function () {
+                        ck.setData(ngModel.$viewValue);
+                    });
+                    ck.on('pasteState', function () {
+                        $scope.$apply(function () {
+                            ngModel.$setViewValue(ck.getData());
+                        });
+                    });
+                    ngModel.$render = function (value) {
+                        ck.setData(ngModel.$viewValue);
+                    };
+                }
+            };
+        }])
+        
+        //Filter the SObject JSON
+        function filterJSON(data) {
+            var ele = data;
+            for (var i in ele) {
+                var ele1 = ele[i];
+                if(ele[i].hasOwnProperty('$$hashKey')){
+                    delete ele[i]['$$hashKey']
+                }
+                for (var j in ele1) {
+                    if(typeof(ele1[j]) == 'object'){
+                        if(ele[i][j].hasOwnProperty('$$hashKey')){
+                            delete ele[i][j]['$$hashKey']
+                        }
+                        for (var k in ele1[j]) {
+                            for (var l in ele1[j][k]) {
+                                if(ele[i][j][k][l].hasOwnProperty('$$hashKey')){
+                                    delete ele[i][j][k][l]['$$hashKey']
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            console.log(ele);
+            return ele;
+        }
+        
+        //Show hide Preview PDF
+        jQuery(document).ready(function() {    
+            $('.hideshowPDF').on('click', function(event) { 
+                $('.upArrowIcon0').toggle('show');
+                $('.downArrowIcon0').toggle('hide');
+                if($('.expanded').css('right') == '-575px')
+                    $('.expanded').css('right','-2px');
+                else
+                    $('.expanded').css('right','-575px');
+            });
+        });
+        
+        var v = '';
+        var remove = '';
+        function loadValues(sr){
+            var idVal = $('.as-values').val();            
+            $("#pg\\:frm\\:pgBlock\\:searchBox_id").val(idVal);
+            v += sr+','; 
+            console.log('Added'+v);
+            angular.element(document.getElementById('myController')).scope().search(v);
+            v = '';
+         }
+         function removeValues(sr)   {
+             remove  += ','+sr; 
+            console.log('Removed'+remove );
+            deletedRecords(sr);    
+         }
+         $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();   
+        });
+        
+        
+        function alert(value, type){
+            $('<div></div>').appendTo('body')
+            .html(value)
+            .dialog({
+                modal: true,
+                title: type,
+                zIndex: 111111111111,
+                autoOpen: true,
+                width: '415px',
+                resizable: false,
+                buttons: {
+                    OK: function () {
+                        $(this).dialog("close");
+                    }
+                },
+                close: function (event, ui) {
+                    $(this).remove();
+                }
+            }); 
+        }
+        
+         //Show hide Preview PDF
+        jQuery(document).ready(function() {    
+            $('.hideshowPDF').on('click', function(event) { 
+                $('.upArrowIcon0').toggle('show');
+                $('.downArrowIcon0').toggle('hide');
+                if($('.expanded').css('right') == '-575px')
+                    $('.expanded').css('right','7px');
+                else
+                    $('.expanded').css('right','-575px');
+            });
+            
+        });
+        
+        
+    </script>
+    
+    <!--- Actions -->
+    <apex:form id="frm">
+        <apex:actionFunction name="saveSB" action="{!saveSB}" reRender="frm">
+            <apex:param assignTo="{!lstSupp}" name="contactJson" value="x"/>
+        </apex:actionFunction>
+    </apex:form>
+    
+    <!--<apex:image url="{!URLFOR($Resource.PDFICONE)}" width="50" height="50" /> -->
+    <br/>
+    <h3 class="field-title" style="float:left;font-size:22px; ">Detailed Itinerary</h3>
+    <br/>       
+    <br/>       
+    <br/>
+    <div class="preview-overlay">
+        <div class="preview-wrap">
+            <div class="slds">  
+                <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                <c:AlertBox ></c:AlertBox>
+            </div>
+            <div id="preview-content" data-css-regions-cloned="true">
+                <div class="page">
+                    <div ng-app="MyApp">
+                        <div id="myController" ng-controller="myController" >
+                            <div style="padding : 5%;padding-bottom: 0px;">
+                                <h5>Destination Map</h5>
+                                <hr/>
+                                <br/>
+                                <div class="slds">  
+                                    <div class="slds-form" style="width: 100%;">
+                                        <table>
+                                            <tr><th style="width:50px;">Map : 
+                                                </th>
+                                                <td>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="mapType" class="slds-select"  ng-model="opportunity.O_Map_Type__c" ng-options="record.value as record.label for record in pickList['o_map_type__c']">
+                                                            <option value="" label="-- Select --"></option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" ng-dblclick="openDestinationMap('lg',0,true);" >
+                                                    <div class="slds-form-element__control" ng-show="opportunity.O_Map_Type__c == 'Single'">
+                                                        <img width="450px" height="450px" src="{{getStaticMap('','')}}" alt="India"/>  
+                                                        <!--<img   src="/servlet/servlet.FileDownload?file={{opportunity.O_Destination_Map_Image_ID__c}}" style="padding: 5px;width:100%;height:150px"/> -->
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <br/>
+                                    <div class="slds-form" ng-repeat="dMap in destinationMap" style="width: 100%;">
+                                        <label class="slds-form-element__label" for="inputNameSample1">Country Name</label>{{dMap.tc.TC_Country__r.Name}}
+                                        <table style="font-size:12px;">
+                                            <tr id="sup{{dMap .TCId}}">
+                                                <th style="width:100px;"> Accommodation/Region:</th>
+                                                <td> 
+                                                    <select class="slds-select" ng-model="dMap.tc.TC_Accommodation_Region__c" size="1" style="width:200px;"> 
+                                                        <option value="" label="-- Select --"></option>
+                                                        <option value="Region" label="Region"></option>
+                                                        <option value="Accommodation" label="Accommodation"></option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr ng-show="opportunity.O_Map_Type__c != 'Single'">
+                                               <td colspan="2" ng-dblclick="openDestinationMap('lg',$index,false);" >
+                                                   <div class="slds-form-element__control">
+                                                       <img width="450px" height="450px" src="{{getStaticMap('',dMap.tc.TC_Country__r.Name)}}" alt="India"/>  
+                                                       <!--<img   src="/servlet/servlet.FileDownload?file={{dMap.tc.TC_DestinationMap_Image_ID__c}}" class="img" style="padding: 5px;width:100%;height:150px"/> -->
+                                                   </div>
+                                               </td>
+                                           </tr>
+                                       </table>
+                                   </div>
+                                   
+                                </div>
+                                <br/>
+                                <h5>Itinerary Detail</h5>
+                                <hr/>
+                            </div>
+                            <div style="padding-left: 5%;padding-right: 5%;background-image: URL({!URLFOR($Resource.Framework,'Icone/PDFICONE.png')});"> 
+                                <div style="height:35px;"></div>
+                                <div ng-repeat="sbVar in supplierBookings">
+                                    <div id="sup{{sbVar.Id}}" class="stay-wrap">    
+                                        <div  style="background-color:rgba(0, 0, 0, 0);" ng-class="{displayNone: sbVar.SB_Remove_Images__c == true}"><br/></div>
+                                        <div ng-dblclick="open('lg',$index,false);" ng-class="{displayNone: sbVar.SB_Remove_Images__c == true}"  style="border: 1px dashed;min-height:5px;" data-toggle="tooltip" data-placement="left" title="Double Click to edit the Images!">
+                                            <table >
+                                                <tr>
+                                                    <td  ng-show="sbVar.SupplierBookingImages__r.records.length !=''" ng-repeat="sbImage in sbVar.SupplierBookingImages__r.records | filter:{SBI_Attachement_Id__c: '!!'}" style="display: initial;">            
+                                                        <img ng-show="sbImage.SBI_Attachement_Id__c != ''"  src="/servlet/servlet.FileDownload?file={{sbImage.SBI_Attachement_Id__c}}" class="img" width="247.5" height="150" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <span ng-show="sbVar.SupplierBookingImages__r.records[0].SBI_Attachement_Id__c === undefined"><input type="checkbox" ng-model="sbVar.SB_Remove_Images__c"/>Remove Images</span>
+                                        </div>
+                                        <div  style="background-color:rgba(0, 0, 0, 0);"><br/></div>
+                                        <!--<div ng-show="sbVar.SupplierBookingImages__r.records.length !== 'undefined'" style="padding-bottom:15px;"></div> -->
+                                        
+                                        <strong ng-show="{{sbVar.SB_From_Date__c != null && DatesShow[sbVar.Id]}}" ng-class="{displayNone: sbVar.SB_Remove_Date_Title__c == true}">
+                                            <span ng-show="sbVar.SB_From_Date__c == sbVar.SB_To_Date__c"  class="fromDate">{{sbVar.SB_From_Date__c | date:'EEE MMM d'}}</span>
+                                            <span ng-show="sbVar.SB_From_Date__c != sbVar.SB_To_Date__c && sbVar.SB_To_Date__c != undefined"  class="fromDate">{{sbVar.SB_From_Date__c | date:'EEE MMM d'}} - {{sbVar.SB_To_Date__c | date:'EEE MMM d'}}</span>
+                                            &nbsp;&nbsp;<input type="checkbox" ng-model="sbVar.SB_Remove_Date_Title__c"/>Remove Title
+                                            <br/>
+                                        </strong>
+                                        <div ng-class="{displayNone: sbVar.SB_Remove_TextArea__c == true}">
+                                            <span ng-show="sbVar.SB_Itinerary_Description__c == ''"><input type="checkbox" ng-model="sbVar.SB_Remove_TextArea__c"/>Remove Textbox</span>
+                                            <div>
+                                                <div data-ck-editor="data-ck-editor"  contenteditable="true"  class="ckedit"  ng-model="sbVar.SB_Itinerary_Description__c" />
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                    
+                                <!--- Floating button ----->
+                                <div class="actions-bottom">
+                                   <div class="slds">  
+                                       <div class="fixed-footer slds-modal__footer">
+                                           <input type="button" id="btnSave" ng-click="saveSB()" class="slds-button slds-button--brand" style="margin-left: 22px;"  value="Save" />                   
+                                           <input type="button" id="btnExit"  class="slds-button slds-button--brand" style="margin-left: 10px;" value="Exit" />
+                                       </div>
+                                   </div>
+                                </div>
+                                    
+                                <!------------- Angular modal popup -------->
+                                <script type="text/ng-template" id="myModalContent.html">
+                                    <div class="modal-header" id="header">
+                                        <h3 class="modal-title" ng-init="callSearchBox()">Select Image</h3>
+                                        <br/>
+                                        Click outside the pop up or press Esc for the selected images to be inserted.
+                                    </div>
+                                    <div class="modal-body" ng-scope="$scope">
+                                        <input type="text" html-placeholder="Search" id="searchBox" ng-focus="callService()" ng-model="searchText" styleClass="form-control" />
+                                        <br/>
+                                        <h3 style="font-size: 12px;width:100%;"><div>Selected Images</div></h3>
+                                        <div ng-repeat="img in items.records" class="inline-div"> 
+                                            <img ng-show="img.Id != ''" title="" src="/servlet/servlet.FileDownload?file={{img.SBI_Attachement_Id__c}}" ng-click="selectImageDetail(img.SBI_Attachement_Id__c)" ng-class="{'img-class':checkImg(img.SBI_Attachement_Id__c)}" width="230" height="150" style="padding: 10px;"/>
+                                            <span style="position: absolute; margin-left: -216px;width: 200px;text-align: center;font-size: 11px;margin-top: 140px;"><strong>{{img.Name}}</strong></span>
+                                        </div>
+                                        <hr/>
+                                        <h3 style="font-size: 12px;"><div>Searched Images</div></h3>
+                                        <div ng-repeat="img in images" class="inline-div"> 
+                                            <img ng-show="img.Id != ''" title="{{img.name}}" src="/servlet/servlet.FileDownload?file={{img.Id}}" ng-click="selectImageDetail(img.Id)"  width="230" height="150" style="padding: 10px;" ng-class="{'img-class':checkImg(img.Id)}"/>
+                                            <span style="position: absolute; margin-left: -216px;width: 200px;text-align: center;font-size: 11px;margin-top: 140px;"><strong>{{img.Name}}</strong></span>
+                                        </div>
+                                        <!--<div ng-repeat="img in items.records">
+                                            <input type="text" name="input" ng-model="img.attributes.url" />
+                                            <input type="text" name="input" ng-model="img.SBI_Attachement_Id__c" />
+                                        </div> -->
+                                    </div>
+                                </script>
+                                
+                                <!------------- Angular Destination popup -------->
+                                <script type="text/ng-template" id="DestinationContent.html">
+                                    <div class="modal-header" id="header">
+                                        <h3 class="modal-title" ng-init="callSearchBox()">Select Image</h3>
+                                        <br/>
+                                        Click outside the pop up or press Esc for the selected images to be inserted.
+                                    </div>
+                                    <div class="modal-body" ng-scope="$scope">
+                                        <input type="text" html-placeholder="Search" id="searchBox" ng-focus="callService()" ng-model="searchText" styleClass="form-control" />
+                                        <br/>
+                                        <h3 style="font-size: 12px;width:100%;"><div>Selected Images</div></h3>
+                                            <img ng-show="single" title="" src="/servlet/servlet.FileDownload?file={{items.O_Destination_Map_Image_ID__c}}" ng-click="selectImage(items.O_Destination_Map_Image_ID__c)" ng-class="{'img-class':checkImg(img)}" width="230" height="150" style="padding: 10px;"/>
+                                            <img ng-show="!single" title="" src="/servlet/servlet.FileDownload?file={{items.tc.TC_DestinationMap_Image_ID__c}}" ng-click="selectImage(items.tc.TC_DestinationMap_Image_ID__c)" ng-class="{'img-class':checkImg(img)}" width="230" height="150" style="padding: 10px;"/>
+                                        <h3 style="font-size: 12px;"><div>Searched Images</div></h3>
+                                            <div ng-repeat="img in images" class="inline-div"> 
+                                                <img ng-show="img.Id != ''" title="{{img.name}}" src="/servlet/servlet.FileDownload?file={{img.Id}}" ng-click="selectImage(img.Id)"  width="230" height="150" style="padding: 10px;" ng-class="{'img-class':checkImg(img.Id)}"/>
+                                                <span style="position: absolute; margin-left: -216px;width: 200px;text-align: center;font-size: 11px;margin-top: 140px;"><strong>{{img.Name}}</strong></span>
+                                            </div>
+                                        <!--<div ng-repeat="img in items.records">
+                                            <input type="text" name="input" ng-model="img.attributes.url" />
+                                            <input type="text" name="input" ng-model="img.SBI_Attachement_Id__c" />
+                                        </div> -->
+                                    </div>
+                                </script>
+                            </div>
+                            
+                            
+                           
+                            <!------ Where you will stay ---------->
+                            <div style="padding-left: 5%;padding-right: 5%;"><!--background-image: URL({!URLFOR($Resource.PDFICONE)});"> -->
+                                <br/>
+                                    <h3 class="field-title" style="float:left;font-size:22px;background-color:white;float:none;">Where You Will Stay</h3>
+                                <br/>
+                                <br/>
+                                <div ng-repeat="sbVar in whereWillYouStay">
+                                    <div id="sup{{sbVar.sb.Id}}" class="stay-wrap" >    
+                                        <div ng-dblclick="open('lg',$index,true);"  style="border: 1px dashed;min-height:5px;" data-toggle="tooltip" data-placement="left" title="Double Click to edit the Images!">
+                                            <table >
+                                                <tr>
+                                                    <td  ng-show="sbVar.sb.SupplierBookingImages__r.records.length !=''" ng-repeat="sbImage in sbVar.sb.SupplierBookingImages__r.records | filter:{SBI_Attachement_Id__c: '!!'}" style="display: initial;">            
+                                                        <img  src="/servlet/servlet.FileDownload?file={{sbImage.SBI_Attachement_Id__c}}" class="img" width="248" height="150" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div ng-show="sbVar.sb.SupplierBookingImages__r.records.length !=''" style="padding-bottom:15px;"></div>
+                                        <strong>
+                                            <span  class="fromDate">{{sbVar.sb.SB_From_Date__c | date:'EEE MMM d'}}</span>&nbsp;&nbsp;({{sbVar.sb.SB_Supplier__r.Name}})
+                                            <br/>
+                                        </strong>
+                                        <div disabled="disabled"  data-ck-editor="data-ck-editor" contenteditable="false" id="editor{{sbVar.sb.Id}}{{sbVar.qt.Id}}" class="ckedit"  richText="false" ng-model="sbVar.qt.QT_Message__c" />
+                                    </div>
+                                </div>
+                            </div>
+                        
+                        </div>    
+                    </div>
+                </div>
+            </div>    
+        </div>
+    </div>
+    <br/>
+    
+    <div id="devSlide" class="expanded" style="display: block; right: -575px;width:50%">
+        <div class="handle" data-uidsfdc="20" style="background-color:white;width:49px; left: 14px;top:-70px;">
+            <a class="hideshowPDF" style="text-decoration:none">
+                <img alt="Unselect" class="leftArrowIcon downArrowIcon0" src="/s.gif"  title="Preview PDF"/>
+                <img alt="Unselect" class="rightArrowIcon upArrowIcon0" src="/s.gif"  title="Hide PDF" style="display:none;"/>
+            </a>
+        </div>
+        <div class="slideContainer" style="background-color:white;top:-70px;width:91%; ">
+            <h3 class="field-title" style="float:left;font-size:22px;">PDF Preview</h3>
+            <iframe  src="/apex/PreviewPdf?id={!$CurrentPage.parameters.Id}" id="pdfId" style="width: 100%;height: 430px;"/>  
+        </div>
+    </div>
+   
+   
+</apex:page>

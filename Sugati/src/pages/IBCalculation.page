@@ -1,0 +1,644 @@
+<apex:page title="Itinerary Builder" showHeader="false" standardController="Opportunity" extensions="ItineraryBuilderController" sidebar="false" standardStylesheets="false" cache="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <style>    
+            .marginGreen{
+                background: green !important;
+                color: white !important;
+            }
+            .numberTD {
+                text-align: right !important;
+                vertical-align:middle !important;
+            }
+            
+        </style>
+        <script>
+            var contrl = myApp.controller('IBCalculation' ,function($scope,$modal,$filter,oiSelect){
+                $scope.supplierCostBySupplier;
+                $scope.supplierCostByClient;
+                $scope.totalCostBySupplier = 0;
+                $scope.totalPaymentBySupplier = 0;
+                $scope.isFlight = false;
+                $scope.exGBP = 1;
+                $scope.noneLicenceableTable = {!noneLicenceableTable};
+                $scope.sellingPriceChangeable = false;
+                if($scope.Amount === undefined){
+                    $scope.sellingPriceChangeable = true;    
+                }
+                
+                
+                
+                $scope.calculateAgentCommission = function(){
+                    //Agent commision overwritten
+                    $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = 0;
+                    if($scope.opp['{!nameSpacePrefix}O_Agent_Commission_Amount__c'] !== undefined || $scope.opp['{!nameSpacePrefix}O_Agent_Commission_percent__c'] !== undefined){
+                        if($scope.opp['{!nameSpacePrefix}O_Agent_Commission_Amount__c'] !== undefined){
+                            $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Amount__c'];
+                        }
+                        else if($scope.opp['{!nameSpacePrefix}O_Agent_Commission_percent__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] == 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Margin__c '] * ($scope.opp['{!nameSpacePrefix}O_Agent_Commission_percent__c']/100);
+                        }
+                        else if($scope.opp['{!nameSpacePrefix}O_Agent_Commission_percent__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] != 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = $scope.opp.Amount * ($scope.opp['{!nameSpacePrefix}O_Agent_Commission_percent__c']/100);    
+                        }
+                    }
+                    else if($scope.opp['{!nameSpacePrefix}O_Agent__c'] !== undefined){ //From Agent
+                        if($scope.opp['{!nameSpacePrefix}O_Agent__r']['{!nameSpacePrefix}S_Commission_Value__c'] !== undefined){
+                            $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Agent__r']['{!nameSpacePrefix}S_Commission_Value__c'];
+                        }
+                        else if($scope.opp['{!nameSpacePrefix}O_Agent__r']['{!nameSpacePrefix}S_Commission__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] == 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Margin__c'] * ($scope.opp['{!nameSpacePrefix}O_Agent__r']['{!nameSpacePrefix}S_Commission__c']/100);
+                        }
+                        else if($scope.opp['{!nameSpacePrefix}O_Agent__r']['{!nameSpacePrefix}S_Commission__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Agent_Commission_Type__c'] != 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] = $scope.opp.Amount * ($scope.opp['{!nameSpacePrefix}O_Agent__r']['{!nameSpacePrefix}S_Commission__c']/100);    
+                        }
+                    }
+                }
+                
+                $scope.calculateSalesCommission = function(){
+                    //Agent commision overwritten
+                    $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = 0;
+                    if($scope.opp['{!nameSpacePrefix}O_Sales_Commission__c'] !== undefined || $scope.opp['{!nameSpacePrefix}O_Sales_CommissionP__c'] !== undefined){
+                        if($scope.opp['{!nameSpacePrefix}O_Sales_Commission__c'] !== undefined){
+                            $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Sales_Commission__c'];
+                        }
+                        else if($scope.opp['{!nameSpacePrefix}O_Sales_CommissionP__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Sales_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Sales_Commission_Type__c'] == 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Margin__c '] * ($scope.opp['{!nameSpacePrefix}O_Sales_CommissionP__c']/100);
+                        }
+                        else{
+                            $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = $scope.opp.Amount * ($scope.opp['{!nameSpacePrefix}O_Sales_CommissionP__c']/100);    
+                        }
+                    }
+                    else if($scope.opp.Owner['{!nameSpacePrefix}Sales_Commission__c'] !== undefined || $scope.opp.Owner['{!nameSpacePrefix}Sales_CommissionP__c'] !== undefined){ //From Agent
+                        
+                        if($scope.opp.Owner['{!nameSpacePrefix}Sales_Commission__c'] !== undefined){
+                            $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = $scope.opp.Owner['{!nameSpacePrefix}Sales_Commission__c'];
+                        }
+                        else if($scope.opp.Owner['{!nameSpacePrefix}Sales_CommissionP__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Sales_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Sales_Commission_Type__c'] == 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = $scope.opp['{!nameSpacePrefix}O_Margin__c'] * ($scope.opp.Owner['{!nameSpacePrefix}Sales_CommissionP__c']/100);
+                        }
+                        else if($scope.opp.Owner['{!nameSpacePrefix}Sales_CommissionP__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Sales_Commission_Type__c'] !== undefined && $scope.opp['{!nameSpacePrefix}O_Sales_Commission_Type__c'] != 'Margin'){
+                            $scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] = $scope.opp.Amount * ($scope.opp.Owner['{!nameSpacePrefix}Sales_Commission__c']/100);    
+                        }
+                    }
+                }
+                
+                $scope.loadBySupplier = function(){
+                    console.log('In Load By Suppliers')
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.ItineraryBuilderController.getSupplierCostBySupplier}','{!$CurrentPage.parameters.id}',
+                        function(result, event){
+                            if (event.status) {
+                                $scope.supplierCostBySupplier = result;
+                                $scope.$apply();
+                                $scope.loading("hide");
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message,'error');
+                                $scope.loading("hide");
+                            }
+                        },{escape: false}
+                    );
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.ItineraryBuilderController.getSupplierCostByClient}','{!$CurrentPage.parameters.id}',JSON.stringify({!oppStr}),
+                        function(result, event){
+                            if (event.status) {
+                                console.log(result);
+                                $scope.supplierCostByClient = result.SBCClient;
+                                $scope.isFlight = result.isFlight;
+                                $scope.exGBP = result.exGBP;
+                                $scope.opp = result.opp;
+                                $scope.gTotal();
+                                $scope.changes();
+                                $scope.$apply();
+                                if(result.isSellingPriceChanged){
+                                    //Logic to autosave price on change
+                                    $scope.saveCost();
+                                }
+                                $scope.loading("hide");
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message,'error');
+                                $scope.loading("hide");
+                            }
+                        },{escape: false}
+                    );
+                }
+                
+                $scope.gTotal = function(){
+                    $scope.totalCostBySupplier = 0;
+                    $scope.totalPaymentBySupplier = 0;
+                    for(var i = 0; i < $scope.supplierCostBySupplier.length; i++){
+                        var product = $scope.supplierCostBySupplier[i];
+                        $scope.totalCostBySupplier  += product.scp['{!nameSpacePrefix}SCP_Total__c']/product.scp['{!nameSpacePrefix}SCP_Exchange_Rate__r']['{!nameSpacePrefix}ER_Exchange_Rate__c'];
+                        $scope.totalPaymentBySupplier += product['{!nameSpacePrefix}SCP_Total_Payment__c'];
+                    }
+                }
+                
+                $scope.replace = function(str){
+                    var data  = JSON.stringify(str);
+                    data = data.replace(/"/g,'');
+                    data = data.replace('{','[');
+                    data = data.replace('}',']');
+                    return data;
+                }
+                
+                //Calculate Changes in Additional Code Selling Price 
+                $scope.changes = function(){
+                    var totalSellingPrice = 0;
+                    var grandTotalBaseCost = 0;
+                    var totalGift = 0;
+                    var totalAdditionalCharges = 0;
+                    var totalFlightCosts = 0;
+                    
+                    angular.forEach($scope.supplierCostByClient, function(sb,index) {
+                        var cg = $scope.supplierCostByClient[index].cg;
+                        totalSellingPrice += cg['{!nameSpacePrefix}CG_Selling_Price__c'];
+                        totalAdditionalCharges += cg['{!nameSpacePrefix}CG_FX_Transfer_Charges__c']+ cg['{!nameSpacePrefix}CG_Arrival_Presents__c']+ cg['{!nameSpacePrefix}CG_Charity__c'] + cg['{!nameSpacePrefix}CG_Regulatory_Charges__c'];
+                        totalGift += cg['{!nameSpacePrefix}CG_Arrival_Presents__c'];
+                        grandTotalBaseCost += cg['{!nameSpacePrefix}CG_Total_cost_in_selling_currency__c'];
+                        //Update 03-03-2016 by Veer
+                        //cg.CG_Recommended_Selling_Price__c  = cg.CG_Recommended_Selling_Price_Rp__c + (cg.CG_FX_Transfer_Charges__c+ cg.CG_Arrival_Presents__c+ cg.CG_Charity__c + cg.CG_Regulatory_Charges__c)*(1+ cg.CG_Opportunity__r.O_Target_Mark_Up_Value__c/100);
+                        cg['{!nameSpacePrefix}CG_Recommended_Selling_Price__c']  = cg['{!nameSpacePrefix}CG_Recommended_Selling_Price_Rp__c'] + (cg['{!nameSpacePrefix}CG_FX_Transfer_Charges__c']+ cg['{!nameSpacePrefix}CG_Arrival_Presents__c']+ cg['{!nameSpacePrefix}CG_Charity__c'] + cg['{!nameSpacePrefix}CG_Regulatory_Charges__c']);
+                        console.log(totalSellingPrice);
+                        $scope.opp.Amount = totalSellingPrice;
+                        totalFlightCosts += cg['{!nameSpacePrefix}CG_Total_Flight_Cost__c'];
+                    });
+                    $scope.calculateMargin(totalSellingPrice,grandTotalBaseCost,totalGift,totalAdditionalCharges,totalFlightCosts);
+                    if(!$scope.isFlight){
+                        var regulatoryCharges = totalSellingPrice/$scope.opp['{!nameSpacePrefix}Group_Members__r'].length;
+                        var NLPvalue = 1;
+                        angular.forEach($scope.noneLicenceableTable, function(nlt,index) {
+                            if(nlt['{!nameSpacePrefix}NLPC_Low_Band__c'] <= regulatoryCharges && nlt['{!nameSpacePrefix}NLPC_High_Band__c'] >= regulatoryCharges){
+                                NLPvalue = nlt['{!nameSpacePrefix}NLPC_Premium_PP__c'];    
+                            }    
+                        });
+                        totalSellingPrice = 0;
+                        angular.forEach($scope.supplierCostByClient, function(sb,index) {
+                            var cg = $scope.supplierCostByClient[index].cg;
+                            if(NLPvalue !== undefined && cg['{!nameSpacePrefix}CG_Total_Adult_Members__c'] !== undefined && cg['{!nameSpacePrefix}CG_Exchange_Rate_GBP__c'] !== undefined){
+                                var oldCharge = cg['{!nameSpacePrefix}CG_Regulatory_Charges__c'];
+                                cg['{!nameSpacePrefix}CG_Regulatory_Charges__c'] = (NLPvalue*cg['{!nameSpacePrefix}CG_Total_Adult_Members__c']*1.2)/$scope.exGBP;
+                                //Update by Veer 03-03-2016
+                                //cg.CG_Recommended_Selling_Price__c = (cg.CG_Recommended_Selling_Price__c+((cg.CG_Regulatory_Charges__c-oldCharge)*(1+ cg.CG_Opportunity__r.O_Target_Mark_Up_Value__c/100 )));
+                                cg['{!nameSpacePrefix}CG_Recommended_Selling_Price__c'] = (cg['{!nameSpacePrefix}CG_Recommended_Selling_Price__c']+(cg['{!nameSpacePrefix}CG_Regulatory_Charges__c']-oldCharge));
+                            }
+                            else{
+                                cg['{!nameSpacePrefix}CG_Regulatory_Charges__c'] = 0;   
+                            }
+                            totalSellingPrice += cg['{!nameSpacePrefix}CG_Selling_Price__c'];
+                        });
+                        console.log(totalSellingPrice);
+                        $scope.opp.Amount = totalSellingPrice;
+                        console.log(totalSellingPrice);
+                        $scope.calculateMargin(totalSellingPrice,grandTotalBaseCost,totalGift,totalAdditionalCharges,totalFlightCosts);    
+                    }
+                    
+                }
+                
+                //Calculate Margin and TOMS
+                $scope.calculateMargin = function(totalSellingPrice,grandTotalBaseCost,totalGift,totalAdditionalCharges,totalFlightCosts){
+                    if($scope.opp['{!nameSpacePrefix}O_EU__c']){
+                        var creditCardCharges = 0;
+                        if($scope.opp['{!nameSpacePrefix}O_Total_Credit_Card_Charges__c'] !== undefined){
+                            creditCardCharges = $scope.opp['{!nameSpacePrefix}O_Total_Credit_Card_Charges__c'];
+                        }
+                        $scope.opp['{!nameSpacePrefix}O_TOMS_Applicable_Margin__c'] = totalSellingPrice+Opp['{!nameSpacePrefix}O_Total_Credit_Card_Charges__c'];
+                        $scope.opp['{!nameSpacePrefix}O_TOMS_Charges__c'] = (totalSellingPrice+creditCardCharges-grandTotalBaseCost-totalGift) - ((totalSellingPrice+creditCardCharges-grandTotalBaseCost-totalGift)/1.2)
+                    }
+                    var agentcommission  = 0;
+                    var totalBaseCostandAdditional  = 0;
+                    if($scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'] !== undefined){
+                        agentcommission = $scope.opp['{!nameSpacePrefix}O_Agent_Commission__c'];
+                    }
+                    if(!$scope.opp['{!nameSpacePrefix}O_Include_Flight_Margin__c']){
+                        //totalBaseCostandAdditional = (grandTotalBaseCost+totalAdditionalCharges+$scope.opp['{!nameSpacePrefix}O_TOMS_Charges__c']+agentcommission);
+                        totalBaseCostandAdditional = (grandTotalBaseCost+totalAdditionalCharges+$scope.opp['{!nameSpacePrefix}O_TOMS_Charges__c']);
+                    }
+                    else{
+                        //totalBaseCostandAdditional = (grandTotalBaseCost+totalAdditionalCharges+$scope.opp['{!nameSpacePrefix}O_TOMS_Charges__c']+agentcommission);
+                        totalBaseCostandAdditional = (grandTotalBaseCost+totalAdditionalCharges+$scope.opp['{!nameSpacePrefix}O_TOMS_Charges__c']);
+                    }
+                    $scope.opp['{!nameSpacePrefix}O_Margin__c']  = totalSellingPrice - (totalBaseCostandAdditional);
+                    $scope.calculateAgentCommission();
+                    $scope.calculateSalesCommission();
+                    $scope.opp['{!nameSpacePrefix}O_Margin_Value_With_Commission__c'] = totalSellingPrice - (totalBaseCostandAdditional+$scope.opp['{!nameSpacePrefix}O_Agent_Commission__c']+$scope.opp['{!nameSpacePrefix}O_Total_Sales_Commission__c']);
+                    
+                    if(!$scope.opp['{!nameSpacePrefix}O_Include_Flight_Margin__c']){
+                        $scope.opp['{!nameSpacePrefix}O_Live_Margin__c'] = ($scope.opp['{!nameSpacePrefix}O_Margin_Value_With_Commission__c']/(totalSellingPrice-totalFlightCosts))*100;
+                    }
+                    else{
+                        $scope.opp['{!nameSpacePrefix}O_Live_Margin__c'] = ($scope.opp['{!nameSpacePrefix}O_Margin_Value_With_Commission__c']/(totalSellingPrice))*100;    
+                    }
+                    console.log('SSSSSSSSSSSSSSSSS');
+                    console.log(totalSellingPrice);
+                    console.log(totalBaseCostandAdditional);
+                    console.log($scope.opp['{!nameSpacePrefix}O_Margin__c']);
+                    console.log($scope.opp['{!nameSpacePrefix}O_Live_Margin__c']);
+                }
+                
+                //Save Data
+                $scope.saveCost = function(){
+                    $scope.loading("show");
+                    var opp = angular.copy($scope.opp);
+                    var cloneSBC = angular.copy($scope.supplierCostByClient);
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.ItineraryBuilderController.saveCost}',removeObj(opp),removeCusObj(cloneSBC),
+                        function(result, event){
+                            if (event.status) {
+                                console.log(result);
+                                $scope.loading("hide");
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message,'error');
+                                $scope.loading("hide");
+                            }
+                        },{escape: false}
+                    );    
+                }
+                
+                $scope.margin = function(){
+                    return ($scope.opp['{!nameSpacePrefix}O_Live_Margin__c'] < $scope.opp['{!nameSpacePrefix}O_Suggested_Margin_Value__c']);
+                }
+                $scope.margingrt = function(){
+                    return ($scope.opp['{!nameSpacePrefix}O_Live_Margin__c'] >= $scope.opp['{!nameSpacePrefix}O_Suggested_Margin_Value__c']);
+                }
+                
+                //Load data 
+                $scope.loadBySupplier();
+                
+                
+            });
+            
+            function removeObj(data) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    if (typeof item != "object") {
+                        delete data['$$hashKey']; 
+                    } else if (typeof item == "object") {
+                        delete data[key];
+                    }
+                } return data;   
+            }
+            function removeCusObj(data) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    console.log(key);
+                    if (typeof item != "object") {
+                        delete data['$$hashKey']; 
+                    } else if (typeof item == "object" && key.indexOf('__r') != -1) {
+                        delete data[key];
+                    }
+                    else if (typeof item == "object"){
+                        removeCusObj(data[key]);
+                    }
+                } return data;   
+            }
+        </script>
+        <div id="IBCalculation" ng-controller="IBCalculation" >
+            <br/>
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--small slds-truncate">Supplier Cost(s) By Supplier</h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            <img ng-show="toggleSupplier==false" ng-click="collapse('Supplier')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            <img ng-show="toggleSupplier==true" ng-click="collapse('Supplier')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleSupplier}">
+                    <table class="slds-table slds-table--bordered" >
+                        <thead>
+                            <tr> 
+                                <th colspan="1" class="headerRow">Supplier Name</th>
+                                <th colspan="1" class="headerRow">Payment Currency</th>
+                                <th colspan="1" class="headerRow numberTD">Total Cost</th>
+                                <th colspan="1" class="headerRow numberTD">Total Paid</th>
+                                <th colspan="1" class="headerRow numberTD">Outstanding</th>
+                                <th colspan="1" class="headerRow numberTD">ROE</th>
+                                <th colspan="1" class="headerRow">Booking Currency</th>
+                                <th colspan="1" class="headerRow numberTD">Booking Currency Equivalent</th>
+                            </tr>     
+                        </thead>
+                        <tbody>
+                            <tr  ng-repeat="item in supplierCostBySupplier">
+                                <td>{{item.scp['{!nameSpacePrefix}SCP_Supplier__r'].Name}}</td>
+                                <td>{{item.scp.CurrencyIsoCode}}</td>
+                                <td class="numberTD">{{item.scp['{!nameSpacePrefix}SCP_Total__c'] | number}}</td>
+                                <td class="numberTD">{{item.scp['{!nameSpacePrefix}SCP_Total_Payment__c'] | number}}</td>
+                                <td class="numberTD">{{item.scp['{!nameSpacePrefix}SCP_Outstanding_Amount__c'] | number}}</td>
+                                <td class="numberTD">{{item.scp['{!nameSpacePrefix}SCP_Exchange_Rate__r']['{!nameSpacePrefix}ER_Exchange_Rate__c']}}</td>
+                                <td>{{item.scp['{!nameSpacePrefix}SCP_Opportunity__r'].CurrencyIsoCode}}</td>
+                                <td class="numberTD">{{item.scp['{!nameSpacePrefix}SCP_Total__c']/item.scp['{!nameSpacePrefix}SCP_Exchange_Rate__r']['{!nameSpacePrefix}ER_Exchange_Rate__c'] | number:2}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="numberTD" colspan="2"><Strong>Total</Strong></td>
+                                <td></td>
+                                <td class="numberTD"><Strong>{{totalPaymentBySupplier | number:2}}</Strong></td>
+                                <td></td>
+                                <td colspan="2"></td>
+                                <td class="numberTD"><Strong>{{totalCostBySupplier | number:2}}</Strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <br/>
+            
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--small slds-truncate">Supplier Cost(s) By Client</h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            <img ng-show="toggleClient==false" ng-click="collapse('Client')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            <img ng-show="toggleClient==true" ng-click="collapse('Client')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleClient}">
+                    <div ng-repeat="item in supplierCostByClient">
+                        Group - <Strong>{{item.cg.Name}}</Strong>
+                        <table class="slds-table slds-table--bordered" >
+                            <thead>
+                                <tr> 
+                                    <th colspan="1" class="headerRow">Cost Type</th>
+                                    <th colspan="1" class="headerRow numberTD">Costing Currency</th>
+                                    <th colspan="1" class="headerRow numberTD" >Total Net Cost in Costing Currency</th>
+                                    <th colspan="1" class="headerRow numberTD">Costing RoE</th>
+                                    <th colspan="1" class="headerRow numberTD">Total Net Cost in Selling Currency</th>
+                                    <!-- <th colspan="1" class="headerRow numberTD">Mark-up(%)</th> -->
+                                    
+                                    <th colspan="1" class="headerRow numberTD">Marked Up Cost</th>
+                                </tr>     
+                            </thead>
+                            <tbody ng-repeat="supp in item.lstSuppliers">
+                                <tr style="background-color : #E2E1E1;">
+                                    <td colspan="4"><Strong>{{supp.supplier}}</Strong>  {{replace(supp.costWithCurrency)}}</td>
+                                    <td class="numberTD"><Strong>{{opp.CurrencyIsoCode}}</Strong></td>
+                                    <td colspan="2"/>
+                                </tr>
+                                <tr  ng-repeat="cost in supp.lstComponents">
+                                    <td>{{cost.component}}</td>
+                                    <td class="numberTD">{{cost.costingCurrency}}</td>
+                                    <td class="numberTD">{{cost.netCostInCC | number:2}}</td>
+                                    <td class="numberTD">{{cost.roe}}</td>
+                                    <td class="numberTD">{{cost.netCostInSC | number:2}}</td>
+                                   <!-- <td class="numberTD">{{cost.margin | number:2}}</td> -->
+                                    <td class="numberTD">{{cost.totalMarkUpValue | number:2}}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="numberTD" colspan="2"><Strong>Total</Strong></td>
+                                    <td colspan="2"></td>
+                                    <td class="numberTD"><Strong>{{item.cg['{!nameSpacePrefix}CG_Total_cost_in_selling_currency__c'] | number:2}}</Strong></td>
+                                    <!-- <td colspan="1"/> -->
+                                    <td class="numberTD" colspan="1"><Strong>{{item.cg['{!nameSpacePrefix}CG_Recommended_Selling_Price_Rp__c'] | number:2}}</Strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        
+            <br/>
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--small slds-truncate">Additional Costs</h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            <img ng-show="toggleAdditional==false" ng-click="collapse('Additional')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            <img ng-show="toggleAdditional==true" ng-click="collapse('Additional')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleAdditional}">
+                    <div ng-repeat="item in supplierCostByClient" class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                        Group - <Strong>{{item.cg.Name}}</Strong>
+                        <table class="slds-table slds-table--bordered" >
+                            <thead>
+                                <tr> 
+                                    <th colspan="1" class="headerRow">Charity</th>
+                                    <th colspan="1" class="headerRow">Gifts</th>
+                                    <th colspan="1" class="headerRow numberTD">FX Transfer Charges</th>
+                                    <th colspan="1" class="headerRow numberTD">Regulatory Charges</th>
+                                </tr>     
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input ng-disabled="opp['{!nameSpacePrefix}O_Lock__c']" type="number" step=".01" ng-change="changes()" ng-model="item.cg['{!nameSpacePrefix}CG_Charity__c']" class="slds-input"/>
+                                    </td>
+                                    <td>
+                                        <input ng-disabled="opp['{!nameSpacePrefix}O_Lock__c']" type="number" step=".01" ng-change="changes()" ng-model="item.cg['{!nameSpacePrefix}CG_Arrival_Presents__c']" class="slds-input"/>
+                                    </td>
+                                    <td class="numberTD">
+                                        {{item.cg['{!nameSpacePrefix}CG_FX_Transfer_Charges__c'] | number:2}}
+                                    </td>
+                                    <td class="numberTD">
+                                        {{item.cg['{!nameSpacePrefix}CG_Regulatory_Charges__c'] | number:2}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        
+            <br/>
+            
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--small slds-truncate">Selling Price Detail</h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            <img ng-show="toggleSelling==false" ng-click="collapse('Selling')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            <img ng-show="toggleSelling==true" ng-click="collapse('Selling')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleSelling}">
+                    <div ng-repeat="item in supplierCostByClient" class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                        Group - <Strong>{{item.cg.Name}}</Strong>
+                        <table class="slds-table slds-table--bordered" >
+                            <thead>
+                                <tr> 
+                                    <th colspan="1" style="width: 180px;" class="headerRow numberTD">Recommended Selling Price</th>
+                                    <th colspan="1" class="headerRow numberTD">Recommended Selling Price Today</th>
+                                    <th colspan="1" class="headerRow">Selling Price</th>
+                                    <th colspan="1" class="headerRow numberTD">Deposit Required </th>
+                                    <!--<th colspan="1" class="headerRow">Deposit Required II</th> -->
+                                    <th colspan="1" class="headerRow">Deposit Overwrite</th>
+                                    <th colspan="1" class="headerRow">Display Price</th>
+                                    <th colspan="1" class="headerRow"></th>
+                                </tr>     
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="numberTD">
+                                        {{item.cg['{!nameSpacePrefix}CG_Recommended_Selling_Price__c'] | number:2}}
+                                    </td>
+                                    <td class="numberTD">
+                                        {{item.cg['{!nameSpacePrefix}CG_Recommended_Selling_Price_Today__c'] | number:2}}
+                                    </td>
+                                    <td>
+                                        <input ng-disabled="opp['{!nameSpacePrefix}O_Lock__c']" type="number" ng-blur="saveCost()" ng-change="changes()" ng-model="item.cg['{!nameSpacePrefix}CG_Selling_Price__c']" class="slds-input" step=".01"/>
+                                    </td>
+                                    <td class="numberTD">{{item.cg['{!nameSpacePrefix}CG_Deposit_Required_I__c'] | number : 2}}</td>
+                                    <!-- <td>{{item.cg.CG_Deposit_Required_II__c | number : 2}}</td> -->
+                                    <td>
+                                        <input ng-disabled="opp['{!nameSpacePrefix}O_Lock__c']" type="number" step=".01" ng-model="item.cg['{!nameSpacePrefix}CG_Deposit_Overwrite__c']" class="slds-input"/>
+                                    </td>
+                                    <td>
+                                        <input ng-disabled="opp['{!nameSpacePrefix}O_Lock__c']" type="number" step=".01" ng-model="item.cg['{!nameSpacePrefix}CG_Display_Price__c']" class="slds-input"/>
+                                    </td>
+                                    <td>
+                                        <!--IMPORTANT! ALWAYS REMEMBER TO SAVE POST COST OR PRICE AMENDMENTS. <br/>FORGETTING TO DO THIS MEANS THAT YOUR ITINERARY AND ONLINE BOOKING FORMS WILL NOT BE UPDATED -->
+                                    </td>
+                                    
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="slds-card__footer" ng-class="{toggle : toggleSelling}">
+                    <button ng-disabled="opp['{!nameSpacePrefix}O_Lock__c']" class="slds-button slds-button--brand slds-button--small" ng-click="saveCost()">Save</button>
+                </div>
+            </div>
+        
+            <br/>
+            
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--label-normal slds-truncate">Total Booking  [Selling Price : {{opp.CurrencyIsoCode}} {{opp.Amount | number:2}}]</h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            <img ng-show="toggleTotal==false" ng-click="collapse('Total')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            <img ng-show="toggleTotal==true" ng-click="collapse('Total')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;"></img>    
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleTotal}">
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1 ">
+                        <table class="slds-table slds-table--bordered" >
+                            <thead>
+                                <tr> 
+                                    <th width="4%" colspan="1" class="headerRow numberTD">Margin Value Before Commission</th>
+                                    <th width="32%" colspan="1" class="headerRow numberTD">Margin Value After Commission</th>
+                                    <th width="32%" colspan="1" class="headerRow numberTD">Gross Margin %</th>
+                                    <th width="32%" colspan="1" class="headerRow numberTD">Target Margin %</th>
+                                </tr>     
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_Margin__c'] | number:2}}</td>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_Margin_Value_With_Commission__c'] | number:2}}</td>
+                                    <td class="numberTD" ng-class="{groupMemberRed : margin(),marginGreen : margingrt()}">{{opp['{!nameSpacePrefix}O_Live_Margin__c'] | number:2}}</td>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_Suggested_Margin_Value__c'] | number}}</td>
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr> 
+                                    <th colspan="1" class="headerRow numberTD">TOMS</th>
+                                    <th colspan="1" class="headerRow numberTD">Credit Card Charges</th>
+                                    <th colspan="1" class="headerRow numberTD">Agent Commission</th>
+                                    <th colspan="1" class="headerRow numberTD">Sales Commission</th>
+                                </tr>     
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_TOMS_Charges__c'] | number}}</td>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_Total_Credit_Card_Charges__c'] | number}}</td>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_Agent_Commission__c'] | number:2}}</td>
+                                    <td class="numberTD">{{opp['{!nameSpacePrefix}O_Total_Sales_Commission__c'] | number:2}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <!-- Floater Card --->
+            <div style="position:fixed;left:0; bottom:0;padding:0 8px;width:100%">
+                <div class="slds-card" style="padding: 0 12px 0 12px;">
+                    <div class="slds-card__header slds-grid" >
+                      <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/topic_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--label-normal slds-truncate">Total Booking  [Selling Price : {{opp.CurrencyIsoCode}} {{opp.Amount | number:2}}] <span style="float:right;">&#8220;{{O_Booking_Note}}&#8221;</span></h2>
+                        </div>
+                    </div>
+                    <div class="slds-card__body">
+                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                            <table class="slds-table slds-table--bordered" >
+                                <thead>
+                                    <tr> 
+                                        <th width="4%" colspan="1" class="headerRow numberTD">Margin Value Before Commission</th>
+                                        <th width="32%" colspan="1" class="headerRow numberTD">Margin Value After Commission</th>
+                                        <th width="32%" colspan="1" class="headerRow numberTD">Gross Margin %</th>
+                                        <th width="32%" colspan="1" class="headerRow numberTD">Target Margin %</th>
+                                    </tr>     
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="numberTD">{{opp['{!nameSpacePrefix}O_Margin__c'] | number:2}}</td>
+                                        <td class="numberTD">{{opp['{!nameSpacePrefix}O_Margin_Value_With_Commission__c'] | number:2}}</td>
+                                        <td class="numberTD" ng-class="{groupMemberRed : margin(),marginGreen : margingrt()}">{{opp['{!nameSpacePrefix}O_Live_Margin__c'] | number:2}}</td>
+                                        <td class="numberTD">{{opp['{!nameSpacePrefix}O_Suggested_Margin_Value__c']}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </html>   
+</apex:page>

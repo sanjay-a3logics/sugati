@@ -1,0 +1,255 @@
+<apex:page standardController="Opportunity" extensions="CoverPageSelectorController" sidebar="false" showHeader="false" title="Cover Images">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+         <head>
+             <c:BasicResources ></c:BasicResources>
+             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+             <script data-require="angular-resource@1.4.3" data-semver="1.4.3" src="https://code.angularjs.org/1.4.3/angular-resource.js"></script>
+             
+             <style>
+                 .slds .slds-table--bordered{
+                     border-bottom:0px;
+                     border-top:0px
+                 }
+                 .selectedImgBox {
+                     border: 1px dashed;
+                     min-height:5px;
+                     margin-bottom: 20px;
+                 }
+                 .selectedImg{
+                     color : #0070d2;
+                 }    
+                 .search-box-label{
+                     float: left;
+                     display: inline-block;
+                     padding-top: 5px;
+                 }
+                 .search-box-input{
+                    width: 50%;
+                    display: inline-block;
+                    float: left;
+                    min-width: 100px;
+                    padding-left: 10px;
+                 }
+                 .image-select .fa-hand-o-left{
+                    z-index: 11100;
+                    font-size: 25px;
+                    margin-right: -30px;
+                    position: absolute;
+                    left: 260px;
+                    top: 0;
+                 }
+                 .image-select{
+                     padding-bottom: 100px;
+                 }
+             </style>
+             
+             <script>
+                    var myApp = angular.module('MyApp', []);
+                    
+                    var contrl = myApp.controller('myController' ,function($scope){
+                        $scope.travellingCountriesImages =  {!TravellingCountryImages};
+                        $scope.regionImages = {!WTGImages};
+                        $scope.selectedImage = {};
+                        $scope.searchQuery = '';
+                        $scope.imageOrigin = 'travellingImages';
+                        $scope.TCId = '';
+                        $scope.WTGId = '';
+                        $scope.backButton= ((typeof sforce != 'undefined') && (sforce != null));
+                        $scope.selectImage = function(image){
+                            $scope.selectedImage = image; 
+                            if($scope.imageOrigin == 'travellingImages'){
+                                angular.forEach($scope.travellingCountriesImages, function(item){
+                                    item.isselected = false;    
+                                });
+                                $scope.TCId = $scope.selectedImage.recordId;
+                                $scope.attId = $scope.selectedImage.attachmentId;
+                                $scope.WTGId = '';
+                            }
+                            else{
+                                angular.forEach($scope.regionImages, function(item){
+                                    item.isselected = false;    
+                                });
+                                $scope.WTGId = $scope.selectedImage.WTGrecordId; 
+                                $scope.TCId = '';
+                                $scope.attId = $scope.selectedImage.WTGattachmentId;
+                            }
+                            image.isselected = !image.isselected;
+                        }
+                        
+                        $scope.saveCoverImage = function(){
+                           Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.CoverPageSelectorController.saveCoverImages}', 
+                            filterJSON($scope.travellingCountriesImages), filterJSON($scope.regionImages), $scope.TCId, $scope.WTGId, $scope.attId, '{!$CurrentPage.parameters.id}',  
+                            function(result, event){
+                                if (event.status) {
+                                    alert(result);
+                                    //window.open('', '_self', '');
+                                   // window.close();
+                                    //location.href = '/'+ '{!oppId}';
+                                    //Result contains list of account names and account id
+                                }
+                                else if (event.type === 'exception'){
+                                    alert(event.message,'error');
+                                }
+                            }, 
+                            {escape: false}
+                           );      
+                        }
+                        
+                        
+                    });
+                    //custom filter for search function
+                    myApp.filter('filterImage', function() {
+                        return function( items, searchText) {
+                          console.log('matchAccessLevel',arguments);
+                          var filtered = [];
+                          angular.forEach(items, function(item) {
+                            if(searchText == '') {
+                                filtered.push(item);
+                            }
+                            else if(item.Name.indexOf(searchText) != -1){
+                                filtered.push(item);  
+                            }
+                          });
+                          return filtered;
+                        };
+                    });
+                    function removeProperty(data, prop) {
+                        for (var key in data) {
+                            var item = data[key]; 
+                            
+                            if (typeof item != "object") {
+                                delete data[prop]; 
+                            } else if (typeof item == "object") {
+                                delete data[prop]; 
+                                removeProperty(item,prop);
+                            }
+                        } return data;   
+                    }
+                    //Filter the SObject JSON
+                    function filterJSON(data) {
+                        var ele = data;
+                          
+                        for (var i in ele) {
+                                           
+                            var ele1 = ele[i];
+                            if(ele[i] != null && ele[i].hasOwnProperty('$$hashKey')){
+                                delete ele[i]['$$hashKey']
+                            }
+                            for (var j in ele1) {
+                                
+                                if(typeof(ele1[j]) == 'object'){
+                                    if(ele[i][j] != null &&  ele[i][j].hasOwnProperty('$$hashKey')){
+                                        delete ele[i][j]['$$hashKey']
+                                    }
+                                    for (var k in ele1[j]) {
+                                        for (var l in ele1[j][k]) {
+                                            if(ele[i][j][k][l] != null && ele[i][j][k][l].hasOwnProperty('$$hashKey')){
+                                                delete ele[i][j][k][l]['$$hashKey']
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(ele.length === undefined){
+                            delete  ele['$$hashKey'];        
+                        }
+                        return ele;
+                    }
+                    function close(){
+                            window.close();   
+                    }
+                    function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+                    }
+             </script>       
+             
+         </head>    
+         <body>
+            <div ng-app="MyApp" >
+                <div class="slds" id="mycontroller" ng-controller="myController" >
+                    <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                    <c:AlertBox />
+                    <div class="slds-card">
+                        <div class="slds-card__header slds-grid">
+                            <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                <div class="slds-media__figure">
+                                    <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                        <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                    </svg>
+                                </div>
+                                <div class="slds-media__body">
+                                    <h2 class="slds-text-heading--small slds-truncate">Cover Images</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-card__body">
+                            <div class="slds-modal__content">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <div class="slds-form--horizontal">
+                                            <div class="slds-form-element">
+                                                <label class="search-box-label" for="inputNameSample1">Search</label>
+                                                <div class="search-box-input">
+                                                    <input type="text" class="slds-input" ng-model="searchQuery"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <fieldset class="slds-form-element" >
+                                          <legend class="slds-form-element__label slds-form-element__label--top">Image Origin</legend>
+                                          <div class="slds-form-element__control">
+                                            <label class="slds-radio" for="image-origin-travelling">
+                                              <input type="radio" name="options" id="image-origin-travelling" value="travellingImages" ng-model="imageOrigin" />
+                                              <span class="slds-radio--faux"></span>
+                                              <span class="slds-form-element__label">Travelling Countries</span>
+                                            </label>
+                                            <label class="slds-radio" for="image-origin-region">
+                                              <input type="radio" name="options" id="image-origin-region" value="regionImages" ng-model="imageOrigin"/>
+                                              <span class="slds-radio--faux"></span>
+                                              <span class="slds-form-element__label">Region</span>
+                                            </label>
+                                          </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap" style="margin-bottom: 20px;">
+                                    <p class="slds-text-body--small slds-m-top--x-small" style="color: #FA1232;">Note - Click on an image to select as a cover image</p>
+                                </div> 
+                                <div class="slds-grid slds-wrap image-select">
+                                    <div ng-if="imageOrigin== 'travellingImages'" ng-repeat="item in travellingCountriesImages  | filter:searchQuery | orderBy:'CountryImageName'" class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">    
+                                         <div ng-click="selectImage(item);" style="width: 255px; min-height: 210px;" ng-class="{'selectedImgBox' : item.isselected}" > 
+                                             <img src="/servlet/servlet.FileDownload?file={{item.attachmentId}}" alt="No Image Available"  width="250px" height="180px" /> 
+                                             <i class="fa" ng-class="{'fa-hand-o-left selectedImg' : item.isselected}"></i>
+                                             <div style="display: inline-block;">
+                                                 {{item.CountryImageName}}  
+                                             </div>
+                                         </div>
+                                    </div>
+                                    <div ng-if="imageOrigin == 'regionImages'" ng-repeat="item in regionImages  | filter:searchQuery | orderBy:'WTGImageName'" class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">    
+                                         <div ng-class="{selectedImgBox : item.isselected}" ng-click="selectImage(item);" style="width: 255px; height: 210px;"> 
+                                             <img src="/servlet/servlet.FileDownload?file={{item.WTGattachmentId}}" alt="No Image Available"  width="250px" height="180px" /> 
+                                             <i class="fa" ng-class="{'fa-hand-o-left selectedImg' : item.isselected}"></i>
+                                             <div style="display: inline-block;">
+                                                 {{item.WTGImageName}}  
+                                             </div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                        <div class="slds-modal__footer slds-modal__footer" style="position: fixed;bottom: 0px;width: 100%;">
+                            <div class="slds-x-small-buttons--horizontal">
+                                <button id="btnSave" ng-click="saveCoverImage()" class="slds-button slds-button--brand" > Save </button>
+                                <button id="btnSave" onclick="close()" class="slds-button slds-button--brand" ng-if="!backButton" > Close </button>
+                                <button  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" > Back</button>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+             </div>   
+         </body>
+    </html>
+</apex:page>

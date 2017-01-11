@@ -1,0 +1,116 @@
+<apex:component controller="DestinationMapController">
+    <apex:attribute name="opp" assignTo="{!OppRec}" description="Opportuntiy ID" type="Opportunity" required="true"/>
+    
+    <apex:outputPanel id="multipleMap" layout="block" rendered="{!OppRec.O_Map_Type__c == 'Multiple'}">
+        <apex:repeat value="{!MapTravellingCountry}" var="countryName">
+            <apex:outputPanel rendered="{!IF(CONTAINS(Countrieslst, countryName) || CONTAINS(CountryListAcc, countryName), true,false)}">
+                <apex:variable value="" var="MarkerString"/>
+                <apex:outputPanel rendered="{!IF(Contains(Countrieslst,countryName) && mapTravellingCountry[countryName].TC_Accommodation_Region__c =='Region',true,false)}">
+                    <apex:variable value="{!65}" var="listCount"/>
+                    <apex:repeat value="{!mapCountryToWTGList[countryName]}" var="destination">
+                        <apex:variable value="{!MarkerString & '&markers=' & URLENCODE('label:' & ASCIIMAP[listCount] & '|' & SUBSTITUTE(destination,'##',',')  & ', ' & countryName)}" var="MarkerString"/>    
+                        <apex:variable value="{!listCount+1}" var="listCount"/>
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!IF(Contains(CountryListAcc,countryName) && mapTravellingCountry[countryName].TC_Accommodation_Region__c =='Accommodation',true,false)}">
+                    <apex:variable value="{!65}" var="listCount"/>
+                    <apex:repeat value="{!mapCountryToAccom[countryName]}" var="destination">
+                        <apex:variable value="{!MarkerString & '&markers=' & URLENCODE('icon:http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|color:blue|label:' & ASCIIMAP[listCount] & '|' & SUBSTITUTE(destination,'##',',')  & ', ' & countryName)}" var="MarkerString"/>    
+                        <apex:variable value="{!listCount+1}" var="listCount"/>
+                    </apex:repeat>
+                </apex:outputPanel>
+                <div class="page-container" style="margin-top:10pt;">
+                    <div style="float:left;width:450px;">
+                        <span style="word-break: break-all;"> ####### {!MarkerString} ###### </span>
+                        <apex:image width="450px" height="450px" value="https://maps.googleapis.com/maps/api/staticmap?center={!countryName}&size=450x450&maptype=roadmap{!MarkerString}" alt="{!countryName}"/>  
+                    </div>
+                   
+               </div>    
+               <apex:outputPanel layout="block" style="page-break-after:always; ">
+               </apex:outputPanel>
+           </apex:outputPanel>
+        </apex:repeat>
+    </apex:outputPanel>
+    
+    <!------- Single Map for all the destination    -------------------->
+    <apex:outputPanel id="singleMap" layout="block" styleClass="page-container" rendered="{!OppRec.O_Map_Type__c == 'Single'}">
+        <apex:variable value="" var="MarkerString"/>
+        <apex:repeat value="{!MapTravellingCountry}" var="countryName">
+            <apex:outputPanel rendered="{!IF(CONTAINS(Countrieslst, countryName) || CONTAINS(CountryListAcc, countryName), true,false)}">
+                <apex:outputPanel rendered="{!IF(Contains(Countrieslst,countryName) && mapTravellingCountry[countryName].TC_Accommodation_Region__c =='Region',true,false)}">
+                    <apex:variable value="{!65}" var="listCount"/>
+                    <apex:repeat value="{!mapCountryToWTGList[countryName]}" var="destination">
+                        <apex:variable value="{!MarkerString & '&markers=' & URLENCODE('label:' & ASCIIMAP[listCount] & '|' & SUBSTITUTE(destination,'##',',')  & ', ' & countryName)}" var="MarkerString"/>    
+                        <apex:variable value="{!listCount+1}" var="listCount"/>
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!IF(Contains(CountryListAcc,countryName) && mapTravellingCountry[countryName].TC_Accommodation_Region__c =='Accommodation',true,false)}">
+                    <apex:variable value="{!65}" var="listCount"/>
+                    <apex:repeat value="{!mapCountryToAccom[countryName]}" var="destination">
+                        <apex:variable value="{!MarkerString & '&markers=' & URLENCODE('icon:http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|color:blue|label:' & ASCIIMAP[listCount] & '|' & SUBSTITUTE(destination,'##',',')  & ', ' & countryName)}" var="MarkerString"/>    
+                        <apex:variable value="{!listCount+1}" var="listCount"/>
+                    </apex:repeat>
+               </apex:outputPanel>
+           </apex:outputPanel>
+       </apex:repeat>
+       {!MarkerString }
+       <div style="float:left;width:550px; margin-top:10pt;">
+           <apex:image width="550px" height="450px" value="https://maps.googleapis.com/maps/api/staticmap?size=550x450&maptype=roadmap{!MarkerString}"/>  
+       </div>
+       <div style="float:right;width:430px;">
+           <div style="margin-bottom:0px;text-align:right;font-size:20pt;color:#457098;">DESTINATION MAP</div>
+           <div style="text-align:right;">Whether It's a multi-stop tour or a single<br/>destination escape, here we map out<br/>exactly where you're travelling to</div>
+           
+           <div style="margin-top:10pt; width:450px;float:right;">
+               <apex:repeat value="{!MapTravellingCountry}" var="countryName">
+                   <div style="width:405px; float:left;">
+                       <strong style="color:#457098;"><apex:outputText escape="false" value="{!countryName}" /></strong>
+                       <br/>
+                       <apex:outputPanel rendered="{!IF(Contains(Countrieslst,countryName) && mapTravellingCountry[countryName].TC_Accommodation_Region__c =='Region',true,false)}">
+                           <ol style="list-style:upper-alpha">
+                               <apex:variable value="{!0}" var="countWT"/>
+                               <apex:variable value="" var="countWT1"/>
+                               <apex:repeat value="{!mapCountryToWTGList[countryName]}" var="WTGlst">
+                                   <apex:repeat value="{!WTGlst}" var="WTG">
+                                       <apex:variable value="{!countryName+WTGlst}" var="countWT1"/>    
+                                   </apex:repeat>
+                               </apex:repeat>
+                               <apex:repeat value="{!mapCountryToWTGList[countryName]}" var="WTGlst">
+                                   <apex:repeat value="{!WTGlst}" var="WTG">
+                                       <li>
+                                           <table border="0" cellspacing="0" cellpadding="0" class="destinationTable">
+                                               <tr><td width="10" style="{!IF(countryName+WTGlst != countWT1,'padding-bottom:10px','')}">&nbsp;</td><td class="divider" style="{!IF(countryName+WTGlst != countWT1,'padding-bottom:10px','')}"> {!LEFT(WTG, FIND('##', WTG)-1)} </td></tr>
+                                           </table>
+                                       </li>
+                                   </apex:repeat>
+                               </apex:repeat>
+                           </ol>
+                       </apex:outputPanel>
+                       <apex:outputPanel rendered="{!IF(Contains(CountryListAcc,countryName) &&mapTravellingCountry[countryName].TC_Accommodation_Region__c == 'Accommodation',true,false)}">
+                               
+                           <ol style="list-style:upper-alpha">
+                               <apex:variable value="{!0}" var="countWT"/>
+                               <apex:variable value="" var="countWT1"/>
+                               <apex:repeat value="{!mapCountryToAccom[countryName]}" var="WTGlst">
+                                   <apex:repeat value="{!WTGlst}" var="WTG">
+                                       <apex:variable value="{!countryName+WTGlst}" var="countWT1"/>    
+                                   </apex:repeat>
+                               </apex:repeat>
+                               <apex:repeat value="{!mapCountryToAccom[countryName]}" var="WTGlst">
+                                   <apex:repeat value="{!WTGlst}" var="WTG">
+                                       <li>
+                                           <table border="0" cellspacing="0" cellpadding="0" class="destinationTable">
+                                               <tr><td width="10" style="{!IF(countryName+WTGlst != countWT1,'padding-bottom:10px','')}">&nbsp;</td><td class="divider" style="{!IF(countryName+WTGlst != countWT1,'padding-bottom:10px','')}"> {!LEFT(WTG, FIND('##', WTG)-1)} </td></tr>
+                                           </table>
+                                       </li>
+                                   </apex:repeat>
+                               </apex:repeat>
+                           </ol>
+                       </apex:outputPanel>
+                   </div>
+               </apex:repeat>
+           </div>
+       </div>
+       <apex:outputPanel layout="block" style="page-break-after:always; "/>
+   </apex:outputPanel>
+</apex:component>

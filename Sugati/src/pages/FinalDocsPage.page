@@ -1,0 +1,1027 @@
+<apex:page title="Final Docs PDF" standardController="Opportunity" standardStylesheets="false" extensions="ItineraryPdfClassClone" 
+sidebar="false" showHeader="false" applyHtmlTag="false" renderAs="pdf"   applyBodyTag="false">
+<head>
+    <title>Final Docs PDF </title>
+        <style>
+        @page {
+            size: A5;
+          
+            margin-left: 12mm;
+            margin-right: 12mm;
+            margin-bottom: 17mm;
+            margin-top: 28mm;
+            counter-increment: pagecounter;
+           padding: 0px 0px 0px 0px;
+            @bottom-left {
+                content: element(footer);
+                Font-size: 10px;
+            }
+           
+           @top-left {
+                content: element(header);
+             
+            }
+        }
+       
+        div.footer {
+            font-size: 10px;
+            position: running(footer);
+            margin-left: 2mm;
+            margin-right: 1mm;
+            color: rgb(110, 110, 110);
+        }
+           
+        div.header {
+           position: running(header);
+            margin-left: 2mm;
+            margin-right: 2mm;
+             margin-top: 10mm;
+        }
+           
+        .pagenumber:before {
+            content: counter(page);
+            offset: -2;
+        }
+           
+              
+        body {
+           
+            font-family: sans-serif;
+            color: #555
+        }
+      
+        .page-title {
+            display: inline-block;
+            padding-bottom: 8px;
+            font-size: 14pt;
+        }
+        
+        hr {
+            margin-top: 0px;
+            padding-top: 0px;
+            height: 0;
+            border: 0;
+            border-top: 0.5px solid;
+            border-color: rgb(110, 110, 110);
+        }
+           
+       .text   {
+           font-size: 8pt;
+            font-family: sans-serif;
+             vertical-align:center;
+          padding-bottom: 2px;
+               
+           }
+       .titletext   {
+           font-size: 8pt;
+            font-family: sans-serif;
+           line-height:20pt;
+           } 
+           
+        .lettertext{
+           font-size: 8pt !important;
+            font-family: sans-serif;
+           line-height:15pt;  
+         
+           }
+      
+           
+     .label {
+            font-family: sans-serif;
+            font-weight: bold !important;
+            font-size: 8pt;
+            color: #000;
+           line-height:15pt; 
+        }
+        
+           
+    .label_titletext {
+            font-family: sans-serif;
+            font-weight: bold !important;
+            font-size: 8pt;
+            color: #000;
+            vertical-align:center;
+            padding-bottom: 2px;
+        }
+      
+     .Sborder {
+            border-width: 1px;
+            border-style: solid;
+            border-color: #C0C0C0;
+            border-top : none;
+            border-left: none;
+            vertical-align: center;
+            padding-left: 0.1cm;
+            padding-bottom: 2px;
+        }  
+      
+      .Sborder1 {
+        
+            border-width: 1px;
+            border-style: solid;
+            border-color: #C0C0C0;
+            border-top : none;
+            padding-left: 0.1cm;
+            vertical-align: center;
+            padding-bottom: 2px;
+           
+        }      
+      
+
+       
+
+    </style>
+    <!-- AWS script -->
+            <apex:stylesheet value="{!URLFOR($Resource.appssential_new,'appssential_new/Resource/appssential_mobile_css.css')}"/>
+            <apex:includeScript value="{!URLFOR($Resource.appssential_new,'appssential_new/Resource/appssential_mobile_js.js')}"/>
+    
+</head>
+    
+    <apex:form >
+        <body>   
+            <!--- Tickets and Vouchers -->    
+            <apex:variable var="cp" value="{!0}"/>
+            
+            <apex:outputPanel rendered="{!showTicketVoucher}">
+                <apex:outputPanel rendered="{!IF(contains(mapContains,'TICKETS AND VOUCHERS'),mapSelected['TICKETS AND VOUCHERS'] , true)}">
+                    <apex:variable var="cp" value="{!(cp+1)}"/>
+                    <!--- Footer --->
+                        
+                    <div class="footer">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td valign="top" align="left" style="Color:{!Colorr};">
+                                    <!--
+                                    <apex:outputText style="" value="Original Diving - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                                    <apex:outputText style="" value="Simoon Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                                    <apex:outputText style="" value="Sugati Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                                    -->
+                                </td>
+                             </tr>
+                        </table>
+                    </div>
+                    
+                   <!-- header -->
+                   <div class="header">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="left" valign="top">
+                                  
+                                    <div class="">
+                                        <!--
+                                        <apex:variable var="imageVar1" value="{!Logo}" />
+                                        <apex:image url="{!URLFOR($Resource.Logos, imageVar1)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                                        <apex:variable var="imageVar2" value="{!Logo}" />
+                                        <apex:image url="{!URLFOR($Resource.Logos, imageVar2)}" height="45" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                                        <apex:variable var="imageVar3" value="{!Logo}" />
+                                        <apex:image url="{!URLFOR($Resource.Logos, imageVar3)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                                        <apex:image value="/servlet/servlet.FileDownload?file={!OTUKLogo}" height="45" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                                        -->
+                                    </div>
+                                </td>
+                                <td align="Right" valign="top" style="Font-size: 14pt; Color:rgb(17,3,3); ">
+                                <!--
+                                    <apex:outputpanel rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}"> <b>SUGATI</b>&nbsp;</apex:outputpanel>
+                                    <apex:outputpanel rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}"> <b>SUGATI</b>&nbsp;</apex:outputpanel>
+                                    <apex:outputpanel rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}"> <b>SUGATI</b>&nbsp;</apex:outputpanel>
+                                    <apex:outputText style="Color:rgb(95,91,91); " value="DIVING" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                                    <apex:outputText style="Color:rgb(95,91,91); " value="TRAVEL" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                                    <apex:outputText style="Color:rgb(95,91,91); " value="TRAVEL" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                                -->
+                                </td>
+                            </tr>
+                        </table>
+                         <hr style="margin-top: 1px;" />     
+                    </div>  
+                   <!-- First Page -->
+                        
+                    <br /><br /><br /><br /><br /><br /><br /> <br /><br /><br /><br/> 
+                   <div align="center">
+                        <apex:outputText style="Font-size: 16pt; Color:rgb(17,3,3);" value="Tickets and Vouchers" styleClass="bold" ></apex:outputText>
+                   </div>     
+                   <apex:outputPanel layout="block" style="page-break-before:always;" rendered="{!IF(Count_TVFlights ==0 && Count_TVAccomm ==0 && Count_TVTransfer ==0 && Count_TVLocalArrange ==0, false, true)}"  >
+                   </apex:outputPanel> 
+                    
+                    <!-- Second Page Flights Section --> 
+                    
+                    <div class="footer">
+                        <hr style="margin-bottom: 2px;" />
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td valign="top" align="left" style="Color:{!Colorr};">
+                                   <!-- <span class="pagenumber" /> 
+                                    <apex:outputpanel rendered="{!IF(Opp.RecordType.name != 'OTUK', true, false)}">|&nbsp;</apex:outputpanel> -->
+                                   <!-- 
+                                    <apex:outputText style="" value="SUGATI Diving - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                                    <apex:outputText style="" value="SUGATI Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                                    <apex:outputText style="" value="Sugati Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                                 -->
+                                </td>
+                                <td valign="top" align="right">
+                                  <!--
+                                    <apex:outputText escape="false" value="{!Opp.Account.Name}" rendered="{!IF(Opp.RecordType.name != 'OTUK' && (Opp.O_Itinerary_Cover_Name__c == NULL || Opp.O_Itinerary_Cover_Name__c == ''), true, false)}"/>
+                                    <apex:outputText escape="false" value="{!Opp.O_Itinerary_Cover_Name__c}" rendered="{!IF(Opp.RecordType.name != 'OTUK' && (Opp.O_Itinerary_Cover_Name__c != NULL || Opp.O_Itinerary_Cover_Name__c != ''), true, false)}"/>
+                                    <apex:outputText escape="false" value="{!Opp.O_Agent__r.Name}" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                                  -->
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            
+                    <div class="header">   
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="left" valign="bottom" style="Color:{!Colorr};">
+                                <div class="page-title">Tickets and Vouchers</div>
+                            </td>
+                            <td align="right">
+                                <!--apex:image url="{!URLFOR($Resource.Logos, imageVar)}" height="50" /-->
+                               <!--
+                               <apex:variable var="imageVar1" value="{!Logo}" />
+                                <apex:image url="{!URLFOR($Resource.Logos, imageVar1)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                                <apex:variable var="imageVar2" value="{!Logo}" />
+                                <apex:image url="{!URLFOR($Resource.Logos, imageVar2)}" height="45" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                                <apex:variable var="imageVar3" value="{!Logo}" />
+                                <apex:image url="{!URLFOR($Resource.Logos, imageVar3)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                                <apex:image value="/servlet/servlet.FileDownload?file={!OTUKLogo}" height="45" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                                -->
+                            </td>
+                        </tr>
+                        </table>
+                        <hr style="margin-top: 3px;" />     
+                    </div>
+                    <apex:variable value="true" var="countFlight"/>       
+                    <apex:variable value="false" var="countFlight1"/>       
+                    <apex:repeat value="{!TicketsVouchers_Flights}" var="tvf">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                            
+                            <table border="0" cellpadding="0"  cellspacing="0" width="100%"> 
+                                <tr style="background-color:rgb(204,204,204);"> 
+                                    <td Class="Sborder" cellpadding="0"  width="100%">
+                                    <!--
+                                    <apex:outputText escape="false" value="International Flight"  styleClass="label_titletext" rendered="{!IF(tvf.RecordType.name == 'Int Flight',true,false)}"/>
+                                    <apex:outputText escape="false" value="Domestic Flight"  styleClass="label_titletext" rendered="{!IF(tvf.RecordType.name == 'Dom Flights',true,false)}"/>
+                                    <apex:outputText escape="false" value="Light Aircraft Flight"  styleClass="label_titletext" rendered="{!IF(tvf.RecordType.name == 'Light Aircraft',true,false)}"/>
+                                    -->
+                                    </td>
+                                </tr>
+                            </table>        
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">   
+                                <tr>
+                                    <td class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Names"  styleClass="label_titletext" /></td>
+                                    
+                                    <td cellpadding="0" width="75%" Class="Sborder">
+                                        
+                                        <apex:variable var="count" value="{!tvf.Flight_Bookings1__r.size}" />
+                                        <apex:variable var="count1" value="{!0}" />
+                                        <apex:repeat value="{!tvf.Flight_Bookings1__r}" var="subrec">
+                                            <apex:outputPanel rendered="{!(subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c != null )}">
+                                                <apex:variable var="count" value="{!count-1}" />
+                                                <apex:outputText escape="false" value="{!subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c}"  styleClass="text"/>
+                                                    <apex:outputPanel rendered="{!IF(count>0,true,false)}" styleClass="text">,&nbsp;</apex:outputPanel>
+                                                    <apex:variable var="count1" value="{!count1+1}" />
+                                                    <apex:outputPanel rendered="{!IF(count1/2==1,true,false)}">
+                                                        <br/>
+                                                        <apex:variable var="count1" value="{!0}" />
+                                                    </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </apex:repeat>    
+                                    </td>
+                                </tr>
+                            </table>
+                    
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td  Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Reference No."  styleClass="label_titletext"/></td>
+                                    <td  Class="Sborder" align="left" cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tvf.SB_Reservation_Ref__c}"  styleClass="text"/></td>
+                                    <td  Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Flight No."  styleClass="label_titletext"/></td>
+                                    <td  Class="Sborder" align="left" cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvf.SB_Flight_No__c}" styleClass="text" /></td>
+                                
+                                </tr>
+                                <tr>
+                                    <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="From"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align="" cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tvf.SB_Departure_Airport_l__r.Name}"  styleClass="text"/></td>
+                                    <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="To"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align="" cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvf.SB_Arrival_Airport_l__r.Name}" styleClass="text" /></td>
+                                
+                                </tr>
+                                
+                                <tr>
+                                    <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Departure Date"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align="" cellpadding="0" width="25%">
+                                        <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                            <apex:param value="{!tvf.SB_From_Date__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Departure Time"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align="" cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvf.SB_From_Time__c}" styleClass="text" /></td>
+                                
+                                </tr>
+                                
+                                <tr>
+                                    <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Arrival Date"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align=""  cellpadding="0" width="25%" >
+                                        <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                            <apex:param value="{!tvf.SB_To_Date__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Arrival Time"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvf.SB_To_Time__c}" styleClass="text" /></td>
+                                
+                                </tr>
+                                
+                                <tr>
+                                    <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Check-in"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align=""  cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tvf.SB_Check_In_Time__c}"  styleClass="text"/></td>
+                                    <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Class"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvf.SB_Class__c}" styleClass="text" /></td>
+                                
+                                </tr>
+                                
+                                <tr>
+                                    <!--<td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Booking Status"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align=""  cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tvf.SB_Booking_Status__c}"  styleClass="text"/></td> -->
+                                    <td Class="Sborder1" cellpadding="0" width="20%"><apex:outputText escape="false" value="Operated By"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" colspan="3" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvf.SB_Carrier__c}" styleClass="text" /></td>
+                                
+                                </tr>
+                                     </table>
+                                     
+                                   <table border="0" cellpadding="0" cellspacing="0" width="100%">     
+                                 <tr>
+                                    <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Ticket No."  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" align=""  cellpadding="0" width="75%"><apex:outputText escape="false" value="{!tvf.SB_Ticket_No__c}"  styleClass="text"/></td>
+                                   <!--   <td  Class="Sborder"  cellpadding="0" cellspacing="0" width="20%"></td>
+                                     <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="30%">  </td>   -->                
+                                </tr>
+                                
+                                 <tr>
+                                    <td  Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Luggage Note"  styleClass="label_titletext"/></td>
+                                    <td  Class="Sborder" align=""  cellpadding="0" width="75%"><apex:outputText escape="false" value="{!tvf.SB_Luggage_Note__c}"  styleClass="text"/></td>
+                                   <!--   <td  Class="Sborder"  cellpadding="0" cellspacing="0" width="20%"></td>
+                                     <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="30%">  </td>      -->             
+                                </tr>
+                                     </table>
+                                </table> 
+                                <br/>
+                                 
+                                 <apex:outputPanel rendered="{!IF(countFlight1 == 'true',true,false)}">
+                                     <div layout="block" style="page-break-before:always;"/> 
+                                 </apex:outputPanel>
+                                 <apex:variable value="{!IF(countFlight1 == 'false','false','true')}" var="countFlight"/>
+                                 <apex:variable value="{!IF(countFlight1 == 'false','true','false')}" var="countFlight1"/> 
+                                 
+                                </apex:repeat>    
+                                
+                                
+                                <!-- Accommodation Section -->   
+                                <apex:repeat value="{!TicketsVouchers_Accomm}" var="tva">
+                                   <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                                 <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                                  <tr style="background-color:rgb(204,204,204);">   
+                                    <td Class="Sborder" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Accommodation"  styleClass="label_titletext"/></td>
+                                    
+                                  </tr>
+                                  </table>
+                                 <apex:outputPanel rendered="{!IF(tva.SB_Ground_Handler__r.Name != NULL,true,false)}">   
+                                       <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                                               
+                                        <tr>
+                                    <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Arranged By"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tva.SB_Ground_Handler__r.Name}"  styleClass="text"/></td>
+                                                   
+                                        </tr>
+                                    
+                                       </table> 
+                                  </apex:outputPanel> 
+                                      <table border="0" cellpadding="0" cellspacing="0" width="100%">         
+                                    <tr>
+                                    <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Hotel"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tva.SB_Supplier__r.Name}"  styleClass="text"/></td>
+                                                   
+                                   </tr>
+                                    
+                                    <tr>
+                                        <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Names"  styleClass="label_titletext"/></td>
+                                       
+                                         <td cellpadding="0" width="75%" Class="Sborder">
+                                             <apex:variable var="count" value="{!tva.Flight_Bookings1__r.size}" />
+                                            <apex:variable var="count1" value="{!0}" />
+                                            <apex:repeat value="{!tva.Flight_Bookings1__r}" var="subrec">
+                                                <apex:outputPanel rendered="{!(subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c != null)}">
+                                                    <apex:variable var="count" value="{!count-1}" />
+                                                    <apex:outputText escape="false" value="{!subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c }"  styleClass="text"/>
+                                                    <apex:outputPanel rendered="{!IF(count>0,true,false)}" styleClass="text">,&nbsp;</apex:outputPanel>
+                                                    <apex:variable var="count1" value="{!count1+1}" />
+                                                    <apex:outputPanel rendered="{!IF(count1/2==1,true,false)}">
+                                                        <br/>
+                                                        <apex:variable var="count1" value="{!0}" />
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                            </apex:repeat>    
+                                        </td>                
+                                    </tr>
+                                </table>
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">   
+                                    <tr>
+                                        <td Class="Sborder1" cellpadding="0" width="25%" style=""><apex:outputText escape="false" value="Arrival Date"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="25%">
+                                            <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                <apex:param value="{!tva.SB_From_Date__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Departure Date"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="30%">
+                                            <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                <apex:param value="{!tva.SB_To_Date__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Type of Room"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tva.SB_Room_Type__c}"  styleClass="text"/></td>
+                                        <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Basis"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tva.SB_Meal_Basis__c}" styleClass="text" /></td>
+                                    </tr>
+                                   
+                                     <tr>
+                                        <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%">
+                                            <apex:outputText escape="false" value="Hotel Address"  styleClass="label_titletext"/>
+                                        </td>
+                                        
+                                         <td cellpadding="0" colspan="3" Class="Sborder">
+                                            <apex:outputText escape="false" value="{!If(tva.SB_Supplier__r.S_Street__c!= null, tva.SB_Supplier__r.S_Street__c+'&nbsp','')}"  styleClass="text"/>
+                                            <apex:outputText escape="false" value="{!If(tva.SB_Supplier__r.S_City__c != null, tva.SB_Supplier__r.S_City__c+'&nbsp','')}"  styleClass="text"/>
+                                            <apex:outputText escape="false" value="{!IF(tva.SB_Supplier__r.S_State__c != null, tva.SB_Supplier__r.S_State__c +'&nbsp','')}"  styleClass="text"/>
+                                            <apex:outputText escape="false" value="{!IF(tva.SB_Supplier__r.S_Country__c != null,tva.SB_Supplier__r.S_Country__c+'&nbsp','')}"  styleClass="text"/>
+                                            <apex:outputText escape="false" value="{!tva.SB_Supplier__r.S_Postcode__c}"  styleClass="text"/>  
+                                        </td>                
+                                    </tr>
+                                    <tr>
+                                        <!--<td Class="Sborder1" cellpadding="0" width="25%"><!--<apex:outputText escape="false" value="Payment"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tva.SB_Payment_Type__c}"  styleClass="text"/></td> -->
+                                        <td Class="Sborder1" cellpadding="0" width="20%"><apex:outputText escape="false" value="Telephone"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" colspan="3" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tva.SB_Supplier__r.S_Phone__c}" styleClass="text" /><apex:outputText escape="false" value="{!IF(tva.SB_Supplier__r.S_Phone__c !=null && tva.SB_Ground_Handler__r.S_Phone__c != null,','+tva.SB_Ground_Handler__r.S_Phone__c,tva.SB_Ground_Handler__r.S_Phone__c)}" styleClass="text" /></td>
+                                    </tr>
+                                    </table>
+                                       
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">  
+                                    <tr>
+                                        <td Class="Sborder1" cellpadding="0" width="25%"><apex:outputText escape="false" value="Booking No."  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="25%"><apex:outputText escape="false" value="{!tva.SB_Booking_No__c}"  styleClass="text"/></td>
+                                        <td Class="Sborder" cellpadding="0" width="20%"><apex:outputText escape="false" value="Nights"  styleClass="label_titletext"/></td>
+                                        <td Class="Sborder" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tva.SB_Night__c}" styleClass="text" /></td>
+                                    </tr>
+                                </table> 
+                            </table>
+                            <br />
+                         
+                         <apex:outputPanel rendered="{!IF(countFlight1 == 'true',true,false)}">
+                             <div layout="block" style="page-break-before:always;"/> 
+                         </apex:outputPanel>
+                         <apex:variable value="{!IF(countFlight1 == 'false','false','true')}" var="countFlight"/>
+                         <apex:variable value="{!IF(countFlight1 == 'false','true','false')}" var="countFlight1"/> 
+                    </apex:repeat>    
+              
+            
+            <!-- Transfer Section -->
+            <!-- 3 transfer <apex:variable value="{!IF(countFlight1 == 'true','true','true')}" var="x11"/>
+            <apex:variable value="{!IF(countFlight1 == 'true','true','false')}" var="countFlight11"/> 
+            <apex:variable value="{!IF(countFlight1 == 'true','true','false')}" var="countFlight111"/> 
+            <apex:variable value="{!x11}" var="x"/>
+            <apex:variable value="{!countFlight11}" var="countFlight"/>
+            <apex:variable value="{!countFlight111}" var="countFlight1"/>
+            -->
+                 <apex:repeat value="{!TicketsVouchers_Transfer}" var="tvt">    
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                             <tr  style="background-color:rgb(204,204,204);">
+                                 <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Transfer"  styleClass="label_titletext"/></td>
+                             </tr>
+                        </table>
+                          
+                        <apex:outputPanel rendered="{!IF(tvt.SB_Ground_Handler__r.Name != NULL,true,false)}">   
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">    
+                                <tr>
+                                    <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Arranged By"  styleClass="label_titletext"/></td>
+                                    <td Class="Sborder" cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvt.SB_Ground_Handler__r.Name}"  styleClass="text"/></td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>   
+                               
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">        
+                            <tr>
+                                <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Names"  styleClass="label_titletext"/></td>
+                                
+                                <td cellpadding="0" width="75%" Class="Sborder">
+                                <apex:variable var="count" value="{!tvt.Flight_Bookings1__r.size}" />
+                                <apex:variable var="count1" value="{!0}" />
+                                <apex:repeat value="{!tvt.Flight_Bookings1__r}" var="subrec">
+                                <apex:outputPanel rendered="{!(subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c != null)}">
+                                    <apex:variable var="count" value="{!count-1}" />
+                                    <apex:outputText escape="false" value="{!subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c }"  styleClass="text"/>
+                                    <apex:outputPanel rendered="{!IF(count>0 && (subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c != null),true,false)}" styleClass="text">,&nbsp;</apex:outputPanel>
+                                    <apex:variable var="count1" value="{!count1+1}" />
+                                    <apex:outputPanel rendered="{!IF(count1/2==1,true,false)}">
+                                        <br/>
+                                        <apex:variable var="count1" value="{!0}" />
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                </apex:repeat>   
+                                </td>             
+                            </tr>
+                        </table>
+                        
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >  
+                            <tr>
+                                <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="From"  styleClass="label_titletext"/></td>
+                                <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="25%">
+                                  <apex:outputText escape="false" value="{!tvt.SB_From_Place__c}" styleClass="text"/>
+                                </td>
+                                <td Class="Sborder" cellpadding="0" cellspacing="0" width="20%"><apex:outputText escape="false" value="To"  styleClass="label_titletext"/></td>
+                                <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="30%">
+                                <apex:outputText escape="false" value="{!tvt.SB_To_Place__c}" styleClass="text"/>
+                                </td>     
+                            </tr>
+                            
+                            <tr>
+                                <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Pick Up Date"  styleClass="label_titletext"/></td>
+                                <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="25%">
+                                <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                    <apex:param value="{!tvt.SB_From_Date__c}" />
+                                </apex:outputText>
+                                </td>
+                            
+                                <td Class="Sborder" cellpadding="0" cellspacing="0" width="20%"><apex:outputText escape="false" value="Pick Up Time"  styleClass="label_titletext"/></td>
+                                <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="30%">
+                                 <apex:outputText escape="false" value="{!IF(tvt.SB_From_Time__c != null, tvt.SB_From_Time__c,'TBC')}" styleClass="text"/>
+                                </td>    
+                            </tr>
+                        </table>
+                        
+                                                
+                         <table border="0" cellpadding="0" cellspacing="0" width="100%">  
+                         
+                             <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Pick Up Details"  styleClass="label_titletext"/></td>
+                             <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvt.SB_Itinerary_Description__c}" styleClass="text" /></td>
+                           
+                             </tr>
+                                
+        
+                             <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Transfer Tel"  styleClass="label_titletext"/></td>
+                             <td   Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvt.SB_Supplier__r.S_Phone__c}" styleClass="text" /><apex:outputText escape="false" value="{!IF(tvt.SB_Supplier__r.S_Phone__c !=null && tvt.SB_Ground_Handler__r.S_Phone__c != null,','+tvt.SB_Ground_Handler__r.S_Phone__c,tvt.SB_Ground_Handler__r.S_Phone__c)}" styleClass="text" /></td>
+                           
+                             </tr>
+                           
+                             <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Transfer Name"  styleClass="label_titletext"/></td>
+                             <td   Class="Sborder" align="" cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvt.SB_Supplier__r.Name}" styleClass="text" /></td>
+                           
+                             </tr>
+                        </table>
+                    </table>
+                    <br />
+                    <!-- 3 flight <apex:outputPanel style="height:0px" rendered="{!IF(x == 'true' && countFlight == 'true' && countFlight1 =='true' ,'true','false')}">
+                    <div style="page-break-before:always;"/>
+                    </apex:outputPanel>
+                    <apex:variable value="true" var="x11"/>
+                    <apex:variable value="{!IF(x == 'true' && countFlight == 'false' && countFlight1 =='false','false',IF(x == 'true' && countFlight == 'false' && countFlight1 =='true','true',IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','false','')))}" var="countFlight11"/>
+                    <apex:variable value="{!IF(x == 'true' && countFlight == 'false' && countFlight1 =='false','true',IF(x == 'true' && countFlight == 'false' && countFlight1 =='true','true',IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','false','')))}" var="countFlight111"/>
+                    
+                    <apex:variable value="{!x11}" var="x"/>
+                    <apex:variable value="{!countFlight11}" var="countFlight"/>
+                    <apex:variable value="{!countFlight111}" var="countFlight1"/>
+                    -->
+                    <apex:outputPanel rendered="{!IF(countFlight1 == 'true',true,false)}">
+                    <div layout="block" style="page-break-before:always;"/> 
+                    </apex:outputPanel>
+                    <apex:variable value="{!IF(countFlight1 == 'false','false','true')}" var="countFlight"/>
+                    <apex:variable value="{!IF(countFlight1 == 'false','true','false')}" var="countFlight1"/> 
+                </apex:repeat>
+               
+               
+                 <!--- Local Arrangements -->
+                 <apex:variable value="{!IF(countFlight1 == 'true','true','true')}" var="x11"/>
+                 <apex:variable value="{!IF(countFlight1 == 'true','true','false')}" var="countFlight11"/> 
+                 <apex:variable value="{!IF(countFlight1 == 'true','true','false')}" var="countFlight111"/> 
+                 <apex:variable value="{!x11}" var="x"/>
+                 <apex:variable value="{!countFlight11}" var="countFlight"/>
+                 <apex:variable value="{!countFlight111}" var="countFlight1"/>    
+                
+                <apex:repeat value="{!TicketsVouchers_LocalArrange}" var="tvl">    
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                           <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                         <tr  style="background-color:rgb(204,204,204);">
+                             <td Class="Sborder" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Local Arrangements"  styleClass="label_titletext" /></td>
+                             
+                        </tr>
+                        </table>
+                           <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                        <tr>
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Names"  styleClass="label_titletext"/></td>
+                      
+                         <td cellpadding="0" width="75%" Class="Sborder">
+                            <apex:variable var="count" value="{!tvl.Flight_Bookings1__r.size}" />
+                            <apex:variable var="count1" value="{!0}" />
+                            <apex:repeat value="{!tvl.Flight_Bookings1__r}" var="subrec">
+                                <apex:outputPanel rendered="{!(subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c != null)}">
+                                    <apex:variable var="count" value="{!count-1}" />
+                                    <apex:outputText escape="false" value="{!subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c }"  styleClass="text"/>
+                                    <apex:outputPanel rendered="{!IF(count>0,true,false)}" styleClass="text">,&nbsp;</apex:outputPanel>
+                                    <apex:variable var="count1" value="{!count1+1}" />
+                                    <apex:outputPanel rendered="{!IF(count1/2==1,true,false)}">
+                                        <br/>
+                                        <apex:variable var="count1" value="{!0}" />
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </apex:repeat>   
+                        </td>            
+                        </tr>
+                        </table>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">     
+                        <tr>
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Provider"  styleClass="label_titletext"/></td>
+                         <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{!tvl.SB_Supplier__r.Name}" styleClass="text" /></td>
+                         <td Class="Sborder" cellpadding="0" cellspacing="0" width="20%"><apex:outputText escape="false" value="Telephone"  styleClass="label_titletext"/></td>
+                         <td Class="Sborder" align=""  cellpadding="0" width="30%"><apex:outputText escape="false" value="{!tvl.SB_Supplier__r.S_Phone__c}" styleClass="text" /><apex:outputText escape="false" value="{!IF(tvl.SB_Supplier__r.S_Phone__c !=null && tvl.SB_Ground_Handler__r.S_Phone__c != null,','+tvl.SB_Ground_Handler__r.S_Phone__c,tvl.SB_Ground_Handler__r.S_Phone__c)}" styleClass="text" /></td>
+                         </tr>
+                        
+                         <tr>
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Start Date"  styleClass="label_titletext"/></td>
+                          <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="25%">
+                            <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                <apex:param value="{!tvl.SB_From_Date__c}" />
+                            </apex:outputText>
+                        </td>
+                         <td Class="Sborder" cellpadding="0" cellspacing="0" width="20%"><apex:outputText escape="false" value="End Date"  styleClass="label_titletext"/></td>
+                         <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="30%">
+                            <apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                <apex:param value="{!tvl.SB_To_Date__c}" />
+                            </apex:outputText>
+                        </td>   
+                         </tr>
+                         </table>
+                        
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">  
+                         <tr>
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Services"  styleClass="label_titletext"/></td>
+                         <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvl.SB_Name__c}" styleClass="text" /></td>
+                         </tr>
+                         <tr>
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Local Arrangements"  styleClass="label_titletext"/></td>
+                         <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvl.SB_Local_Arrangements_Content__c}" styleClass="text" /></td>
+                         </tr>
+                           
+                       <!--  <tr>
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Payment"  styleClass="label_titletext"/></td>
+                         <td  Class="Sborder" align=""  cellpadding="0" cellspacing="0" width="75%"><apex:outputText escape="false" value="{!tvl.SB_Payment_Type__c}" styleClass="text" /></td>
+                         </tr>-->
+         
+                        </table>
+                    </table>
+                    <br />
+                    <apex:outputPanel style="height:0px" rendered="{!IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','true','false')}">
+                        <div layout="block" style="page-break-before:always;"/> 
+                    </apex:outputPanel>
+                    <apex:variable value="true" var="x11"/>
+                    <apex:variable value="{!IF(x == 'true' && countFlight == 'false' && countFlight1 =='false','false',IF(x == 'true' && countFlight == 'false' && countFlight1 =='true','true',IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','false','')))}" var="countFlight11"/>
+                    <apex:variable value="{!IF(x == 'true' && countFlight == 'false' && countFlight1 =='false','true',IF(x == 'true' && countFlight == 'false' && countFlight1 =='true','true',IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','false','')))}" var="countFlight111"/>
+                    
+                    <apex:variable value="{!x11}" var="x"/>
+                    <apex:variable value="{!countFlight11}" var="countFlight"/>
+                    <apex:variable value="{!countFlight111}" var="countFlight1"/>
+            </apex:repeat>
+            
+            
+            <!-- car hire -->
+            
+            <apex:repeat value="{!TicketsVouchers_CarHire}" var="tvc">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%"> 
+                     <tr  style="background-color:rgb(204,204,204);" >
+                         <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Car Hire"  styleClass="label_titletext"/></td>
+                         <!--<td Class="Sborder" cellpadding="0" cellspacing="0" width="75%"></td>-->
+                    </tr>
+                    </table>
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0"><apex:outputText escape="false" value="Name"  styleClass="label_titletext"/></td>
+                             <td colspan="3" Class="Sborder1" cellpadding="0" cellspacing="0" width="25%">
+                                <apex:variable var="count" value="{!tvc.Flight_Bookings1__r.size}" />
+                                <apex:variable var="count1" value="{!0}" />
+                                <apex:repeat value="{!tvc.Flight_Bookings1__r}" var="subrec">
+                                    <apex:outputPanel rendered="{!(subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c != null)}">
+                                        <apex:variable var="count" value="{!count-1}" />
+                                        <apex:outputText escape="false" value="{!subrec.FB_Group_Member__r.GM_Contact__r.C_Full_Name_on_Passport__c }"  styleClass="text"/>
+                                        <apex:outputPanel rendered="{!IF(count>0,true,false)}" styleClass="text">,&nbsp;</apex:outputPanel>
+                                        <apex:variable var="count1" value="{!count1+1}" />
+                                        <apex:outputPanel rendered="{!IF(count1/2==1,true,false)}">
+                                            <br/>
+                                            <apex:variable var="count1" value="{!0}" />
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                </apex:repeat>    
+                             </td>
+                          </tr> 
+                         <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Pick Up Location"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{!tvc.SB_Pickup_Point__c}" styleClass="text"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Drop Off Location"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{!tvc.SB_Drop_off_Point__c}" styleClass="text"/></td>
+                         </tr>      
+                          <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Pick Up Date"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                <apex:param value="{!tvc.SB_From_Date__c}" />
+                            </apex:outputText></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Drop Off Date"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{0,date,dd' 'MMM' 'yyyy}" styleClass="text">
+                                                <apex:param value="{!tvc.SB_To_Date__c}" />
+                            </apex:outputText></td>
+                         </tr>     
+                         <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Pick Up Time"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{!tvc.SB_From_Time__c}" styleClass="text"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Drop Off Time"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{!tvc.SB_To_Time__c}" styleClass="text"/></td>
+                         </tr>
+                          <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Car Hire Details"  styleClass="label_titletext"/></td>
+                             <td colspan="3" Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="{!tvc.SB_Vehicle__c}" styleClass="text"/></td>
+                          </tr> 
+                          <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Car Hire Provider"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%" colspan="3"><apex:outputText escape="false" value="{!tvc.SB_Name__c}" styleClass="text"/></td>
+                          </tr> 
+                          <tr>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%"><apex:outputText escape="false" value="Provider Telephone"  styleClass="label_titletext"/></td>
+                             <td Class="Sborder1" cellpadding="0" cellspacing="0" width="25%" colspan="3"><apex:outputText escape="false" value="{!tvc.SB_Provider_Telephone__c}" styleClass="text"/></td>
+                          </tr>     
+                        </table>
+                  </table>
+                  <br />
+                <apex:outputPanel style="height:0px" rendered="{!IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','true','false')}">
+                    <div layout="block" style="page-break-before:always;"/> 
+                </apex:outputPanel>
+                <apex:variable value="true" var="x11"/>
+                <apex:variable value="{!IF(x == 'true' && countFlight == 'false' && countFlight1 =='false','false',IF(x == 'true' && countFlight == 'false' && countFlight1 =='true','true',IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','false','')))}" var="countFlight11"/>
+                <apex:variable value="{!IF(x == 'true' && countFlight == 'false' && countFlight1 =='false','true',IF(x == 'true' && countFlight == 'false' && countFlight1 =='true','true',IF(x == 'true' && countFlight == 'true' && countFlight1 =='true','false','')))}" var="countFlight111"/>
+                
+                <apex:variable value="{!x11}" var="x"/>
+                <apex:variable value="{!countFlight11}" var="countFlight"/>
+                <apex:variable value="{!countFlight111}" var="countFlight1"/>
+            </apex:repeat>
+            <apex:outputPanel layout="block" style="page-break-before:always;" />            
+        </apex:outputPanel> 
+    </apex:outputPanel>
+<!--- Confirmation letter -------------------------->    
+             
+        <apex:outputPanel rendered="{!IF(contains(mapContains,'CONFIRMATION LETTER'),mapSelected['CONFIRMATION LETTER'], true)}">
+            <apex:outputPanel rendered="{!IF(contains(mapContains,'TICKETS AND VOUCHERS'),mapSelected['TICKETS AND VOUCHERS'], true)}"/> 
+            
+            <apex:variable var="cp" value="{!(cp+1)}"/>
+            <div class="footer">
+                <hr style="margin-bottom: 2px;" />
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td valign="top" align="left" style="Color:{!Colorr};">
+                          
+                            <!--
+                            <apex:outputText style="" value="Original Diving - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                            <apex:outputText style="" value="Simoon Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                            <apex:outputText style="" value="Sugati Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                            -->
+                        </td>
+                        <td valign="top" align="right">
+                          <!--
+                            <apex:outputText escape="false" value="{!Opp.Account.Name}" rendered="{!IF(Opp.RecordType.name != 'OTUK' && (Opp.O_Itinerary_Cover_Name__c == NULL || Opp.O_Itinerary_Cover_Name__c == ''), true, false)}"/>
+                            <apex:outputText escape="false" value="{!Opp.O_Itinerary_Cover_Name__c}" rendered="{!IF(Opp.RecordType.name != 'OTUK' && (Opp.O_Itinerary_Cover_Name__c != NULL || Opp.O_Itinerary_Cover_Name__c != ''), true, false)}"/>
+                            <apex:outputText escape="false" value="{!Opp.O_Agent__r.Name}" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                            -->
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="header">
+               <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="left" valign="bottom" style="Color:rgb(17,3,3);">
+                          Confirmation Letter
+                        </td>
+                        <td align="right">
+                            <!--apex:image url="{!URLFOR($Resource.Logos, imageVar)}" height="50" /-->
+                            <!--
+                            apex:variable var="imageVar1" value="{!Logo}" />
+                            <apex:image url="{!URLFOR($Resource.Logos, imageVar1)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                            <apex:variable var="imageVar2" value="{!Logo}" />
+                            <apex:image url="{!URLFOR($Resource.Logos, imageVar2)}" height="45" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                            <apex:variable var="imageVar3" value="{!Logo}" />
+                            <apex:image url="{!URLFOR($Resource.Logos, imageVar3)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                            <apex:image value="/servlet/servlet.FileDownload?file={!OTUKLogo}" height="45" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                            -->
+                        </td>
+                    </tr>
+             </table>
+                <hr style="margin-top: 3px;" />       
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" >
+                <apex:repeat value="{!ConfirmLetterPleaseDontForget}" var="d">
+                    <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c == 'Confirmation Letter Intro',true,false))}">    
+                        <tr class ="lettertext" style="line-height:11pt;">
+                                <td><apex:outputText escape="false" value="{!d.SICCO_Description__c}"  /> </td>
+                        </tr>
+                     </apex:outputPanel>          
+                 </apex:repeat>
+                
+                   <!--<tr><td height="10pt"></td></tr> -->
+                <apex:variable value="" var="latterTitle"/>
+                <apex:repeat value="{!ConfirmLetterPleaseDontForget}" var="d">
+                    <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c != 'Confirmation Letter Intro' && d.SICCO_Title__c != 'Confirmation Letter Closing',true,false))}">    
+                    <tr class ="lettertext" style="width:{!IF(d.SICCO_Title__c != 'Medical Advice','Auto','0px;')}height:{!IF(d.SICCO_Title__c != 'Medical Advice','Auto','0px')}">
+                        <td><apex:outputText rendered="{!d.SICCO_Title__c != 'Medical Advice' && latterTitle != d.SICCO_Title__c}"  escape="false" value="{!d.SICCO_Title__c}" styleClass="label" /></td>
+                    </tr>
+                    <tr class ="lettertext" style="line-height:11pt;" >
+                        <td><apex:outputText escape="false" value="{!d.SICCO_Description__c}"  /> </td>
+                    </tr>
+                    <apex:variable value="{!d.SICCO_Title__c}" var="latterTitle"/>
+                    </apex:outputPanel>          
+                </apex:repeat>
+                  
+                <apex:repeat value="{!ConfirmLetterPleaseDontForget}" var="d">
+                    <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c == 'Confirmation Letter Closing',true,false))}">    
+                        <tr class ="lettertext" style="line-height:11pt;">
+                            <td><apex:outputText escape="false" value="{!d.SICCO_Description__c}"  /> </td>
+                        </tr>
+                    </apex:outputPanel>          
+                </apex:repeat>
+                  
+                  
+                  <!-- <tr><td height="10pt"></td></tr> -->
+                <tr class ="lettertext"><td>Yours sincerely</td></tr>
+                <tr><td height="20pt"></td></tr>
+                <tr>
+                    <td> <apex:outputPanel rendered="{!IF(UserSign!='' && UserSign!= null, true, false)}" >
+                        <p> 
+                        <img src="{!UserSign}" width="80px" height="50px"/> 
+                        </p> 
+                        </apex:outputPanel>
+                    </td>
+                </tr>
+                <tr class ="lettertext"><td>{!Opp.Owner.Name}</td></tr>
+            </table> 
+        </apex:outputPanel>
+    
+    
+    
+<!--- Confirmation Invoice ---------------->    
+    
+     <!--
+     
+      -->
+    <!----- Final Docs Letter ------------->
+    
+     <apex:outputPanel rendered="{!IF(contains(mapContains,'FINAL DOCS LETTER'),mapSelected['FINAL DOCS LETTER'], true)}">
+      
+         <apex:outputPanel rendered="{!IF(cp > 0, true, false)}">
+         <apex:outputPanel layout="block" style="page-break-before:always;" rendered="{!IF(contains(mapContains,'FINAL DOCS LETTER'),mapSelected['FINAL DOCS LETTER'], true)}">
+           </apex:outputPanel>
+         </apex:outputPanel>
+         
+         
+         
+         <div class="footer">
+                    <hr style="margin-bottom: 2px;" />
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td valign="top" align="left" style="Color:{!Colorr};">
+                               <!--
+                                <apex:outputText style="" value="Original Diving - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                                <apex:outputText style="" value="Simoon Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                                <apex:outputText style="" value="Sugati Travel - Life is in the detail" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                                -->
+                            </td>
+                            <td valign="top" align="right">
+                              <!-- 
+                                <apex:outputText escape="false" value="{!Opp.Account.Name}" rendered="{!IF(Opp.RecordType.name != 'OTUK' && (Opp.O_Itinerary_Cover_Name__c == NULL || Opp.O_Itinerary_Cover_Name__c == ''), true, false)}"/>
+                                <apex:outputText escape="false" value="{!Opp.O_Itinerary_Cover_Name__c}" rendered="{!IF(Opp.RecordType.name != 'OTUK' && (Opp.O_Itinerary_Cover_Name__c != NULL || Opp.O_Itinerary_Cover_Name__c != ''), true, false)}"/>
+                                <apex:outputText escape="false" value="{!Opp.O_Agent__r.Name}" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                                -->
+                            </td>
+                        </tr>
+                    </table>
+            </div>
+            <div class="header">
+            
+               <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="left" valign="bottom" style="Color:RGB(17,3,3)">
+                          Final Documents Letter
+                        </td>
+                        <td align="right">
+                            <!-- apex:image url="{!URLFOR($Resource.Logos, imageVar)}" height="50" /">
+                            <apex:variable var="imageVar1" value="{!Logo}" />
+                            <apex:image url="{!URLFOR($Resource.Logos, imageVar1)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OT', true, false)}" />
+                            <apex:variable var="imageVar2" value="{!Logo}" />
+                            <apex:image url="{!URLFOR($Resource.Logos, imageVar2)}" height="45" rendered="{!IF(Opp.RecordType.name == 'ST', true, false)}" />
+                            <apex:variable var="imageVar3" value="{!Logo}" />
+                            <apex:image url="{!URLFOR($Resource.Logos, imageVar3)}" height="45" rendered="{!IF(Opp.RecordType.name == 'OD', true, false)}" />
+                            <!--
+                            <apex:image value="/servlet/servlet.FileDownload?file={!OTUKLogo}" height="45" rendered="{!IF(Opp.RecordType.name == 'OTUK', true, false)}" />
+                            -->
+                        </td>
+                    </tr>
+             </table>
+                 <hr style="margin-top: 3px;" />     
+            </div>
+               
+            
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" >
+                  
+              
+                   <tr><td height="10pt"></td></tr>
+                  <apex:repeat value="{!FinalDocsPleaseDontForget}" var="d">
+                 
+                      <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c =='Final Letter Intro',true,false))}">   
+                    <tr class ="lettertext">
+
+                            <td cellpadding="0" style="line-height:11pt;"><apex:outputText escape="false" value="{!d.SICCO_Description__c}"  /> </td>
+                    </tr>
+                   </apex:outputPanel> 
+                  </apex:repeat> 
+         
+                     <tr><td height="10pt"></td></tr>
+                  <apex:repeat value="{!FinalDocsPleaseDontForget}" var="d">
+                    
+                   <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c !='Final Letter Intro' && d.SICCO_Title__c !='Final Letter Closing',true,false))}">
+                   <tr class ="lettertext" style="width:{!IF(d.SICCO_Title__c != 'Medical Advice','Auto','0px;')}height:{!IF(d.SICCO_Title__c != 'Medical Advice','Auto','0px')}">
+                       <td><apex:outputText rendered="{!d.SICCO_Title__c != 'Medical Advice'}"  escape="false" value="{!d.SICCO_Title__c}" styleClass="label" /></td>
+                   </tr>
+                   
+                   </apex:outputPanel>
+                    
+                     <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c !='Final Letter Intro' && d.SICCO_Title__c !='Final Letter Closing',true,false))}">  
+                    <tr class ="lettertext">
+
+                            <td cellpadding="0" style="line-height:11pt;"><apex:outputText escape="false" value="{!d.SICCO_Description__c}"  /> </td>
+                    </tr>
+                         <tr><td height="10pt"></td></tr>
+                      </apex:outputPanel>
+                    </apex:repeat>
+                  <tr class ="lettertext">
+
+                            <td cellpadding="0"><apex:outputText escape="false" value="In case of emergency, you can contact any of the following people:" styleClass="label" /> </td>
+                    </tr>
+                  
+                  
+                   <tr class ="lettertext">
+                            <apex:repeat value="{!EmergencyDetail}" var="d">
+                                <td cellpadding="0"><apex:outputText escape="false" value="{!d}"  /> </td><br/></apex:repeat>
+                    </tr>
+                  
+                   <tr class ="lettertext">
+                            
+                       <td cellpadding="0">Alternatively you can call
+                           
+                             <apex:outputText escape="false" value=" emergency number on + 44 20 7978 7333. " styleClass="label"/> Outside of office hours (6pm – 9am) we have a 24 hour team who are on hand to answer any calls and subsequently contact myself or one of my colleagues. Please do pass these numbers as a form of contact for friends and relatives should you wish.
+Please do not hesitate to give me a call if you have any queries on the above or on your enclosed itinerary. On behalf of Sugati Travel I hope that you have a wonderful time in&nbsp; 
+                       <apex:variable value="{!ConfirmLetter_CountTravelCountry}" var="tccount"/>
+                      
+                      <apex:repeat value="{!ConfirmLetter_TravelCountry}" var="cltc"> 
+                      <apex:outputText escape="false" value="{!cltc}"/>
+                          
+                       <apex:variable value="{!(tccount-1)}" var="tccount"/>    
+                         <apex:outputPanel rendered="{!if(tccount>0,'true','false')}">,&nbsp;</apex:outputPanel> 
+                          </apex:repeat> and I very much look forward to hearing your feedback on your return. </td>
+                    </tr>
+                
+        
+                    <apex:repeat value="{!FinalDocsPleaseDontForget}" var="d">
+                 
+                      <apex:outputPanel rendered="{!(IF(d.SICCO_Title__c =='Final Letter Closing',true,false))}">   
+                    <tr class ="lettertext">
+
+                            <td cellpadding="0" style="line-height:11pt;"><apex:outputText escape="false" value="{!d.SICCO_Description__c}"  /> </td>
+                    </tr>
+                   </apex:outputPanel> 
+                  </apex:repeat> 
+                  
+         
+                    <tr><td height="10pt"></td></tr>
+                   <tr class ="lettertext"><td>Yours sincerely</td></tr>
+                   <tr><td height="20pt"></td></tr>
+                   <tr><td> <apex:outputPanel rendered="{!IF(UserSign!='' && UserSign!= null, true, false)}" >
+                      <p> 
+                         
+                      <img src="{!UserSign}" width="80px" height="50px"/> 
+                      </p> 
+                     </apex:outputPanel></td></tr>
+                   
+                   <tr class ="lettertext"><td>{!Opp.Owner.Name}</td></tr>
+             </table>
+        </apex:outputPanel>
+            </body>
+    </apex:form>
+</apex:page>

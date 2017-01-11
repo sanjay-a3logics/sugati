@@ -1,0 +1,46 @@
+<apex:page controller="UpgradePackageController">
+  <html>
+   
+   
+           
+<c:BasicResources ></c:BasicResources>
+ <body>
+   <apex:form >
+    <apex:pageMessages id="msg"></apex:pageMessages>
+   <div class="slds">
+    <c:AlertBox ></c:AlertBox>
+    </div>
+   
+<apex:outputPanel id="validateId">
+    <apex:pageBlock title="Varification" id="upgrade" mode="edit">
+        <apex:pageBlockButtons >
+            <apex:commandButton value="Validate" action="{!keyDecryption}" id="saveButton1"  styleclass="slds-button slds-button--brand"  reRender="upgrade,msg"/>
+            <apex:commandButton action="{!UpgradeEdition}" value="Save"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockSection title="Info" columns="2">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel >Enter Your Private Key</apex:outputLabel>
+                <apex:inputText id="inputKeyText" styleclass="slds-input"  value="{!inputText1}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel >Enter Your Encrypted Key</apex:outputLabel>
+                <apex:inputText id="inputKeyText" styleclass="slds-input"  value="{!inputText2}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel >Enter Your Passcode</apex:outputLabel>
+                <apex:inputText id="inputKeyText" styleclass="slds-input"  value="{!pssCode}"/>
+            </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="Upgradable Feature" columns="2" rendered="{!validated }">
+            <apex:inputField value="{!proEdition.Group_Booking__c}"/>
+            <apex:inputField value="{!proEdition.Task_Management__c  }"/>
+            <apex:inputField value="{!proEdition.Reports__c  }"/>
+        </apex:pageBlockSection>
+        
+    </apex:pageBlock>
+
+</apex:outputPanel>
+ </apex:form>
+</body>  
+</html> 
+</apex:page>

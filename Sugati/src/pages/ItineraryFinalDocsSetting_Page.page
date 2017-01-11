@@ -1,0 +1,172 @@
+<apex:page standardController="Opportunity" title="Final Docs Setting" cache="false" extensions="ItineraryFinalDocsSetting_Controller" showHeader="true"  sidebar="false">
+    <!--
+    *    Update - 24-02-2016
+    *    Authore -Veer Singh
+    *-->
+    <apex:form >
+         <head>
+             <meta charset="utf-8" />
+             <title>Itinerary Final Docs Setting Page</title>
+             <c:BasicResources ></c:BasicResources>
+             <style>
+                 .field-title{
+                     font-weight: bolder;
+                 }
+             </style>
+             <script>
+                jQuery(window).load(function() { 
+                  for (var i in CKEDITOR.instances) {
+                        var chk = CKEDITOR.instances[i];
+                        var name = CKEDITOR.instances[i].name;
+                        console.log('className ='+name);
+                        vv(chk);      
+                  }     
+                });
+                function vv(chk){
+                    console.log(chk);
+                    var className = chk.element.getAttribute('class').split(' ');
+                    chk.on('change', function() {
+                            // console.log(chk.element.getAttribute('class').split(' ')[1]);  
+                            //console.log('Text Area Changes**************'+chk.getData());
+                            $( 'textarea[class$='+className[1]+']').html(chk.getData()) ;
+                       
+                    }); 
+                }
+                
+                function showMsg(){
+                    alert('Itinerary Content data has been saved!');
+                } 
+                
+                function navigateCancel(){
+                    window.open('', '_self', '');
+                    window.close();
+                    location.href = '/'+'{!opp.Id}';
+                }
+            </script>
+        </head>      
+        <apex:pageMessages id="msg"></apex:pageMessages>
+        
+        <apex:pageBlock >
+            <div class="slds">        
+                <c:Loading />
+                <c:AlertBox />
+        
+                <div class="slds-card" ng-form="IBForm">
+                    <div class="slds-card__header slds-grid">
+                        <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-text-heading--small slds-truncate">Final Doc/Confirmation Category Page</h2>
+                            </div>
+                        </div>
+                        <div class="slds-no-flex">
+                            <div class="slds-button-group">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-card__body" ng-class="{toggle : toggleIB}">
+                        <div class="slds-scrollable--x">
+                            <h3 class="field-title" style="font-size: 14px;font-weight: bold;">Please Don&#39;t Forget</h3>&nbsp; 
+                            <br/>
+                            <apex:outputPanel rendered="{!if(countSICCO >0,true,false)}">       
+                                <apex:repeat value="{!lstSICCO}" var="rec">
+                                    <apex:outputPanel rendered="{!(IF(rec.SICCO_Order__c !='998' && rec.SICCO_Order__c != '999' && rec.SICCO_Order__c != '0',true,false))}">
+                                        <label  class="field-title">Order No:</label>
+                                        <apex:OutputField style="font-size:16px;" value="{!rec.SICCO_Order__c}"/>
+                                        &nbsp;&nbsp;
+                                    </apex:outputPanel>
+                                    
+                                    <label  class="field-title">Component:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.SICCO_Title__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <apex:outputPanel rendered="{!(IF(rec.SICCO_Country__r.Name!=NULL,true,false))}">
+                                        <label  class="field-title">Country:</label>
+                                        <apex:OutputField style="font-size:16px;" value="{!rec.SICCO_Country__r.Name}"/>
+                                        &nbsp;&nbsp;
+                                    </apex:outputPanel>
+                                    
+                                    <label  class="field-title">Confirmation Letter:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.SICCO_Confirmation_Letter__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <label  class="field-title">Final Doc:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.SICCO_FinalDoc__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <br />
+                                    <div style="width: 100%; height: auto ;">
+                                        <apex:inputTextarea id="sicMsg1" style="font-size:9pt;width: 50%; height: 70px ;" styleClass="ckeditor ck{!rec.Id}" richText="false"   value="{!rec.SICCO_Description__c}" />
+                                    </div>
+                                    <br />
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            
+                            
+                            <apex:outputPanel rendered="{!if(countSICCO ==0 && countSICC > 0,true,false)}">
+                                <label  class="field-title">Confirmation Letter Intro:</label>
+                                <apex:inputTextarea id="CLetterIntro" style="width: 50%; height: 70px ;font-size:9pt;" styleClass="ckeditor 1" richText="false" value="{!CLetterIntro}" /><br/><br/>
+                                <br />
+                                
+                                <label  class="field-title">Final Letter Intro:</label>
+                                <apex:inputTextarea id="FLetterIntro" style="width: 50%; height: 70px ;font-size:9pt;" styleClass="ckeditor 4" richText="false" value="{!FLetterIntro}" /><br/><br/>
+                                <br />
+                                
+                                <apex:repeat value="{!lstForget}" var="rec">
+                                    <label  class="field-title">Order No:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.IC_Order__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <label  class="field-title">Component:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.IC_Title__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <apex:outputPanel rendered="{!(IF(rec.IC_Country__r.Name!=NULL,true,false))}">
+                                        <label  class="field-title">Country:</label>
+                                        <apex:OutputField style="font-size:16px;" value="{!rec.IC_Country__r.Name}"/>
+                                        &nbsp;&nbsp;
+                                    </apex:outputPanel>
+                                    
+                                    <label  class="field-title">Confirmation Letter:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.IC_ConfirmationLetter__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <label  class="field-title">Final Doc:</label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.IC_FinalDoc__c}"/>
+                                    &nbsp;&nbsp;
+                                    
+                                    <br />
+                                    <div style="width: 100%; height: auto ;">
+                                        <apex:inputTextarea id="sicMsg2" style="font-size:9pt;width: 50%; height: 70px ;" styleClass="ckeditor ck{!rec.Id}" richText="false"  value="{!rec.IC_Description__c}" />
+                                    </div>
+                                    <br />
+                                </apex:repeat>
+                           
+                            
+                                <label  class="field-title">Confirmation Letter Closing:</label>
+                                <apex:inputTextarea id="CLetterEnd" style="width: 50%; height: 70px ;font-size:9pt;" styleClass="ckeditor 3" richText="false" value="{!CLetterEnd}" /><br/><br/>
+                                            
+                                <br />
+                                
+                                
+                                <label  class="field-title">Final Letter Closing:</label>
+                                <apex:inputTextarea id="FLetterEnd" style="width: 50%; height: 70px ;font-size:9pt;" styleClass="ckeditor 5" richText="false" value="{!FLetterEnd}" /><br/><br/>
+                            
+                            </apex:outputPanel>   
+                        </div>
+                    </div>
+                    <div class="slds-card__footer">
+                        <div class="slds-x-small-buttons--horizontal" style="text-align: right;">
+                            <apex:commandButton id="btnExit"  styleClass="slds-button slds-button--brand" status="loading"  value="Exit" action="{!cancel}" oncomplete="navigateCancel();"/>
+                            <apex:commandButton id="btnSave" styleClass="slds-button slds-button--brand" status="loading"   value="Save" action="{!save}"  oncomplete="showMsg();"/>                   
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

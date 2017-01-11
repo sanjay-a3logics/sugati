@@ -1,0 +1,368 @@
+<apex:page title="Change Costs Option" showHeader="true" standardController="Opportunity" extensions="ItineraryBuilderController" sidebar="false" standardStylesheets="false" cache="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <head>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <c:BasicResources ></c:BasicResources>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+                              
+            <style>
+                .slds-tabs--path__title{
+                    transform: rotateX(0deg) !important;
+                }
+                .blink{
+                    padding: 0 2px 0 2px !important;
+                }
+                .itinerary th, .itinerary td{
+                    padding: 4px !important;
+                }
+                @media (min-width: 48em)
+                .slds .slds-modal--large .slds-modal__container {
+                    width: 70% !important;
+                }
+                
+                .slds-form-element {
+                    padding: 2.5px !important;
+                }
+                .selectedAcc{
+                    background-color : #D6E2F3;;
+                }
+                .select2-choices{
+                    border : none !important;
+                    background-images : none !important;
+                }
+                .SBTable{
+                    font-size : 10px !important;
+                }
+                .SBTable textarea{
+                    min-height: calc(25px + 2px) !important;
+                    line-height:25px !important;
+                    height:20px;
+                }
+                .SBTable select{
+                    min-height: calc(25px + 2px) !important;
+                    line-height:25px !important;
+                }
+                .SBTable input{
+                    min-height: calc(25px + 2px) !important;
+                    line-height:25px !important;
+                }
+                .dropdown-menu {
+                    min-width: 60px !important;
+                }
+                .slds-large-size--1-of-3 {
+                    padding-right: 5% !important;
+                }
+                .cke_editable {
+                    border: 1px dashed;
+                }
+                .groupMemberRed{
+                    background-color: red !important;
+                    color:white;
+                }
+                .dropdown-menu {
+                    position: absolute !important;        
+                }
+                .ng-invalid{
+                    border: 1px solid red !important;
+                }
+                .toggle{
+                    display:none !important;
+                }
+                .iconsIB{
+                    width: 33px !important;
+                    height: 33px !important;
+                }
+            </style>
+            <!-- Angular Controller -->
+            <script>
+                
+                var myApp = angular.module('MyApp', ['ui.sortable','ui.bootstrap','oi.select', 'ui.select','checklist-model','ngSanitize']);
+                
+                var contrl = myApp.controller('COController' ,function($scope,$modal,$filter,oiSelect){
+                    $scope.supplierCosts;
+                    $scope.loading = function(action){
+                        if(action == "show"){
+                            $('#contentLoading').css("display","block");
+                        }
+                        else{
+                            $('#contentLoading').css("display","none");
+                        }
+                    }
+                    
+                    /// Load Supplier Costs
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.ItineraryBuilderController.CostOptions}','{!$CurrentPage.parameters.id}',
+                        function(result, event){
+                            if (event.status) {
+                            //Result contains list of account names and account id
+                               $scope.supplierCosts = result;
+                               $scope.$apply();
+                               $scope.loading("hide");
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message,'error');
+                                $scope.loading("hide");
+                            }
+                        }, 
+                        {escape: false}
+                    
+                    ); 
+                    
+                    $scope.trimString = function(str){
+                        str = str.replace(/\s+/g, '');
+                        return str;
+                    }
+                    
+                    $scope.changeOption = function(cg){
+                        
+                        angular.forEach(cg.mapCostnByOptions, function(cost) {
+                            angular.forEach(cost, function(sc) {
+                                if(cg.selectedOption == 'Option '+sc['{!nameSpacePrefix}SC_Option__c']){
+                                    sc['{!nameSpacePrefix}SC_Selected__c'] = true;
+                                }
+                                else{
+                                    sc['{!nameSpacePrefix}SC_Selected__c'] = false;
+                                }    
+                            });
+                        });
+                        console.log(cg);
+                    }
+                    
+                    //Total Cost Calculation
+                    $scope.TotalCost = function(lstSc,field){
+                        var totalCost = 0;
+                        angular.forEach(lstSc, function(sc) {
+                            totalCost += sc[field];
+                        });
+                        
+                        return totalCost;
+                    }
+                    
+                    //Save Supplier Costs
+                    $scope.saveAll = function(){
+                        $scope.loading("show");
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.ItineraryBuilderController.saveOptions}',removeProperty(removeHashKey($scope.supplierCosts),'{!nameSpacePrefix}Supplier_Costs__r'),
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   alert(result);
+                                   $scope.$apply();
+                                   $scope.loading("hide");
+                                }
+                                else if (event.type === 'exception'){
+                                    alert(event.message,'error');
+                                    $scope.loading("hide");
+                                }
+                            }, 
+                            {escape: false}
+                        
+                        );     
+                    }
+                    
+                    $scope.collapse = function(id){
+                        $('.Body'+id).toggle('show');
+                    }
+                });
+            
+                myApp.directive('jqdatepicker', function () {
+                    return {
+                        restrict: 'A',
+                        require: 'ngModel',
+                         link: function (scope, element, attrs, ngModelCtrl) {
+                            $(element).datepicker({
+                                dateFormat: 'dd/mm/yy',
+                                onSelect: function (date) {
+                                    ngModelCtrl.$setViewValue(date);
+                                    ngModelCtrl.$render();
+                                    scope.$apply();
+                                }
+                            });
+                        }
+                    };
+                });
+                
+                
+                //Filter the SObject JSON
+                function removeHashKey(data) {
+                    for (var key in data) {
+                        var item = data[key]; 
+                        if (typeof item != "object") {
+                            delete data['$$hashKey']; 
+                        } else if (typeof item == "object") {
+                            delete data['$$hashKey'];
+                            removeHashKey(item);
+                        }
+                    } return data;   
+                }
+                function removeProperty(data, prop) {
+                    for (var key in data) {
+                        var item = data[key]; 
+                        
+                        if (typeof item != "object") {
+                            delete data[prop]; 
+                        } else if (typeof item == "object") {
+                            delete data[prop]; 
+                            removeProperty(item,prop);
+                        }
+                    } return data;   
+                }
+                function changeDateInSalesforceDate(data){
+                    for (var key in data) {
+                        var item = data[key];
+                        if (typeof item != "object" && key.indexOf('Date__c') != -1) {
+                            data[key] = moment(data[key],'DD/MM/YYYY').format('YYYY-MM-DD');
+                        } else if (typeof item == "object") {
+                            changeDateInSalesforceDate(item);
+                        }
+                    } 
+                    return data;
+                }
+                
+                
+               
+            </script>
+        </head>
+        <body>
+            
+            <div ng-app="MyApp">
+                <div id="COController" ng-controller="COController" >
+                    <div class="slds">        
+                        <c:OpportunityDetailComponent />
+                        <c:Loading />
+                        <c:AlertBox />
+                       
+                        <div class="slds-card" ng-repeat="sbc in supplierCosts">
+                            <div class="slds-card__header slds-grid">
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure" style="width: 30px;">
+                                        <img ng-show="sbc.sb.RecordType.Name == 'Accommodation'" src="{!URLFOR($Resource.Framework,'SugatiIcon/Accommodation.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="sbc.sb.RecordType.Name == 'Own arrangement'" src="{!URLFOR($Resource.Framework,'SugatiIcon/v1-Re-own-arrangement-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="sbc.sb.RecordType.Name == 'Car Hire'" src="{!URLFOR($Resource.Framework,'SugatiIcon/CarHire.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Int Flight' || sbc.sb.RecordType.Name == 'Dom Flights' || sbc.sb.RecordType.Name == 'Light Aircraft' || sbc.sb.RecordType.Name == 'Sea Plane' || sbc.sb.RecordType.Name == 'Private Jet')" src="{!URLFOR($Resource.Framework,'SugatiIcon/Flight.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="sbc.sb.RecordType.Name == 'Rail'" src="{!URLFOR($Resource.Framework,'SugatiIcon/Rail.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Notes' || sbc.sb.RecordType.Name == 'Description')" src="{!URLFOR($Resource.Framework,'SugatiIcon/Notes.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name ==  'Shared Transfer with Excursion' || sbc.sb.RecordType.Name == 'Private Road Transfer' || sbc.sb.RecordType.Name == 'Transfer' || sbc.sb.RecordType.Name == 'Shared Road Transfer' || sbc.sb.RecordType.Name == 'Private Transfer with Excursion')" src="{!URLFOR($Resource.Framework,'SugatiIcon/CarHire.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Commission In' || sbc.sb.RecordType.Name == 'Commission Out' || sbc.sb.RecordType.Name == 'Credit Card')" src="{!URLFOR($Resource.Framework,'SugatiIcon/currency-v2-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Meet & Greet')" src="{!URLFOR($Resource.Framework,'SugatiIcon/meet-greet-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'VIP Meet And Greet')" src="{!URLFOR($Resource.Framework,'SugatiIcon/vip-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Ferry')" src="{!URLFOR($Resource.Framework,'SugatiIcon/Ferry.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Days at Leisure')" src="{!URLFOR($Resource.Framework,'SugatiIcon/Leisure.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Excursion')" src="{!URLFOR($Resource.Framework,'SugatiIcon/Excursion.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Private Speed Boat Transfer' || sbc.sb.RecordType.Name == 'Shared Speed Boat Transfer')" src="{!URLFOR($Resource.Framework,'SugatiIcon/speed-boat-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Bulk Cost')" src="{!URLFOR($Resource.Framework,'SugatiIcon/bulk-cost-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Visa Fast Track')" src="{!URLFOR($Resource.Framework,'SugatiIcon/visa-track-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                        <img ng-show="(sbc.sb.RecordType.Name == 'Tuck-Tuck')" src="{!URLFOR($Resource.Framework,'SugatiIcon/tuk-orange.png')}" Class="slds-icon slds-icon--small iconsIB" />
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-text-heading--small slds-truncate" style="display:inline;">&nbsp;Day - {{sbc.sb['{!nameSpacePrefix}SB_Day__c']}}.&nbsp;{{sbc.sb.RecordType.Name}}&nbsp;&nbsp;</h2>
+                                        <span>{{sbc.sb['{!nameSpacePrefix}SB_From_Date__c'] | date :'EEE MMMM d,  yyyy'}} <span ng-show="sbc.sb['{!nameSpacePrefix}SB_To_Date__c'] !== undefined">to</span>  {{sbc.sb['{!nameSpacePrefix}SB_To_Date__c'] | date :'EEE MMMM d,  yyyy'}}</span>
+                                    </div>
+                                </div>
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <span ng-show="clientGorup.selectedClient !== undefined && clientGorup.selectedClient != null && clientGorup.selectedClient != ''">Total Gorup Members - {{supplierCosts[0].mapClientGroup[clientGorup.selectedClient]['{!nameSpacePrefix}CG_Total_Group_Members__c']}}</span>       
+                                </div>
+                                <div class="slds-no-flex">
+                                    <div class="slds-button-group">
+                                        <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                        <button class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-click = "collapse(sbc.sb.Id)">
+                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Show More</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__body Body{{sbc.sb.Id}}" style="display: none;">
+                                <div ng-repeat="cg in sbc.lstClientGroups" style="padding:8px;">
+                                    <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                       <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                    </svg> 
+                                    Group - {{cg.ClientGroupName}} 
+                                    <div class="slds-scrollable--x" ng-repeat="(key1, value1) in cg.mapCostnByOptions">
+                                        <div style="10px;">
+                                            <span>
+                                                {{key1}} 
+                                                <label class="slds-radio" >
+                                                    <input class="slds-radio" ng-change="changeOption(cg)" name="option_{{trimString(sbc.sb.RecordType.Name)}}_{{trimString(cg.ClientGroupName)}}_{{trimString(key1)}}" type="radio"  ng-model="cg.selectedOption" ng-value="key1"/>
+                                                    <span class="slds-radio--faux"></span>
+                                                    <span class="slds-form-element__label"></span>
+                                                </label>
+                                            </span > 
+                                            <span style="float: right;"> Total Cost : {{TotalCost(value1,'{!nameSpacePrefix}SC_Total_Net_CostSC__c') | number : 2}}</span>
+                                        </div>
+                                        <table class="slds-table slds-table--bordered" style="font-size: 10px !important;">
+                                            <thead>
+                                                <tr > 
+                                                    <th colspan="1" class="headerRow">Number</th>
+                                                    <th colspan="1" class="headerRow">Currency</th>
+                                                    <th colspan="1" class="headerRow">Occupancy Type</th>
+                                                    <th colspan="1" class="headerRow">Occupancy No</th>
+                                                    <th colspan="1" class="headerRow">Total Supplier Cost</th>
+                                                    <th colspan="1" class="headerRow">Total Supplier Cost In Booking Currency</th>
+                                                    <th colspan="1" class="headerRow">Notes</th>
+                                                    <th colspan="1" class="headerRow">Selected</th>
+                                                </tr>     
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="cost in value1" >
+                                                    <td>
+                                                        {{$index+1}}. 
+                                                    </td>
+                                                    <td>
+                                                        {{cost.CurrencyIsoCode}}
+                                                    </td>
+                                                    <td>
+                                                        {{cost['{!nameSpacePrefix}SC_Occupancy_Type__c']}} 
+                                                    </td>
+                                                    <td>
+                                                        {{cost['{!nameSpacePrefix}SC_Occupancy_No__c']}}
+                                                    </td>
+                                                    <td>
+                                                        {{cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] | number : 2}}
+                                                    </td>
+                                                    <td>
+                                                        {{cost['{!nameSpacePrefix}SC_Total_Net_CostSC__c'] | number : 2}}
+                                                    </td>
+                                                    <td>
+                                                        <textarea ng-model="cost['{!nameSpacePrefix}SC_Description__c']"  disbled="disabled"   style="width: 200px;border: 0;background: white; height:20px;"/>
+                                                    </td>
+                                                    <td >
+                                                        <label class="slds-checkbox">
+                                                            <input name="Selected{{$index}}" disabled="disabled" type="checkbox" id="selected" ng-model="cost['{!nameSpacePrefix}SC_Selected__c']" />
+                                                            <span class="slds-checkbox--faux" style="background: rgba(0, 79, 160, 0.72);"></span>
+                                                            <span class="slds-form-element__label"></span>
+                                                        </label>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="footerClient"/>
+                            </div>
+                            <div class="slds-card__footer">
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="slds-x-small-buttons" style="float: right;">
+                            <button class="slds-button slds-button--brand" ng-click="saveAll()" style="font-size: 10px;">Save</button>                
+                            <a href="/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}" class="slds-button slds-button--brand" style="font-size: 10px;">Go back to the Itinerary Builder</a>                
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+</apex:page>

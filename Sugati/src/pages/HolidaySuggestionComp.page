@@ -1,0 +1,1203 @@
+<apex:page sidebar="false" controller="HolidayEnquiryController" extensions="ItinerarySetting" cache="false" showHeader="false" >
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.js"></script>
+    <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.7.0.js"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="//code.jquery.com/ui/1.11.0/jquery-ui.js" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    
+    <apex:stylesheet value="{!URLFOR($Resource.Framework,'AutoSuggest/autoSuggest.css')}"/>  
+    <apex:includeScript value="{!URLFOR($Resource.Framework,'AutoSuggest/jquery.autoSuggest.js')}"/>  
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/>
+    
+    
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <style>
+        /*
+            .tree {
+            min-height:20px;
+            padding:19px;
+            margin-bottom:20px;
+            background-color:#fbfbfb;
+            border:1px solid #999;
+            -webkit-border-radius:4px;
+            -moz-border-radius:4px;
+            border-radius:4px;
+            -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+            -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+            box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+        }
+        */
+        .nodeTreeFilter{
+            margin-top:4px;
+        }
+        .tree li {
+            position:relative;
+            margin:0;
+            list-style-type:none;
+        }
+        .tree li::before, .tree li::after {
+            content:'';
+            left:-21px;
+            position:absolute;
+            right:auto
+        }
+        .tree li::before {
+            border-left:1px solid #D8DDE5;
+            bottom:50px;
+            height:100%;
+            top:-7px;
+            width:1px
+        }
+        .tree li::after {
+            border-top:1px solid #D8DDE5;
+            height:17px;
+            top:12px;
+            width:14px
+        }
+        .tree li.parent_li span.leaf {
+            display:block;
+            overflow:hidden;
+            padding:5px;
+            text-decoration:none
+        }
+        .tree li.parent_li>span {
+            padding:5px 0;
+            cursor:pointer
+        }
+        .tree li.parent_li>span:first-child{
+            float:left;
+            margin-right:5px;
+            margin-left:-7px;
+        }
+        .tree>ul>li::before, .tree>ul>li::after {
+            border:0
+        }
+        .tree li:last-child::before {
+            height:19px
+        }
+        
+        .tree li.parent_li>span.leaf:hover, .tree li.parent_li>span.leaf:hover+ul li span.leaf {
+            background:rgba(0,0,0,0.1);
+            color:#000
+        }
+        @media (min-width: 64em){
+            .divheight {
+              height:170px !important;    
+            }
+            
+        }
+        @media (min-width: 48em){
+            .divheight {
+              height:170px !important;    
+            }
+           
+        }  
+        
+        .checked-heart{
+            color:red;
+        }
+        .unchecked-heart{
+            color:#54698d;
+        }   
+        .hs-content{
+            max-height: 100px !important;
+        }
+        .estimate-label{
+            padding-top: 5px;
+        }
+        .estimate-cost{
+                text-align: left;
+                padding-right: 10px;
+                padding-top: 5px;
+        }
+        .slds .slds-dl--horizontal__label{
+            width: 42% !important;
+        }
+        .slds .slds-dl--horizontal__detail{
+            width: 50% !important;
+        }
+        .inline-div{
+            display:inline;
+        }
+        .img-class{   
+            border-color: #08E0EA !important;
+            border: dashed;
+        }
+        </style>
+        <script>
+            
+            $(document).ready(function(){
+                if('{!$CurrentPage.Name}'.indexOf('HolidaySuggestion') != -1){
+                    $('#mySuggestion').trigger('click');
+                }
+            });
+            var errorMsg = {!hEPageErrorMessage};
+            var contrl = myApp.controller('SuggestionController' ,function($scope,$http, $timeout,oiSelect,$modal,$route,Upload,productService){
+                $scope.version = oiSelect.version.full;
+                //Travelling Countries 
+                $scope.filter = {!filter};
+                $scope.suggestions = [];
+                $scope.mySuggestions = [];
+                $scope.opportunity = {};
+                $scope.whereToGoFilter = '';
+                $scope.activityFilter = '';
+                $scope.isCollapsed = true;
+                $scope.ErrorMessages = JSON.parse('{!HSPageErrorMessage}');
+                $scope.nameSpacePrefix = '{!nameSpacePrefix}';
+                $scope.whereToGoLoading = false;
+                
+                
+                $scope.loading = function(action){
+                    if(action == "show"){
+                        $('#contentLoading').css("display","block");
+                    }
+                    else{
+                        $('#contentLoading').css("display","none");
+                    }
+                }
+                
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.HolidayEnquiryController.getOpportunityDetail}','{!$CurrentPage.parameters.id}','',
+                    function(result, event){
+                        if (event.status) {
+                        //Result contains list of account names and account id
+                           $scope.opportunity = JSON.parse(result);
+                           $scope.$apply();
+                           $scope.LoadFilter();
+                        }else if (event.type === 'exception') 
+                            alert(event.message, 'error');
+                    }, 
+                    {escape: false}
+                );
+                console.log('{!$CurrentPage.Name}');
+                if('{!$CurrentPage.Name}' != 'HolidayEnquiry'){
+                    $scope.searchEnabled = true;
+                    $scope.multipleDemo = {};
+                    $scope.multipleDemo.selectedCountries = {!TCountries};
+                    $scope.country = {};
+                    $scope.countries = {!countries};
+                    $scope.holidayType = {!holidayType};
+                    
+                    //Formate referrer auto fill
+                    $scope.formatInputPr = function($model,type) {
+                        var objects;
+                        if(type == 'HolidayType'){
+                            objects =    $scope.holidayType;         
+                        }
+                        var inputLabel = '';
+                        console.log(objects);
+                        console.log($model);
+                        angular.forEach(objects, function(state) {
+                            if ($model === state.value) {
+                                inputLabel = state.label;
+                            }
+                        });
+                        return inputLabel;
+                    } 
+                }
+                //Create Filter
+                
+                
+                $scope.LoadFilter = function(){
+                    $scope.filter.holidayType = $scope.opportunity[$scope.nameSpacePrefix+'O_Holiday_Type__c'];     
+                    $scope.filter.countries = $scope.multipleDemo.selectedCountries;     
+                    $scope.LoadData();
+                }
+                $scope.firstTimeLoad = true;
+                $scope.LoadData = function(){
+                    $scope.whereToGoLoading = true;
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.HolidayEnquiryController.getSuggestions}',$scope.filter,$scope.firstTimeLoad, '{!$CurrentPage.parameters.id}',
+                        function(result, event){
+                            if (event.status) {
+                                $scope.whereToGoLoading =false;
+                            //Result contains list of account names and account id
+                               console.log(result);
+                               $scope.displayTree = result.whereToGoTree;
+                               $scope.$apply();
+                               $scope.firstTimeLoad = false;
+                               $scope.LoadFilteredData();
+                               $scope.LoadFilteredDataAcc();
+                               $scope.addSuggestions({"hs":{}});
+                            }else if (event.type === 'exception') {
+                                $scope.whereToGoLoading =false;
+                                 alert(event.message, 'error');
+                            }
+                               
+                        }, 
+                        {escape: false}
+                    );
+                }
+                $scope.LoadFilteredData = function(){
+                    if($scope.opportunity.Id != undefined){
+                        $scope.whereToGoLoading = true;
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.getCategoies}',removeHashKey($scope.displayTree),removeHashKey($scope.displayTreeCat),$scope.filter,'{!$CurrentPage.parameters.id}',
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   $scope.displayTreeCat = result.catTree;
+                                   $scope.whereToGoLoading = false;
+                                   $scope.$apply();
+                                   $scope.LoadSuggestions();
+                                }else if (event.type === 'exception'){ 
+                                    $scope.whereToGoLoading = false;
+                                    alert(event.message, 'error');
+                                }
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                }
+                
+                $scope.LoadFilteredDataAcc = function(){
+                    if($scope.opportunity.Id != undefined){
+                        $scope.whereToGoLoading = true;
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.getAccommodation}',removeHashKey($scope.displayTree),removeHashKey($scope.displayTreeCat),removeHashKey($scope.displayTreeAcc),$scope.filter,'{!$CurrentPage.parameters.id}',
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   $scope.displayTreeAcc = result.catTree;
+                                   $scope.whereToGoLoading = false;
+                                   $scope.$apply();
+                                   $scope.LoadSuggestions();
+                                }else if (event.type === 'exception'){ 
+                                    $scope.whereToGoLoading = false;
+                                    alert(event.message, 'error');
+                                }
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                }
+                
+                $scope.LoadSuggestions = function(){
+                    if($scope.opportunity.Id != undefined){
+                        $scope.whereToGoLoading = true;
+                        var hType = 'Generic';
+                        if($scope.opportunity[$scope.nameSpacePrefix+'O_Holiday_Type__c'] !== undefined){
+                             hType = $scope.opportunity[$scope.nameSpacePrefix+'O_Holiday_Type__c'];
+                        }
+                        
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.LoadSuggestions}',removeHashKey($scope.displayTree),removeHashKey($scope.displayTreeCat),removeHashKey($scope.displayTreeAcc),$scope.opportunity.Id,hType,
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   $scope.suggestions = result;
+                                   $scope.whereToGoLoading = false;
+                                   $scope.$apply();
+                                }else if (event.type === 'exception'){ 
+                                    $scope.whereToGoLoading = false;
+                                    alert(event.message, 'error');
+                                }
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                }
+                
+                $scope.changeSuggestionState = function(state){
+                    console.log(state);
+                }
+                $scope.LoadFilter();
+                
+                $scope.addSuggestions = function(sugg){
+                    $scope.addSugg = [];
+                    $scope.removeSugg = [];
+                    
+                    if(sugg != [] && sugg.selected){
+                        $scope.mySuggestions.push(sugg);
+                        if(sugg.activity !== undefined){
+                            $scope.addSugg.push({"value":""+sugg.activity.Id,"label":"Activity__c"});
+                        }
+                        if(sugg.whereToGo !== undefined){
+                            $scope.addSugg.push({"value":""+sugg.whereToGo.Id,"label":"Where_To_Go__c"});
+                        }
+                        if(sugg.supplier !== undefined){
+                            $scope.addSugg.push({"value":""+sugg.supplier.Id,"label":"Supplier__c"});
+                        }
+                    }
+                    else if(sugg != []){
+                        if(sugg.activity !== undefined){
+                            $scope.removeSugg.push({"value":""+sugg.activity.Id,"label":"Activity__c"});
+                        }
+                        if(sugg.whereToGo !== undefined){
+                            $scope.removeSugg.push({"value":""+sugg.whereToGo.Id,"label":"Where_To_Go__c"});
+                        }
+                        if(sugg.supplier !== undefined){
+                            $scope.removeSugg.push({"value":""+sugg.supplier.Id,"label":"Supplier__c"});
+                        }  
+                        for(var i = $scope.suggestions.length - 1; i >= 0; i--){
+                            if(sugg.activity !== undefined &&  $scope.suggestions[i].activity !== undefined &&  sugg.activity.Id == $scope.suggestions[i].activity.Id){
+                                $scope.suggestions[i].selected = false;
+                            }
+                            if(sugg.whereToGo !== undefined &&  $scope.suggestions[i].whereToGo !== undefined &&  sugg.whereToGo.Id == $scope.suggestions[i].whereToGo.Id){
+                                $scope.suggestions[i].selected = false;
+                            }
+                            if(sugg.supplier !== undefined &&  $scope.suggestions[i].supplier !== undefined &&  sugg.supplier.Id == $scope.suggestions[i].supplier.Id){
+                                $scope.suggestions[i].selected = false;
+                            } 
+                        }
+                        
+                    }
+                    var imgId = '';
+                    if(sugg.imageID !== undefined){
+                        imgId  = sugg.imageID;
+                    }
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.HolidayEnquiryController.saveSuggestion}',sugg.hs,imgId,$scope.addSugg,$scope.removeSugg,$scope.opportunity.Id,
+                        function(result, event){
+                            if (event.status) {
+                            //Result contains list of account names and account id
+                               $scope.mySuggestions = result;
+                               $scope.$apply();
+                               
+                            }else if (event.type === 'exception') 
+                                alert(event.message, 'error');
+                        }, 
+                        {escape: false}
+                    );    
+                }
+                
+                //Tree Component
+                buildEmptyTree();
+                $scope.selectedNode = "";
+                function buildEmptyTree() {
+                    $scope.displayTree = [];
+                    $scope.displayTreeCat = [];
+                    $scope.displayTreeAcc = [];
+                }
+                
+                //ShowEmailSuggestionModal
+                $scope.showSuggestionEmail = function(){
+                    
+                   if($scope.mySuggestions.length == 0){
+                       alert($scope.ErrorMessages['HS_No_Suggestion_Available'],'error');
+                       $('#searchSuggestion').trigger('click');
+                   }
+                   else{
+                    angular.element(document.getElementById('HolidaySuggestions')).scope().loadRcap();
+                    $('#suggestionEmail').toggle('show');
+                    $('#suggestionEmailOverLay').toggle('show');
+                   }
+                }
+                
+                //Darg and Drop Table
+                $scope.sortableOptions = {
+                    stop: function(e, ui) {
+                        console.log('Dropped')
+                        var hsOrder = [];
+                        angular.forEach($scope.mySuggestions, function(sugg,index) {
+                            sugg.hs['{!nameSpacePrefix}HS_Order__c']= index; 
+                            hsOrder.push(sugg.hs);
+                        });
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.saveSuggestionOrder}',hsOrder,
+                            function(result, event){
+                                if (event.status) {
+                                    //Result contains list of account names and account id
+                                    console.log('Order Saved.');
+                                }else if (event.type === 'exception') 
+                                    alert(event.message, 'error');
+                            }, 
+                            {escape: false}
+                        );
+                    },
+                    axis: 'y'
+                };
+                
+                
+                $scope.filterTree = function(tree){
+                    console.log(tree);
+                    if(tree == 'whereToGo'){
+                        angular.forEach($scope.displayTree, function(country,index) {
+                            angular.forEach(country.children, function(whereToGo,index1) {
+                                if($scope.whereToGoFilter == ''){
+                                    whereToGo.show =  true;
+                                }
+                                else if(whereToGo.name.toUpperCase().indexOf($scope.whereToGoFilter.toUpperCase()) != -1){
+                                    whereToGo.show =  true;
+                                } 
+                                else{
+                                    whereToGo.show =  false;
+                                }       
+                            });
+                        });
+                    }
+                    else{
+                        angular.forEach($scope.displayTreeCat, function(country,index) {
+                            angular.forEach(country.children, function(whereToGo,index1) {
+                                if($scope.activityFilter == ''){
+                                    whereToGo.show =  true;
+                                }
+                                else if(whereToGo.name.toUpperCase().indexOf($scope.activityFilter.toUpperCase()) != -1){
+                                    whereToGo.show =  true;
+                                } 
+                                else{
+                                    whereToGo.show =  false;
+                                }       
+                            });
+                        });    
+                    }
+                }
+                
+                
+                <!--- Change Image Popup --->
+                $scope.openDestinationMap = function (size,sugg,countryId) {
+                    var modalInstance = $modal.open({
+                        templateUrl: 'DestinationContent.html',
+                        controller: 'DestinationCtrl',
+                        size: size,
+                        resolve: {
+                            //return clicked Supplier booking information using index
+                            items : function(){
+                                var images = [];
+                                return  sugg;
+                            },
+                            searchedImages : function(){
+                                return $scope.images;
+                            },
+                            parentId : function(){
+                                return countryId;
+                            }
+                        },
+                        
+                    });
+                    
+                    modalInstance.result.then(function () {
+                          alert('Modal success at:' + new Date());
+                        },
+                        function () {
+                            console.log('Saviiiiiiiiiiiiiiiing');
+                            console.log(sugg.imageID);
+                            sugg.hs['{!nameSpacePrefix}HS_Suggestion_Image__c'] = sugg.imageID;
+                            var hsOrder = [];
+                            Visualforce.remoting.Manager.invokeAction(
+                               '{!$RemoteAction.HolidayEnquiryController.saveSuggestionImage}',sugg.hs,
+                                function(result, event){
+                                    if (event.status) {
+                                        //Result contains list of account names and account id
+                                        console.log('Order Saved.');
+                                    }else if (event.type === 'exception') 
+                                        alert(event.message, 'error');
+                                }, 
+                                {escape: false}
+                            );
+                        }
+                    );
+                            
+                    $timeout(function (){
+                        var element = document.getElementById('searchBox');       
+                        $(element).autoSuggest('/apex/{!nameSpacePrefix}ContextSearch', {selectedItemProp: "name", searchObjProps: "name,Country",formatList: function(data,elem){ return elem.html(data.name +"&nbsp;" +"&nbsp;"+ data.Country + "&nbsp;" + data.type);  }});    
+                    }, 300);
+                } 
+                //Load searched images
+                $scope.search = function(searcContext){
+                   Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.ItinerarySetting.search}',searcContext,
+                        function(result, event){
+                            $scope.images = result;
+                            productService.addProduct(result);
+                            $scope.$apply();
+                        }
+                    );
+                }               
+                 
+            });
+            
+            
+            
+            //Service 
+            myApp.service('productService', function($rootScope) {
+              var productList = [];
+            
+              var addProduct = function(newObj) {
+                  productList = newObj;
+                  $rootScope.$broadcast("myEvent", 'Veer');
+              };
+              
+            
+              var getProducts = function(){
+                  return productList;
+              };
+            
+              return {
+                addProduct: addProduct,
+                getProducts: getProducts
+              };
+            
+            });
+             <!-- Change Image Popup ---->
+             //Controller for DestinationCtrl popup
+            contrl.controller('DestinationCtrl', function ($scope, $modalInstance,items,searchedImages,productService,parentId) {
+                
+                //Initialize clicked supplier booking
+                $scope.items = items ;
+                $scope.images = [];
+                $scope.selectedImages = [];
+                $scope.imgStr = '';
+                console.log('Controller');
+                console.log(items);
+                
+                $scope.loading = function(action){
+                    if(action == "show"){
+                        $('#contentLoading').css("display","block");
+                    }
+                    else{
+                        $('#contentLoading').css("display","none");
+                    }
+                }
+                
+                $scope.$on("myEvent", function (event, args) {
+                    $scope.images = productService.getProducts();
+                    $scope.$apply();
+                    
+                    angular.forEach($scope.images, function(value,index) {
+                        $scope.imgStr += ' '+value.Id;    
+                    });
+                    $scope.selectedImages.push($scope.items.imageID);
+                    
+                    
+                    //Remove already selected images from search
+                    angular.forEach($scope.images, function(value,index) {
+                        if(value.Id == $scope.items.imageID){
+                            $scope.images.splice(index,1);    
+                        }
+                    });
+                    $scope.$apply();
+                });
+                
+               
+                
+                
+                $scope.selectImage = function(imageId){
+                    if(imageId != ''){
+                        $scope.items.imageID = imageId;
+                    }
+                }
+                
+                
+                $scope.ok = function () {
+                    $modalInstance.close($scope.selected.item);
+                };
+                
+                //Cancel the popup 
+                $scope.cancel = function () {
+                    $modalInstance.dismiss('cancel');
+                };
+                $scope.submitFile = function() {
+                  
+                    if ($scope.files.length > 0) {
+                        $scope.uploadFiles($scope.files);
+                    }
+                    else{
+                        alert(errorMsg['PDF_Select_Img'],'Error');  
+                    }
+                };
+               
+                // upload on file select or drop
+                $scope.upload = function (file) {
+                    Upload.upload({
+                        url: 'upload/url',
+                        data: {file: file, 'username': '{!$User.FirstName}'}
+                    }).then(function (resp) {
+                        console.log('************************'+resp.config.data.file);
+                        //console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
+                    }, function (resp) {
+                        console.log('Error status: ' + resp.status);
+                    }, function (evt) {
+                        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+                        console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+                    });
+                };
+                // for multiple files:
+                $scope.uploadFiles = function (files) {
+                  if (files && files.length) {
+                    for (var i = 0; i < files.length; i++) {
+                        $scope.uploadFile(files[i],parentId);
+                    }
+                  }
+                }
+                
+                // Functions to upload Images
+                var maxStringSize = 6000000;    //Maximum String size is 6,000,000 characters
+                var maxFileSize = 4350000;      //After Base64 Encoding, this is the max file size
+                var chunkSize = 950000;         //Maximum Javascript Remoting message size is 1,000,000 characters
+                var attachment;
+                var attachmentName;
+                var fileSize;
+                var positionIndex;
+                var doneUploading;
+                
+                //Method to prepare a file to be attached to the Account bound to the page by the standardController
+                $scope.uploadFile= function(file,parentId) {
+                    if(file != undefined) {
+                        if(file.size <= maxFileSize) {
+                            attachmentName = file.name;
+                            var fileReader = new FileReader();
+                            fileReader.onloadend = function(e) {
+                                attachment = window.btoa(this.result);  //Base 64 encode the file before sending it
+                                positionIndex=0;
+                                fileSize = attachment.length;
+                                console.log("Total Attachment Length: " + fileSize);
+                                doneUploading = false;
+                                if(fileSize < maxStringSize) {
+                                    $scope.uploadAttachment(null,parentId);
+                                } else {
+                                    alert("Base 64 Encoded file is too large.  Maximum size is " + maxStringSize + " your file is " + fileSize + ".");
+                                }
+                            }
+                            fileReader.onerror = function(e) {
+                                alert(errorMsg['PDF_Upload_Read']);
+                            }
+                            fileReader.onabort = function(e) {
+                                alert(errorMsg['PDF_Upload_Read']);
+                            }
+                            fileReader.readAsBinaryString(file);  //Read the body of the file
+                            
+                        } else {
+                            alert(errorMsg['PDF_Upload_Size']);
+                        }
+                    } else {
+                        alert(errorMsg['PDF_Select_Img']);
+                    }
+                }
+                
+                
+                //Method to send a file to be attached to the Account bound to the page by the standardController
+                //Sends parameters: Account Id, Attachment (body), Attachment Name, and the Id of the Attachment if it exists to the controller   
+                $scope.uploadAttachment = function (fileId,parentId) {
+                    var attachmentBody = "";
+                    if(fileSize <= positionIndex + chunkSize) {
+                        attachmentBody = attachment.substring(positionIndex);
+                        doneUploading = true;
+                    } else {
+                        attachmentBody = attachment.substring(positionIndex, positionIndex + chunkSize);
+                    }
+                    console.log("Uploading " + attachmentBody.length + " chars of " + fileSize);
+                    $scope.loading("show")
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.ItinerarySetting.doUploadAttachment}',parentId, attachmentBody, attachmentName, fileId, 
+                        function(result, event) {
+                            console.log(result);
+                            if(event.type === 'exception') {
+                                $scope.loading("hide")
+                                console.log("exception");
+                                console.log(event);
+                            } else if(event.status) {
+                                $scope.loading("hide")
+                                if(result.substring(0,3) == '00P') {
+                                    if(doneUploading == true) {
+                                        $scope.items.imageID = result;
+                                        $scope.items.hs['{!nameSpacePrefix}HS_Suggestion_Image__c']= result;
+                                        $scope.$apply();
+                                        $scope.loading("hide")
+                                        alert(errorMsg['PDF_Settting_Save'],'Success');
+                                    } else {
+                                        $scope.loading("hide")
+                                        positionIndex += chunkSize;
+                                        uploadAttachment(result);
+                                    }
+                                }
+                            } else {
+                                $scope.loading("hide")
+                                console.log(event.message);
+                            }
+                        },
+                        {buffer: true, escape: true, timeout: 120000}
+                     );
+                }
+            });
+            
+            
+            
+            
+            
+            myApp.directive('jqdatepicker', function () {
+                return {
+                    restrict: 'A',
+                    require: 'ngModel',
+                     link: function (scope, element, attrs, ngModelCtrl) {
+                        $(element).datepicker({
+                            dateFormat: 'dd/mm/yy',
+                            onSelect: function (date) {
+                                ngModelCtrl.$setViewValue(date);
+                                ngModelCtrl.$render();
+                                scope.$apply();
+                            }
+                        });
+                    }
+                };
+            });
+            myApp.directive('nodeTree', function() {
+                return {
+                    template: '<node ng-repeat="node in tree"></node>',
+                    replace: true,
+                    transclude: true,
+                    restrict: 'E',
+                    scope: {
+                      tree: '=ngModel',
+                      collapsed: '=ngCollapsed'
+                    }
+                };
+            });
+             //CKEditor 
+            
+            myApp.directive('node', function($compile) {
+                return { 
+                    restrict: 'E',
+                    replace:true,
+                    templateUrl: 'the-tree.html',
+                    link: function(scope, elm, attrs) {
+                    
+                        //$(elm).parent('ul').find('span.leaf').on('click', function (e) {
+                        $(elm).find('span.leaf').on('click', function (e) {
+                            var children = $(elm).find('li');
+                            var objType = $(elm).attr('data-object');
+                            
+                            if($(elm).attr('data-object') == 'Country__c'){
+                                scope.displayTree[$(elm).attr('id')].expanded = true;
+                                angular.forEach(scope.displayTree[$(elm).attr('id')].children, function(child){
+                                    child.expanded = true;
+                                });
+                            }
+                            if (children.is(":visible")) {
+                                children.hide('fast');
+                                $(elm).find('span.leaf i.icon-minus-sign').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+                            }
+                            else{
+                                children.show('fast');
+                                $(elm).find('span.leaf i.icon-plus-sign').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+                            }
+                            scope.$apply();
+                            e.stopPropagation();
+                        });
+                        
+                      
+                        scope.nodeClicked = function(node) {
+                            node.checked = !node.checked;
+                            isCollapsed = false;
+                            function checkChildren(c) {
+                                angular.forEach(c.children, function(c) {
+                                    c.checked = node.checked;
+                                    checkChildren(c);
+                                });
+                            }
+                            checkChildren(node);
+                            
+                            if(node.obj != 'Activity__c' && node.obj != 'Category__c' && node.obj != 'Accommodation'){
+                                scope.LoadFilteredData();
+                                scope.LoadFilteredDataAcc();
+                            }
+                            else{
+                                console.log('DDDDDDDDDDDDDDddd');
+                                scope.LoadSuggestions();    
+                            }
+                        };
+                      
+                      
+                        scope.switcher = function(booleanExpr, trueValue, falseValue) {
+                            return booleanExpr ? trueValue : falseValue;
+                        };
+                        
+                        scope.isLeaf = function(_data) {
+                            if (_data.children.length == 0) {
+                                return true;
+                            }
+                            return false;
+                        };
+                        
+                        if (scope.node.children.length > 0) {
+                            var childNode = $compile('<ul class="slds-tree__group slds-nested slds-scrollable--y" style="max-height:200px;"><node-tree ng-model="node.children"></node-tree></ul>')(scope)
+                            elm.append(childNode);
+                            var children = $(elm).find('li');
+                            children.hide('fast');
+                        }
+                    }
+                };
+            });
+            
+            
+            var v = '';
+            var remove = '';
+            function loadValues(sr){
+                var idVal = $('.as-values').val();            
+                $("#pg\\:frm\\:pgBlock\\:searchBox_id").val(idVal);
+                v += sr+','; 
+                console.log('Added'+v);
+                angular.element(document.getElementById('SuggestionController')).scope().search(v);
+                v = '';
+             }
+             function removeValues(sr)   {
+                 remove  += ','+sr; 
+                console.log('Removed'+remove );
+                deletedRecords(sr);    
+             }
+             $(document).ready(function(){
+                $('[data-toggle="tooltip"]').tooltip();   
+            });
+            
+
+            
+            //Filter the SObject JSON
+            function removeHashKey(data) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    if (typeof item != "object") {
+                        delete data['$$hashKey']; 
+                    } else if (typeof item == "object") {
+                        delete data['$$hashKey'];
+                        removeHashKey(item);
+                    }
+                } return data;   
+            }
+            function removeProperty(data, prop) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    
+                    if (typeof item != "object") {
+                        delete data[prop]; 
+                    } else if (typeof item == "object") {
+                        delete data[prop]; 
+                        removeProperty(item,prop);
+                    }
+                } return data;   
+            }
+            
+            //Collapse all child node from tree when page load
+            function CollapseAll(){
+                $('.leaf').click()
+            }
+            
+            
+            
+              
+            
+            
+            
+            
+                
+        </script>
+        
+        
+        <c:StarRatingComponent > </c:StarRatingComponent>
+        <body>    
+                
+                <div id="SuggestionController" ng-controller="SuggestionController" >
+                    <div class="slds" ng-cloak="ng-cloak">
+                        <c:AlertBox ></c:AlertBox>
+                        
+                         <div class="slds-tabs--default">
+                            <ul class="slds-tabs--default__nav" role="tablist">
+                                <li class="slds-tabs--default__item slds-text-heading--label slds-active" title="Item One" role="presentation" id="searchSuggestion"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-suggestion-1">Search Suggestions</a></li>
+                                <li class="slds-tabs--default__item slds-text-heading--label" title="Item Two" role="presentation" id="mySuggestion"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-suggestion-2">My Suggestions</a></li>
+                            </ul>
+                            <!--- Search Area -->
+                            <div id="tab-suggestion-1" class="slds-tabs--default__content slds-show slds-p-horizontal--medium" role="tabpanel">
+                                <div class="slds-grid slds-grid--pull-padded-medium slds-grid--vertical-stretch">    
+                                    <div class="slds-col slds-col--padded-medium slds-col--rule-right slds-size--1-of-1 slds-medium-size--1-of-4">
+                                        
+                                                <ul>
+                                                    <li class="slds-tile slds-hint-parent">
+                                                        
+                                                        <div class="slds-tile__detail">
+                                                            <dl class="slds-dl--horizontal">
+                                                                <dt class="slds-dl--horizontal__label">Travelling Countries:</dt>
+                                                                <dd class="slds-dl--horizontal__detail">
+                                                                    <strong>{{opportunity[nameSpacePrefix+'O_Country__c']}}</strong>
+                                                                </dd>
+                                                                <dt class="slds-dl--horizontal__label">Holiday Type:</dt>
+                                                                <dd class="slds-dl--horizontal__detail">
+                                                                    <strong>{{opportunity[nameSpacePrefix+'O_Holiday_Type__r'].Name}}</strong>
+                                                                </dd>
+                                                                <dt class="slds-dl--horizontal__label">Duration:</dt>
+                                                                <dd class="slds-dl--horizontal__detail">
+                                                                    <strong>{{opportunity[nameSpacePrefix+'O_No_of_Nights__c']}}</strong>
+                                                                </dd>
+                                                                
+                                                                <dt class="slds-dl--horizontal__label">Departure Date:</dt>
+                                                                <dd class="slds-dl--horizontal__detail">
+                                                                    <strong>{{opportunity[nameSpacePrefix+'O_Departure_Date__c'] | date:'dd/MM/yyyy'}}</strong>
+                                                                </dd>
+                                                                
+                                                                <dt class="slds-dl--horizontal__label">Return Date:</dt>
+                                                                <dd class="slds-dl--horizontal__detail">
+                                                                    <strong>{{opportunity[nameSpacePrefix+'O_Return_Date__c'] | date:'dd/MM/yyyy'}}</strong>
+                                                                </dd>
+                                                                
+                                                                <!--<input id="Departure-date"  jqdatepicker="jqdatepicker" class="slds-input" type="text" ng-model="opportunity.O_Departure_Date__c"  placeholder="Departure Date"/>
+                                                                <input id="Return-date"  jqdatepicker="jqdatepicker" class="slds-input" type="text" ng-model="opportunity.O_Return_Date__c"  placeholder="Return Date"/>    -->
+                                                            </dl>
+                                                        </div>
+                                                        <br/>
+                                                        <div class="slds-grid slds-grid--align-spread slds-has-flexi-truncate">
+                                                            <div class="slds-text-heading--label">Where To Go</div>
+                                                            <span ng-if="whereToGoLoading">
+                                                                <apex:image styleclass="slds-spinner--medium" url="{!URLFOR($Resource.SLDS011, '/assets/images/spinners/slds_spinner_brand.gif')}" width="100" height="100"  alt="Loading graphic"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="span5 article-tree">
+                                                            <div>
+                                                                <div class="tree" role="application">
+                                                                    <ul class="slds-tree">
+                                                                        <input type="text" class="slds-input" ng-model="whereToGoFilter" ng-keyup="filterTree('whereToGo')" placeholder="Search" />
+                                                                        <div class="nodeTreeFilter">
+                                                                            <node-tree ng-model="displayTree" ></node-tree>
+                                                                        </div>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <br />
+                                                        <div class="slds-grid slds-grid--align-spread slds-has-flexi-truncate">
+                                                            <div class="slds-text-heading--label">Activities</div>
+                                                            <span ng-if="whereToGoLoading">
+                                                                <apex:image styleclass="slds-spinner--medium" url="{!URLFOR($Resource.SLDS011, '/assets/images/spinners/slds_spinner_brand.gif')}" width="100" height="100"  alt="Loading graphic"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="span5 article-tree">
+                                                            <div>
+                                                                <div class="tree" role="application">
+                                                                    <ul class="slds-tree">
+                                                                        <input type="text" class="slds-input" ng-model="activityFilter" ng-keyup="filterTree('activity')" placeholder="Search" />
+                                                                        <div class="nodeTreeFilter">
+                                                                            <node-tree ng-model="displayTreeCat "></node-tree>  
+                                                                        </div>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <br />
+                                                        <div class="slds-grid slds-grid--align-spread slds-has-flexi-truncate">
+                                                            <div class="slds-text-heading--label">Accommodation</div>
+                                                            <span ng-if="whereToGoLoading">
+                                                                <apex:image styleclass="slds-spinner--medium" url="{!URLFOR($Resource.SLDS011, '/assets/images/spinners/slds_spinner_brand.gif')}" width="100" height="100"  alt="Loading graphic"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="span5 article-tree">
+                                                            <div>
+                                                                <div class="tree" role="application">
+                                                                    <ul class="slds-tree">
+                                                                        <input type="text" class="slds-input" ng-model="activityFilter" ng-keyup="filterTree('activity')" placeholder="Search" />
+                                                                        <div class="nodeTreeFilter">
+                                                                            <node-tree ng-model="displayTreeAcc"></node-tree>
+                                                                        </div>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>  
+                                         
+                                    </div>
+                                    
+                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--3-of-4">
+                                        <ul class="slds-list--vertical slds-has-dividers--bottom-space" style="border-top:1px solid #d8dde6">
+                                            <li class="slds-list__item " ng-repeat="sugg in suggestions | limitTo: 30">
+                                                <div class="slds-p-around--x-small">
+                                                    <div class="slds-grid slds-wrap">
+                                                        <div class="hs-thumb slds-col slds-size--1-of-1 divheight slds-medium-size--1-of-5 image-container" 
+                                                            style="background-image:url(/servlet/servlet.FileDownload?file={{sugg.imageID}});"
+                                                        >
+                                                            <!--img src="/servlet/servlet.FileDownload?file={{sugg.imageID}}" class="divheight" style="width: auto; max-width: 100%;  vertical-align: middle;"/-->    
+                                                        </div>
+                                                        <div class="slds-col slds-size--1-of-1 slds-medium-size--4-of-5">
+                                                            <div class="slds-p-left--medium">
+                                                                <dl class="dl--horizontal slds-text-body--small">
+                                                                    <h2 class="slds-text-heading--small slds-truncate"><a target="_blank" href="/{{sugg.whereToGo.Id}}{{sugg.activity.Id}}{{sugg.supplier.Id}}" style="text-decoration: none;">{{sugg.whereToGo.Name}}{{sugg.activity.Name}}{{sugg.supplier.Name}}</a>
+                                                                        <div star-rating ="star-rating" rating-value="sugg.whereToGo[nameSpacePrefix+'W_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                        <div star-rating ="star-rating" rating-value="sugg.activity[nameSpacePrefix+'WH_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                        <div star-rating ="star-rating" rating-value="sugg.supplier[nameSpacePrefix+'S_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                        <div class="slds-form-element" style="float:right">
+                                                                            <a ng-click="sugg.selected = !sugg.selected; addSuggestions(sugg);"> <i class="fa fa-heart" ng-class="{'checked-heart':sugg.selected,'unchecked-heart' : !sugg.selected}" ></i> </a>
+                                                                        </div>
+                                                                    </h2>
+                                                                    <div class="hs-content editable-content slds-scrollable--y">
+                                                                        <textArea ck-Editor="ck-Editor" ng-model="sugg.hs[nameSpacePrefix+'HS_Message__c']" ng-blur="addSuggestions(sugg)"/>
+                                                                    </div>
+                                                                    
+                                                                    <dd class="slds-tile__meta estimate-cost">
+                                                                      <p class="slds-truncate"><span ng-if="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c'] !== undefined"><Strong>Errata Text : </Strong><span ng-bind-html="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c']"/>  <br/></span> <Strong ng-if="sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c'] !== undefined || sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c'] !== undefined || sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c'] !== undefined">Estimated Cost : </Strong><span ng-if="sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c'] !== undefined || sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c'] !== undefined || sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c'] !== undefined"> {{sugg.whereToGo[nameSpacePrefix+'CurrencyIsoCode']}}  {{sugg.activity[nameSpacePrefix+'CurrencyIsoCode']}} {{sugg.supplier[nameSpacePrefix+'CurrencyIsoCode']}} </span> {{sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c']}}  {{sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c']}} {{sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c']}} </p>
+                                                                    </dd>
+                                                                    <!--<p class="slds-truncate" ng-bind-html="sugg.whereToGo.W_Description__c">{{sugg.whereToGo.W_Description__c}} {{sugg.activity.WH_Description__c}}<br/></p> -->
+                                                                </dl>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                             </li> 
+                                         </ul>
+                                         
+                                         <div class="fixed-footer slds-modal__footer">
+                                            <button class="slds-button slds-button--brand" onclick="$('#mySuggestion').trigger('click');return false;">Go To My Suggestion List</button>
+                                            <button  class="slds-button slds-button--brand">
+                                                <a target="_blank" style="color:white;text-decoration:none;" href="/apex/{!nameSpacePrefix}ItineraryBuilder?id={!opp.id}">Go To Itinerary Builder</a>
+                                            </button >
+                                        </div>
+                                        
+                                    </div>
+                                    <br /><br />
+                                </div>       
+                            </div>
+                            
+                            <!---- My Suggestion List --->
+                            <div id="tab-suggestion-2" class="slds-grid slds-tabs--default__content slds-hide" role="tabpanel">
+                                <ul ui-sortable="sortableOptions" ng-model="mySuggestions" class="slds-list--vertical slds-has-dividers--bottom-space">
+                                    <li class="slds-list__item " ng-repeat="sugg in mySuggestions | orderBy : 'hs.{!nameSpacePrefix}HS_Order__c'">
+                                        <div class="slds-p-around--x-small">
+                                            <div class="slds-grid slds-wrap">
+                                                <div class="slds-col slds-size--1-of-1 divheight slds-medium-size--1-of-5 image-container">
+                                                     <img src="/servlet/servlet.FileDownload?file={{sugg.imageID}}" class="divheight " style="width: 100%; max-width: 100%; vertical-align: middle;" ng-dblclick="openDestinationMap('lg',sugg,sugg.whereToGo.Id+''+sugg.activity.Id+''+sugg.supplier.Id);"/> 
+                                                </div>
+                                                <div class="slds-col slds-size--1-of-1 slds-medium-size--4-of-5" style="padding-left: 10px; max-height: 200px;">
+                                                    <div style="padding: 5px;">
+                                                        <dl class="dl--horizontal slds-text-body--small">
+                                                            <h2 class="slds-text-heading--small slds-truncate"><a target="_blank" href="/{{sugg.whereToGo.Id}}{{sugg.activity.Id}}{{sugg.supplier.Id}}">{{sugg.whereToGo.Name}}{{sugg.activity.Name}}{{sugg.supplier.Name}}</a>
+                                                                <div star-rating ="star-rating" rating-value="sugg.whereToGo[nameSpacePrefix+'W_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                <div star-rating ="star-rating" rating-value="sugg.activity[nameSpacePrefix+'WH_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                <div star-rating ="star-rating" rating-value="sugg.supplier[nameSpacePrefix+'S_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                <div class="slds-form-element" style="float:right">
+                                                                   <a ng-click="sugg.selected = !sugg.selected; addSuggestions(sugg); "> <i class="fa fa-heart" ng-class="{'checked-heart':sugg.selected,'unchecked-heart' : !sugg.selected}" ></i> </a>
+                                                                </div>
+                                                            </h2>
+                                                            <div  class="hs-content slds-scrollable--y">
+                                                                <div contenteditable="true" ck-Editor="ck-Editor" ng-model="sugg.hs[nameSpacePrefix+'HS_Message__c']" ng-blur="addSuggestions(sugg)" />
+                                                            </div>
+                                                            <!--<p class="slds-truncate" ng-bind-html="sugg.whereToGo.W_Description__c">{{sugg.whereToGo.W_Description__c}} {{sugg.activity.WH_Description__c}}<br/></p> -->
+                                                            <dd class="slds-tile__meta estimate-cost">
+                                                                  <p class="slds-truncate"><span ng-if="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c'] !== undefined"><Strong>Errata Text : </Strong><span ng-bind-html="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c']"/> <br/></span> <Strong ng-if="sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c'] !== undefined || sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c'] !== undefined || sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c'] !== undefined">Estimated Cost : </Strong> <span ng-if="sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c'] !== undefined || sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c'] !== undefined || sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c'] !== undefined"> {{sugg.whereToGo[nameSpacePrefix+'CurrencyIsoCode']}}  {{sugg.activity[nameSpacePrefix+'CurrencyIsoCode']}} {{sugg.supplier[nameSpacePrefix+'CurrencyIsoCode']}} </span>  {{sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c']}}  {{sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c']}} {{sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c']}} </p><br/>
+                                                                </dd>
+                                                        </dl>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div class="slds-col slds-has-flexi-truncate">
+                                    <div class="fixed-footer slds-modal__footer">
+                                        <button onclick="return false;" class="slds-button slds-button--brand" ng-click="showSuggestionEmail()">
+                                            Open Suggestions Email
+                                        </button> 
+                                        <button  class="slds-button slds-button--brand">
+                                                <a target="_blank" style="color:white;text-decoration:none;" href="/apex/{!nameSpacePrefix}ItineraryBuilder?id={!opp.id}">Go To Itinerary Builder</a>
+                                        </button >
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            
+                        </div>
+                    
+                    </div>   
+                    
+                    <!-- Node Template -->
+                    <script type="text/ng-template" id="the-tree.html">
+                        <li class="parent_li slds-tree__branch slds-is-open" data-object="{{node.obj}}" data-expanded="{{node.expanded}}" id="{{$index}}" style="margin-left: 1.5em !important;" ng-show="(node.expanded || node.obj != 'Where_to_go__c') && node.show">
+                             <span ng-click="nodeClicked(node)">
+                                 <label class="slds-checkbox" style="margin-left: 7px;">
+                                    <input name="checkbox{{$index}}" type="checkbox" id="checkboxSample1{{$index}}" type="checkbox" ng-model="node.checked"/>
+                                    <span class="slds-checkbox--faux"></span>
+                                </label>
+                                 
+                             </span> 
+                             <!-- <span class="leaf"  ng-click="nodeClicked(node)"  >{{node.name}} -->
+                             <span class="leaf slds-form-element__label">{{node.name}} {{node.children.length == 0? '' : ' - ['+node.children.length+']'}}
+                                <i class="{{ switcher( isLeaf(node), '', 'icon-minus-sign' )}}"></i> 
+                                  {{showNode(node)}}
+                             </span>
+                        </li>
+                    
+                    </script> 
+                 </div>    
+             <!--- Suggestion Popup -->
+            <div class="slds">
+                <div aria-hidden="false" role="dialog" style="display:none;" id="suggestionEmail" class="slds-modal slds-modal--large slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <div class="slds-modal__header" style="padding: 10px 16px;">
+                            <h2 class="slds-text-heading--label">Send Suggestion Email</h2>
+                            <button class="slds-button slds-button--icon-inverse slds-modal__close suggestionEmail_close" onclick="return false;">
+                                <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                    <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                </svg>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </div>
+                        <div class="slds-modal__content" style="overflow: auto !important;">
+                            <c:MailService opportunityId="{!opp.Id}" templateName="Holiday Suggestions" id="suggestion"/>    
+                        </div>
+                        <!--
+                        <div class="slds-modal__footer slds-modal__footer--directional">
+                            <div class="slds-x-small-buttons--horizontal">
+                                <button class="slds-button slds-button--brand" ng-click="saveQuestions(cat.Name)" onclick="return false;">Close</button>&nbsp; 
+                                <button class="slds-button slds-button--brand" ng-click="sendEmail()" onclick="return false;">Send</button>   &nbsp;
+                            </div>
+                        </div>
+                        -->
+                        
+                    </div>
+                </div>
+                <div style="display:none;" id="suggestionEmailOverLay" class="slds-backdrop slds-backdrop--open"></div>
+            </div>
+            <!--- Popup Closed -->
+            
+            <!------------- Angular Destination popup -------->
+            <script type="text/ng-template" id="DestinationContent.html">
+                <div class="modal-header" id="header">
+                    <h3 class="modal-title" ng-init="callSearchBox()">Select Image</h3>
+                    <br/>
+                    Click outside the pop up or press Esc for the selected images to be inserted.
+                </div>
+                <div class="modal-body" ng-scope="$scope">
+                    <input type="text" html-placeholder="Search" id="searchBox" ng-focus="callService()" ng-model="searchText" styleClass="form-control" />
+                    <br/>
+                    
+                    Drop images here: <span class="button" ngf-select="ngf-select" ng-model="files" ngf-multiple="true">Select</span>
+                    <div ngf-drop="ngf-drop" ngf-select="ngf-select" ngf-multiple="true" ng-model="files" class="drop-box" style="padding: 20px;border: dashed 0.5px;text-align: center;">Drop</div>
+                    <div class="slds">
+                        <input type="button" ng-click="submitFile()" class="slds-button slds-button--brand" style="float: right;margin-top: 5px;" value="upload"></input>
+                    </div>
+                    <br/>
+                    <h3 style="font-size: 12px;width:100%;"><div>Selected Images</div></h3>
+                        <img  title="" src="/servlet/servlet.FileDownload?file={{items.imageID}}" ng-click="selectImage(items.imageID)" ng-class="{'img-class':checkImg(img)}" width="230" height="150" style="padding: 10px;"/>
+                    <h3 style="font-size: 12px;"><div>Searched Images</div></h3>
+                        <div ng-repeat="img in images" class="inline-div"> 
+                            <img ng-show="img.Id != ''" title="{{img.name}}" src="/servlet/servlet.FileDownload?file={{img.Id}}" ng-click="selectImage(img.Id)"  width="230" height="150" style="padding: 10px;" ng-class="img-class"/>
+                            <span style="position: absolute; margin-left: -216px;width: 200px;text-align: center;font-size: 11px;margin-top: 140px;"><strong>{{img.Name}}</strong></span>
+                        </div>
+                    <!--<div ng-repeat="img in items.records">
+                        <input type="text" name="input" ng-model="img.attributes.url" />
+                        <input type="text" name="input" ng-model="img.SBI_Attachement_Id__c" />
+                    </div> -->
+                </div>
+            </script>
+            
+            <script>
+                $('.slds-tabs--default__item').on('click', function(){
+                    $(this).addClass('slds-active');
+                    $(this).find('a').attr('aria-selected', true);
+                    var $contentToShow = $('#'+$(this).find('a').attr('aria-controls'));
+                    $contentToShow.removeClass('slds-hide');
+                    $contentToShow.addClass('slds-show');
+                    
+                    $(this).siblings().removeClass('slds-active');
+                    $(this).siblings().find('a').attr('aria-selected', false);
+                    $contentToShow.siblings('.slds-tabs--default__content').removeClass('slds-show');
+                    $contentToShow.siblings('.slds-tabs--default__content').addClass('slds-hide');
+                }); 
+                $('.suggestionEmail_close').on('click', function(){
+                    $('#suggestionEmail').toggle('hide');    
+                    $('#suggestionEmailOverLay').toggle('hide');    
+                });
+                
+            </script> 
+        </body>
+    </html>
+</apex:page>

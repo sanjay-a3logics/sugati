@@ -1,0 +1,369 @@
+<apex:page controller="SuggestedSupplierPaymentController" title="Suggested Supplier Payments" sidebar="false">
+    <apex:form id="frm">
+        <head>
+            <c:BasicResources ></c:BasicResources>
+            <c:BasicCss ></c:BasicCss>
+            <apex:stylesheet value="https://appssential-mobile.s3.amazonaws.com/vintagetravel/sf/style.css" />    
+            
+            <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+            <apex:includeScript value="https://code.jquery.com/jquery-1.8.2.js"/>
+            <script src="https://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+            <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"/>
+            <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/ui-lightness/jquery-ui.css"/>
+            <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"/>
+            
+            <apex:includeScript value="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" />
+            <apex:includeScript value="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.8/js/jquery.tablesorter.min.js" />
+            <apex:stylesheet value="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.8/css/theme.blue.css" />
+            
+            
+            <style>
+                .dateFormat{
+                    display:none;
+                }
+                .dateOnlyInput input {
+                    width: 100% !important;
+                }
+                
+                .form-control{
+                    width: 100% !important; 
+                }  
+                .cmdbtn{
+                    background-color: #1A9AD6 !important;
+                    
+                   
+                }
+                a.btn.cmdbtn {
+                  padding: 5px 10px !important;
+                }
+                .tablesorter-header{
+                    background: none !important;
+                }
+                .tablesorter-blue th{
+                    background: none !important;
+                }
+                .tablesorter-blue th{
+                    font-family: Arial,Helvetica,sans-serif !important;
+                    font-weight: bold !important;
+                    text-shadow: none !important;
+                    font: bold 14px/12px Arial, Sans-serif !important;
+                }
+                td> .form-control{
+                    font-size: 12px;
+                }
+                td> input[type='text'].form-control{
+                    height: 30px;
+                }
+                .ErrorField{
+                    border-radius: 5px;
+                    border: #FF0000 1px solid;
+                    box-shadow: 0 0 3px 1px red; 
+                }
+                .required-field:after{
+                    color:red;
+                    content:'*';
+                    font-weight:bold;
+                    font-size: 20px;
+                }
+            </style>
+            <script>
+                
+                function setPayEndDate(v) {
+                    
+                    var newdate = v.split('/');
+                    if(newdate.length == 3){
+                        var d = new Date(newdate[2]+'/'+newdate[1]+'/'+newdate[0]);
+                        
+                        var dd = new Date(d);
+                        
+                        moment(dd).format('DD/MM/YYYY');
+                        var endDate = moment(dd).add('days',6).format('DD/MM/YYYY');
+                        
+                        $('.endDate').val(endDate);
+                    }
+                    
+                }
+                
+                
+                function decorateErrorMsg(){
+                    $('.message.errorM3').addClass('alert');
+                    $('.message.errorM3').addClass('alert-info');
+                    $('.message.errorM3').removeClass('message');
+                    $('.alert.alert-info').removeClass('errorM3');
+                    
+                }
+                
+                function validateFilters(){
+                    var flag = false;
+                    var bankAccountText = $('.bank-account-dropdown option:selected').text();
+                    var startPaymentDate = $('.start-date-field').val();
+                    var endPaymentDate = $('.end-date-field').val();
+                    var startDateError = false;
+                    var endDateError = false;
+                    var errorMsg='';
+                    
+                    if( bankAccountText == '-Select-'){
+                        errorMsg = 'You must select Bank Account Number'; 
+                        $('.custom-alert').show();
+                        $('#errorMsgText').text(errorMsg);
+                        $('.bank-account-dropdown').addClass('ErrorField'); 
+                        return false;  
+                    }
+                    else{
+                        errorMsg = '';
+                        $('.bank-account-dropdown').removeClass('ErrorField');          
+                    }
+                    if (startPaymentDate == ''){
+                        errorMsg = 'You must select Start Payment Date';     
+                        $('.start-date-field').addClass('ErrorField'); 
+                        startDateError =true;
+                        $('.custom-alert').show();
+                        $('#errorMsgText').text(errorMsg);
+                        return false; 
+                    }
+                    else{
+                         $('.start-date-field').removeClass('ErrorField'); 
+                         startDateError = false;
+                         errorMsg = '';
+                    }
+                    if (endPaymentDate == ''){
+                        errorMsg = 'You must select End Payment Date';   
+                        $('.end-date-field').addClass('ErrorField'); 
+                        endDateError = true;
+                        $('.custom-alert').show();
+                        $('#errorMsgText').text(errorMsg);
+                        return false;     
+                    }
+                    else{
+                        $('.end-date-field').removeClass('ErrorField'); 
+                        errorMsg = '';
+                        endDateError = false;
+                         
+                    }
+                    
+                    if(convertToDate(startPaymentDate) > convertToDate(endPaymentDate) ){
+                        errorMsg = 'Start Payment Date must be less than End Payment Date';   
+                        $('.end-date-field').addClass('ErrorField'); 
+                        $('.start-date-field').addClass('ErrorField'); 
+                        endDateError = true;   
+                        $('.custom-alert').show();
+                        $('#errorMsgText').text(errorMsg);
+                        return false; 
+                    }
+                    else{
+                        $('.end-date-field').removeClass('ErrorField'); 
+                        $('.start-date-field').removeClass('ErrorField');   
+                        errorMsg = '';  
+                    }
+                    $('.custom-alert').hide();
+                    performSearch();
+                    
+                }
+                function convertToDate(str) {
+                    
+                    var newdate = str.split('/');
+                    var d = new Date(newdate[2]+'/'+newdate[1]+'/'+newdate[0]);
+                    var dd = new Date(d);
+                    return dd;
+                }
+                
+                $('document').ready(function(){
+                    $('.bank-account-dropdown').change(function(){
+                        var bankAccountText = $('.bank-account-dropdown option:selected').text();
+                        if(bankAccountText == 'All')
+                            $('.total-amount-row').hide();
+                        else
+                            $('.total-amount-row').show();
+                    });
+                
+                });
+                
+            </script>
+        </head>
+        
+        <div class="slds">
+            <apex:actionFunction name="loadSupplier" action="{!loadSupplier}" status="loading" reRender="opSuppliers,msg" />
+            <apex:actionFunction action="{!DoSort}" name="sortData" status="sortStatus" rerender="dataTable">
+                <apex:param name="sortField" assignTo="{!sortField}" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction name="performSearch" action="{!search}" status="loading" reRender="dataTable,msg"  />
+            <div class="container" style="width: 99%; padding: 0px;margin: 10px;">
+            <div class="custom-alert alert alert-info" role="alert" style="display:none;margin-bottom: 5px; margin-top: 10px;">
+                <span style="color:#cc0000"> <h4> Error: </h4> </span>
+                <span id="errorMsgText"/>
+            </div>
+            <apex:pageMessages id="msg" ></apex:pageMessages>
+                <div class="slds-card ">
+                   <div class="slds-card__header slds-grid ">
+                        <div class="slds-text-heading--small slds-media__body slds-truncate ">Search Filters</div>
+                   </div> 
+                    <div class="panel-body">
+                        <div  class="row" style="margin-bottom: -20px;">
+                            <div class="col-md-2">
+                                 <label class="slds-form-element__label slds-size--4-of-5">Bank Account<span class="required-field"></span></label>
+                            </div>
+                            <div class="col-md-2">
+                                <apex:selectList size="1" styleClass="form-control bank-account-dropdown slds-size--3-of-5" value="{!bankAccountNumber}">
+                                    <apex:selectOptions value="{!bankAccounts}"></apex:selectOptions>
+                                </apex:selectList>
+                            </div>
+                            
+                             <div class="col-md-2">
+                                <label class="slds-form-element__label">Start Payment Date<span class="required-field"></span></label>
+                             </div>
+                            <div class="col-md-2">
+                                <apex:inputField value="{!supplierPayment.SP_Due_Date__c}" styleClass="form-control start-date-field" onChange="setPayEndDate(this.value);loadSupplier();"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="slds-form-element__label">End Payment Date<span class="required-field"></span></label>
+                            </div>
+                            <div class="col-md-2">
+                                <apex:inputField styleClass="endDate form-control end-date-field" onChange="loadSupplier();" value="{!supplierPayment1.SP_Due_Date__c }"/>
+                            </div>
+                            
+                            <br/><br/><br/>
+                        </div>
+                        
+                        <div class="row" style="margin-bottom: -20px;">
+                            <div class="col-md-2">
+                                <label class="slds-form-element__label">Supplier Name</label>
+                            </div>
+                            <apex:outputPanel layout="block" styleClass="col-md-2" id="opSuppliers">
+                                <apex:selectList size="1" styleClass="form-control supplier-name-dropdown" value="{!suppliername}">
+                                    <apex:selectOptions value="{!suppliers}"></apex:selectOptions>
+                                </apex:selectList>
+                            </apex:outputPanel>
+                            <div class="col-md-2">
+                                <label class="slds-form-element__label">Booking Ref</label>
+                            </div>
+                            <div class="col-md-2">
+                                <apex:inputText styleClass="form-control booking-ref-field" value="{!bookingRef}"/>
+                            </div>
+                            
+                            <!--
+                            <div class="col-md-2">
+                                <apex:outputLabel value="Rev Analysis Code" />
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <apex:selectList size="1" value="{!revAnalysis}" styleClass="form-control rev-ref-dropdown" >
+                                    <apex:selectOptions value="{!revOptions}"></apex:selectOptions>    
+                                </apex:selectList>
+                            </div>
+                            -->
+                            
+                            <div class="col-md-2" style="float:right;    margin-top: 10px;">
+                                <button class="slds-button" value=" Search " style="line-height: 28px;border: 1px solid #1A9AD6 !important;color: white;background: #1A9AD6 !important;padding-left: 16px; padding-right: 16px; text-align: center; vertical-align: middle;" onClick="validateFilters(); return false;" >Search </button>
+                            </div>
+                            
+                        </div>
+                    </div> 
+                    
+                </div>
+                <apex:outputPanel id="dataTable" layout="block" style="font-size:12px;">
+                    
+                    <apex:outputPanel rendered="{!supplierPayments.size > 0}">
+                    <table class="table table-hover" style="font-size:12px;">        
+                        <tr>
+                            <th><a style="cursor:pointer;color:black" >Supplier Name</a></th>
+                            <th><a style="cursor:pointer;color:black" >Book Ref</a></th>
+                            <th><a style="cursor:pointer;color:black" >Serv Date</a></th>
+                            <th><a style="cursor:pointer;color:black" >Date Due</a></th>
+                            <th><a style="cursor:pointer;color:black" >Currency</a></th>
+                            <th><a style="cursor:pointer;color:black" onclick="">Inv Total</a></th>
+                            <th><a style="cursor:pointer;color:black" onclick="">Paid</a></th>
+                            <th><a style="cursor:pointer;color:black" onclick="">Due Amount</a></th>
+                            <th><a style="cursor:pointer;color:black" >Bank</a></th>
+                            <th style="color:black">Rem Comm</th>
+                            <th style="color:black">Supp Comm</th>
+                            <th style="color:black">In Dispute Reason</th>
+                            
+                        </tr>    
+                        <apex:variable value="{!0}" var="invTotal"/>
+                        <apex:variable value="{!0}" var="paidTotal"/>
+                        <apex:variable value="{!0}" var="dueTotal"/>
+                        <apex:repeat value="{!supplierPayments}" var="sp">
+                            <tr>
+                                <td>{!sp.SP_Supplier_Name__c}</td>
+                                
+                                
+                                <td><a href="/{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Opportunity__c}" target="blank">{!sp.SP_Opportunity__c}</a></td>
+                                <td>
+                                </td>
+                                <td><apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+                                    <apex:param value="{!sp.SP_Due_Date__c}" />
+                                </apex:outputText></td>
+                                <td>{!sp.CurrencyIsoCode}</td>
+                                <td class="inv"><apex:outputText value="{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Total__c}"></apex:outputText> </td>
+                                <td class="paid"><apex:outputText value="{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Total_Payment__c}"></apex:outputText></td>
+                                <td class="due"><apex:outputText value="{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Outstanding_Amount__c}"></apex:outputText></td>
+                                <td><apex:outputtext value="{!sp.SP_Bank_Accounts__r.Name}"></apex:outputtext></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                
+                                
+                            </tr>    
+                        </apex:repeat>
+                            
+                            <tr class="total-amount-row">
+                                <td/>
+                                <td/>
+                                <td/>
+                                <td/>
+                                <td/>
+                                <td style="font-weight: bold;"> Total </td>
+                                <td style="font-weight: bold;">{!invTotal}</td>
+                                <td style="font-weight: bold;">{!paidTotal}</td>
+                                <td style="font-weight: bold;">{!dueTotal}</td>
+                                <td/>
+                                <td/>
+                                <td/>
+                                <td/>
+                            </tr>
+                        
+                    </table>
+                    <script type="text/javascript">
+                        console.log('aaaaaaaaa');
+                        var bankAccountText = $('.bank-account-dropdown option:selected').text();
+                        
+                        if(bankAccountText == 'All')
+                                $('.total-amount-row').hide();
+                        else
+                            $('.total-amount-row').show();
+                    </script>
+                    </apex:outputPanel>
+                   
+                        
+                        <center>
+                            <apex:outputPanel rendered="{!hasPrevious}">
+                            <apex:commandLink status="loading"  styleClass="btn-lg" reRender="dataTable" style="padding:0px;"   action="{!previous}"  title="Previous Page">
+                                <apex:outputLabel value="<< Previous"></apex:outputLabel> 
+                                </apex:commandLink>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!hasPrevious && hasNext}">   &nbsp;&nbsp; | &nbsp; &nbsp;</apex:outputPanel>
+                                 <apex:outputPanel rendered="{!hasNext}">
+                         
+                            
+                            <apex:commandLink status="loading" styleClass="btn-lg" style="padding:0px;"  reRender="dataTable"   action="{!next}" title="Next Page">
+                                <apex:outputLabel value="Next >>"></apex:outputLabel> 
+                            </apex:commandLink>&nbsp;
+                             </apex:outputPanel>
+                            
+                        </center>
+                        
+                        
+                    
+                    <apex:outputPanel rendered="{!supplierPayments!= null && supplierPayments.size > 0}">
+                        <center>
+                            <!-- <apex:commandLink styleclass="btn cmdbtn" value="Print" action="{!print}" target="_blank" style="color:purple"/> &nbsp; -->
+                            <apex:commandLink styleclass="cmdbtn slds-button" value="Print"  action="{!printPreview}" target="_blank" style="line-height: 28px;border: 1px solid #1A9AD6 !important;color: white;background: #1A9AD6 !important;padding-left: 16px; padding-right: 16px; text-align: center; vertical-align: middle;"/> &nbsp;
+                            <apex:commandLink styleclass="cmdbtn slds-button" value="Export" action="{!export}" target="_blank" style="line-height: 28px;border: 1px solid #1A9AD6 !important;color: white;background: #1A9AD6 !important;padding-left: 16px; padding-right: 16px; text-align: center; vertical-align: middle;"/>
+                        </center>
+                    </apex:outputPanel>          
+                </apex:outputPanel>
+            </div>
+        </div>
+    
+    </apex:form> 
+</apex:page>

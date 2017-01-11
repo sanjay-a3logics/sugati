@@ -1,0 +1,1253 @@
+<apex:page standardStylesheets="true" cache="false" sidebar="false" showHeader="false" standardController="Opportunity" extensions="BookingFormController">
+    <title>Online Booking Form</title>
+    <c:BasicResources ></c:BasicResources>
+    <c:Loading />
+    <script>
+        jQuery(document).ready(function() {    
+            jQuery('.hideshowtc').on('click', function(event) { 
+                jQuery('.upArrowIcon0').toggle('show');
+                jQuery('.downArrowIcon0').toggle('hide');
+                jQuery('.tcContent').toggle('show');
+            });
+            jQuery('.hideshowIn').on('click', function(event) { 
+                jQuery('.upArrowIcon1').toggle('show');
+                jQuery('.downArrowIcon1').toggle('hide');       
+                $('.inContent').toggle('show');
+            });
+        });
+        
+        function validateEmail(th) {
+            var email = $(th).val();
+            console.log(email);
+            var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            if(!re.test(email)){
+                $(th).css('border-color','red');    
+            }
+            else{
+                $(this).css('border-color','#959595');
+            }
+            return re.test(email);
+        }
+    </script>
+    <apex:form id="frm">
+        <apex:actionFunction status="loading" name="JsConfirm" action="{!Confirm}" reRender="msgs"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/> 
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <apex:stylesheet value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/css/booking.css"/>
+        <apex:includeScript value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/js/booking.js"/>    
+        <head>
+            <meta charset="utf-8" />
+            <title>Introduction</title>
+           <!--  <c:GoogleTag ></c:GoogleTag> -->
+            <apex:outputPanel id="script">
+                <style>    
+                    .ui-button-icon-only .ui-icon {
+                        left: 5%;
+                        top: 1%;
+                    }
+                    body{
+                    background: #f2f2ef;
+                    font-family: Century Gothic,CenturyGothic,AppleGothic,museo_sans300,sans-serif;
+                    }
+                    .heading{
+                    color: #457098;
+                    }
+                    .tcBulletHeading{
+                    color: #457098;
+                    }
+                    td{
+                    font-family: Century Gothic,CenturyGothic,AppleGothic,museo_sans300,sans-serif;
+                    }
+                    .actions-bottom {
+                        position: fixed;
+                        z-index: 99;
+                        margin: 0;
+                        bottom: 0;
+                        left: 0;
+                        width: 100%;
+                        background: #f1f1f1;
+                    }
+                </style>
+                <script>
+                    function alert(content){
+                        $('<div></div>').appendTo('body')
+                        .html(content)
+                        .dialog({
+                            modal: true,
+                            title: 'Error',
+                            zIndex: 10000,
+                            autoOpen: true,
+                            width: '415px',
+                            resizable: false,
+                            buttons: {
+                                OK: function () {
+                                    $(this).dialog("close");
+                                }
+                            },
+                            close: function (event, ui) {
+                                $(this).remove();
+                            }
+                        });
+                    }
+                    jQuery(document).ready(function() {
+                        $( ".date" ).datepicker({ 
+                            altFormat: "dd/mm/yy", 
+                            dateFormat: 'dd/mm/yy',
+                            changeMonth: true,
+                            changeYear: true,
+                            yearRange: "-100:+0"
+                        });
+                        $( ".date" ).datepicker( "option", "maxDate", new Date() );
+                        
+                        // for passport expiry date field
+                        $( ".passportDate" ).datepicker({ 
+                            altFormat: "dd/mm/yy", 
+                            dateFormat: 'dd/mm/yy',
+                            changeMonth: true,
+                            changeYear: true,
+                            yearRange: "-0:+15"
+                        });
+                        $( ".passportDate" ).datepicker( "option", "minDate", new Date() );
+                    });
+                    
+                    
+                    function validate(){
+                        var IsError = false;
+                        
+                        if('{!isSiteUser}' == 'true'){
+                            if(!$('.tc').prop('checked')){
+                                alert('Please select Terms and Conditions checkbox to proceed');
+                                $("html, body").scrollTop($('.tc').offset().top-10);
+                                $('.tc').css('border-color','red');
+                                return false;
+                            }
+                            else {
+                                    $('.tc').css('border-color','#959595');
+                            }
+                            if(!$('.insurance').prop('checked')){
+                                $("html, body").scrollTop($('.insurance').offset().top-10);
+                                alert('Please select the Insurance checkbox to proceed');
+                                $('.insurance').css('border-color','red');
+                                return false;
+                            }
+                            else {
+                                $('.insurance').css('border-color','#959595');
+                            }
+                            $('.validate').each(function( index ) {
+                                console.log( index + " : " + $( this ).text() );
+                                if($(this).val()==''){
+                                    IsError = true;
+                                    $(this).css('border-color','red');
+                                }
+                                else {
+                                    $(this).css('border-color','#959595');
+                                }
+                            });
+                        }
+                        else{
+                            
+                        }
+                        
+                        var emailError = false;
+                        $('.email').each(function(){
+                            if(!validateEmail($(this))){
+                                IsError = true;
+                                emailError = true;
+                            }
+                        });
+                        
+                        if(!IsError){
+                            JsConfirm();
+                        }
+                        else if(!emailError){
+                            alert('Please fill the required fields.');
+                        }
+                        if(emailError){
+                            alert('Please fill correct email address.');
+                        }
+                         
+                    }
+                    function alert(value, type){
+                        $('<div></div>')
+                        .html(value)
+                        .dialog({
+                            modal: true,
+                            title: 'River of Footsteps Travel',
+                            zIndex: 111111111111,
+                            autoOpen: true,
+                            width: '415px',
+                            resizable: false,
+                            buttons: {
+                                OK: function () {
+                                    $(this).dialog("close");
+                                }
+                            },
+                            close: function (event, ui) {
+                                $(this).remove();
+                            }
+                        }); 
+                    }
+
+                </script>
+            </apex:outputPanel>
+        </head>
+        
+        
+        <div style="background-color: white;">
+           <!-- <apex:image URL="{!URLFOR($Resource.LFLogo)}" style="padding:20px;margin-left:13%;"/> -->
+        </div>
+        <div class="wrap" >
+            <c:headerComponent page="Booking Form"/>
+            <div>
+                <script>    
+                    
+                </script>       
+            </div>
+            <apex:pageMessages id="msgs"></apex:pageMessages>
+            
+            <div class="row">
+                 
+
+
+                <div class="col-sm-8">
+                    <div class="body">
+                        <div style="padding:10px;">
+                            <dt style="text-transform: uppercase;" class="heading">Passenger Details</dt> 
+                            Please check the details below and fill in any missing information. A (*) indicates the information that we require in order to proceed to the next stage.
+                            <hr/>
+                            <div style="text-transform: uppercase;font-weight:bold;" class="heading">Lead Guest</div>
+                            <apex:actionFunction status="loading" name="addAirlineMembre" action="{!addAirlineMembre}" reRender="ssc,ssc1,script, msgs">
+                                <apex:param assignTo="{!selectedContactId}" value="" name="dd"/>
+                            </apex:actionFunction>
+                            <apex:actionFunction status="loading" name="removeAirlineMembre" action="{!removeAirlineMembre}" reRender="ssc,ssc1,script">
+                                <apex:param assignTo="{!selectedContactId}" value="" name="dd1"/>
+                                <apex:param assignTo="{!removedRow}" value="" name="dd2"/>
+                            </apex:actionFunction>
+                            <apex:outputPanel id="ssc">
+                                <apex:variable value="{!1}" var="count"/>
+                                <apex:repeat value="{!lstGroupMembers}" var="gm">
+                                    <apex:outputPanel rendered="{!gm.isLead}">
+                                        <div style="background-color: #EAEAEA !important;padding: 10px;">
+                                            <table>
+                                                
+                                                <tr>
+                                                    <td>First Name:*</td>
+                                                    <td><apex:inputText label="Lead Guest {!gm.count} First Name" value="{!gm.FirstName}"  styleClass="form-control input-md validate"/> </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Last Name:*</td>
+                                                    <td><apex:inputText label="Lead Guest {!gm.count} Last Name" value="{!gm.LastName}"  styleClass="form-control input-md validate"/> </td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>Title:*</td>
+                                                    <td>
+                                                        <apex:selectList size="1" label="Lead Guest {!gm.count} Title" value="{!gm.title}"  styleClass="form-control input-md validate">
+                                                            <apex:selectOptions value="{!salutaionOptions}"></apex:selectOptions>
+                                                        </apex:selectList>
+                                                    </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>DOB:</td>
+                                                    <td><apex:inputText value="{!gm.dob}" styleClass="form-control input-md date"/></td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>Nationality:*</td>
+                                                    <td>
+                                                        <apex:selectList label="Lead Guest {!gm.count} Nationality" size="1" value="{!gm.nationality}"  styleClass="form-control input-md validate">
+                                                            <apex:selectOptions value="{!nationalityOptions}"></apex:selectOptions>
+                                                        </apex:selectList>
+                                                    </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Email:*</td>
+                                                    <td><apex:inputText label="Lead Guest {!gm.count} Email" value="{!gm.Email}"  onblur="validateEmail(this)" styleClass="form-control input-md validate email"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mailing Street 1:</td>
+                                                    <td >
+                                                        <apex:inputText value="{!gm.street}" styleClass="form-control input-md" /> 
+                                                    </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Mailing Street 2:</td>
+                                                    <td >
+                                                        <apex:inputText value="{!gm.Address_Line_2}" styleClass="form-control input-md" /> 
+                                                    </td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>Mailing City:</td>
+                                                    <td >
+                                                        <apex:inputText value="{!gm.city}" styleClass="form-control input-md" /> 
+                                                    </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Telephone:*</td>
+                                                    <td>
+                                                        <apex:inputText label="Lead Guest {!gm.count} Telephone" value="{!gm.Phone}" styleClass="form-control input-md validate" /> 
+                                                    </td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>Mailing Postal Code:</td>
+                                                    <td >
+                                                        <apex:inputText value="{!gm.zip}" styleClass="form-control input-md" /> 
+                                                    </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Mailing Country:</td>
+                                                    <td style="width:170px;">
+                                                        <apex:selectList size="1" value="{!gm.country}" styleClass="form-control input-md" >
+                                                            <apex:selectOptions value="{!countryOptions}"></apex:selectOptions>
+                                                        </apex:selectList>
+                                                    </td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>Passport No.:</td>
+                                                    <td >
+                                                        <apex:inputText value="{!gm.passportNo}" styleClass="form-control input-md" /> 
+                                                    </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Passport Expiry Date:</td>
+                                                    <td>
+                                                        <apex:inputText value="{!gm.passExpiryDate}" styleClass="form-control input-md passportDate"/>
+                                                    </td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>&nbsp;</td>
+                                                </tr>
+                                                <apex:variable value="{!0}" var="count"/>
+                                                <apex:repeat value="{!gm.airlineMemberships}" var="am">
+                                                    <tr>
+                                                        <td>Name of Member:</td>
+                                                        <td><apex:inputText value="{!am.AM_Member_Name__c}" styleClass="form-control input-md"/> </td>
+                                                        <td>&nbsp;</td>
+                                                        <td>Membership Number:</td>
+                                                        <td><apex:inputText value="{!am.Name}" styleClass="form-control input-md"/> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Frequent Flier Carrier:</td>
+                                                        <td><apex:inputText value="{!am.AM_Airline__c}" styleClass="form-control input-md"/> </td>
+                                                        <td>&nbsp;</td>
+                                                        <td/>
+                                                        <td onClick="removeAirlineMembre('{!gm.conId}','{!count}')">Remove Carrier&nbsp;<h class="heading" style="font-size: 18px;color: #457098;">-</h></td>
+                                                    </tr>
+                                                    <apex:variable value="{!count+1}" var="count"/>
+                                                </apex:repeat>
+                                                <tr>
+                                                    <td/>
+                                                    <td/>
+                                                    <td/>
+                                                    <td>&nbsp;</td>
+                                                    <td onClick="addAirlineMembre('{!gm.conId}')" style="cursor: pointer;">Add Another Carrier&nbsp;<h class="heading" style="font-size: 18px;color: #457098;">+</h></td>
+                                                </tr>
+                                                <apex:variable value="{!count+1}" var="count"/>
+                                            </table>
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <hr/>
+                            <dt style="text-transform: uppercase;font-weight:bold;" class="heading">Additional Travelling Guests</dt>
+                            <div >
+                                <apex:outputPanel id="ssc1">
+                                    <apex:variable value="{!1}" var="countG"/>
+                                    <apex:repeat value="{!lstGroupMembers}" var="gm">
+                                        <apex:outputPanel rendered="{!!gm.isLead}">
+                                            <table>
+                                                <tr>
+                                                    <td><strong class="heading">Guest {!gm.count1}</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>First Name:*</td>
+                                                    <td><apex:inputText label="Guest {!gm.count1} First Name" value="{!gm.FirstName}"  styleClass="form-control input-md validate"/> </td>
+                                                    <td>&nbsp;</td>
+                                                    <td>Title:*</td>
+                                                    <td>
+                                                        <apex:selectList size="1" label="Guest {!gm.count} Title" value="{!gm.title}"  styleClass="form-control input-md validate">
+                                                            <apex:selectOptions value="{!salutaionOptions}"></apex:selectOptions>
+                                                        </apex:selectList>
+                                                    </td>
+                                                    
+                                                </tr>
+                                                <tr>
+                                                    <td>Last Name:*</td>
+                                                    <td><apex:inputText label="Guest {!gm.count1} Last Name" value="{!gm.LastName}"  styleClass="form-control input-md validate"/> </td> 
+                                                     <td>&nbsp;</td>
+                                                     <td>DOB:*</td>
+                                                    <td><apex:inputText label="Guest {!gm.count1} Birth Date" value="{!gm.dob}"  styleClass="form-control input-md date validate"/> </td>
+                                                </tr>
+                                                <tr>
+                                                    
+                                                    <td/>
+                                                    <td  style="font-size: 9px;">*Required for guests under 12 year old</td>
+                                                </tr>
+                                                 <tr>
+                                                    <td>&nbsp;</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Nationality:*</td>
+                                                    <td>
+                                                        <apex:selectList label="Guest {!gm.count1} Nationality"  size="1" value="{!gm.nationality}"  styleClass="form-control input-md validate">
+                                                              <apex:selectOptions value="{!nationalityOptions}"></apex:selectOptions>
+                                                        </apex:selectList>
+                                                    </td>
+                                                     <td>&nbsp;</td>
+                                                    <td>Passport No.:</td>
+                                                    <td >
+                                                        <apex:inputText value="{!gm.passportNo}" styleClass="form-control input-md" /> 
+                                                    </td>
+                                                </tr>
+                                                
+                                               
+                                                <tr>
+                                                    <td>Passport Expiry Date:</td>
+                                                    <td>
+                                                        <apex:inputText value="{!gm.passExpiryDate}" styleClass="form-control input-md passportDate"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>&nbsp;</td>
+                                                </tr>
+                                                <apex:variable value="{!0}" var="count"/>
+                                                <apex:repeat value="{!gm.airlineMemberships}" var="am">
+                                                    <tr>
+                                                        <td>Name of Member:</td>
+                                                        <td><apex:inputText value="{!am.AM_Member_Name__c}" styleClass="form-control input-md"/> </td>
+                                                        <td>&nbsp;</td>
+                                                        <td>Membership Number:</td>
+                                                        <td><apex:inputText value="{!am.Name}" styleClass="form-control input-md"/> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Frequent Flier Carrier:</td>
+                                                        <td><apex:inputText value="{!am.AM_Airline__c}" styleClass="form-control input-md"/> </td>
+                                                        <td>&nbsp;</td>
+                                                        <td/>
+                                                        <td onClick="removeAirlineMembre('{!gm.conId}','{!count}')" style="cursor: pointer;">Remove Carrier&nbsp;<h class="heading" style="font-size: 18px;color: #457098;">-</h></td>
+                                                    </tr>
+                                                    <apex:variable value="{!count+1}" var="count"/>
+                                                </apex:repeat>
+                                                <tr>
+                                                    <td/>
+                                                    <td/>
+                                                    <td/>
+                                                    <td>&nbsp;</td>
+                                                    <td onClick="addAirlineMembre('{!gm.conId}')" style="cursor: pointer;">Add Another Carrier&nbsp;<h class="heading" style="font-size: 18px;color: #457098;">+</h></td>
+                                                </tr>
+                                                <apex:variable value="{!countG+1}" var="countG"/>
+                                                
+                                            </table>
+                                        </apex:outputPanel>
+                                    </apex:repeat>
+                                </apex:outputPanel>
+                            </div>
+                            <hr/>
+                            <dt style="text-transform: uppercase;font-weight:bold;" class="heading">Emergency Contact</dt>
+                            <table>
+                                <tr>
+                                    <td>First Name:*</td>
+                                    <td><apex:inputText label="Emergency Contact First Name" value="{!emergencyFirstName}"  styleClass="form-control input-md validate"/> </td>
+                                    <td>&nbsp;</td>
+                                    <td>Last Name:*</td>
+                                    <td><apex:inputText label="Emergency Contact Last Name" value="{!emergencyLastName}"  styleClass="form-control input-md validate"/> </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>Email:*</td>
+                                    <td><apex:inputText label="Emergency Contact Email Address" value="{!emergencyEmail}"  onblur="validateEmail(this)" styleClass="form-control input-md validate"/> </td>
+                                    <td>&nbsp;</td>
+                                    <td>Telephone:*</td>
+                                    <td>
+                                        <apex:inputText label="Emergency Contact Telephone" value="{!emergencyContact}"  styleClass="form-control input-md validate" /> 
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>Relationship:</td>
+                                    <td><apex:inputText label="Emergency Contact Relationship" value="{!emergencyRelationship}" styleClass="form-control input-md"/> </td>
+                                    <td/>
+                                    <td/>
+                                </tr>
+                                <!--<tr>
+                                    <td style="width: 150px;">Additional information and Special Requirements:</td>
+                                    <td><apex:inputTextArea label="Additional information and Special Requirements" rows="3" value="{!OBFNotes}" styleClass="form-control input-md"/> </td>
+                                    <td/>
+                                    <td/>
+                                    <td/>
+                                </tr> 
+                                
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    <td colspan="4" style="font-size: 9px;">Please provide us with any additional information such as birthdays / anniversaries to be celebrated whilst away, dietary requirements, room requests, interests etc.</td>
+                                    <td>&nbsp;</td>
+                                </tr>-->
+                            </table>
+                            
+                        </div>
+                    </div>   
+                </div> 
+                
+              
+
+                <div class="col-sm-4">
+                    <div class="body">
+                        <c:BookingDetails />
+                    </div>
+                </div>
+                
+               <div class="col-sm-8">
+                    
+                    <div class="body">
+                        <div style="padding:10px;">
+                            <dt style="text-transform: uppercase;font-weight:bold;" class="heading">Additional information</dt>
+                            <table style="width:100%">
+                              <tr>
+                                    <td style="width:30%">Additional information and Special Requirements:</td>
+                                    <td><apex:inputTextArea label="Additional information and Special Requirements" rows="3" html-placeholder="Please provide us with any additional information such as birthdays / anniversaries to be celebrated whilst away, dietary requirements, room requests, interests etc." value="{!OBFNotes}" styleClass="form-control input-md"/> </td>
+                                    
+                              </tr> 
+                            </table>
+
+                        </div>
+                    </div>   
+                </div> 
+                
+                <div class="col-sm-8">
+                    
+                    <div class="body">
+                        <div style="padding:10px;">
+                            <dt style="text-transform: uppercase;" class="heading">Insurance Details</dt> 
+                            Our Terms &amp; Conditions state that you must have suitable travel insurance for your holiday with River of Footsteps Travel ({!opp.O_RecordType__r.Name}) Ltd., and this must cover all
+                            activities you intend on carrying out.<br/><br/><br/>
+                            <strong class="heading">By ticking the following box you are confirming</strong> that you have/will obtain full travel insurance covering all activities you intend on carrying out. If you fail to obtain travel insurance, you agree to the below waiver.
+                            <apex:inputCheckbox label="Insurance" value="{!insurance}" styleClass="form-control input-md insurance"  style="width: 20px;float: right;"/>
+                            <hr/>
+                            <table>
+                                <tr>
+                                    <td>Policy Number:</td>
+                                    <td> <strong>
+                                    <apex:inputText label="Insurance: Policy Number" value="{!policyNo}" styleClass="form-control input-md"/></strong>
+                                    </td>
+                                    <td>&nbsp;&nbsp;&nbsp;</td>
+                                    <td>Contact Number:</td>
+                                    <td> <strong>
+                                    <apex:inputText label="Insurance: Contact Number" value="{!policyCon}" styleClass="form-control input-md"/></strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Insurance Provider:</td>
+                                    <td><strong>
+                                    <apex:inputText label="Insurance: Provider" value="{!policyProvider}" styleClass="form-control input-md "/></strong>
+                                    </td>
+                                </tr>
+                            </table>
+                            <hr/>
+                            <Strong class="heading">Why do you need travel insurance? </Strong><br/>
+                            Please click to see River of Footsteps Travel&#39;s travel insurance policy.
+                            <a href="" style="text-decoration:none" class="hideshowIn">
+                                <img src="/s.gif" title="To maximise insurance detail click here" alt="Unselect" class="downArrowIcon downArrowIcon1"  style=""/>
+                                <img src="/s.gif" title="To minimise insurance detail click here" alt="Unselect" class="upArrowIcon upArrowIcon1"  style="display:inline;display: none;"/>
+                            </a>
+                            <div class="inContent" style="display:none;">
+                                <hr/>
+                                You must be fully insured for your holiday and must make sure that all of the activities which you will be carrying out are covered under such insurance, protecting against unforeseen circumstances that could otherwise spoil your travels. Cover must include medical expenses and repatriation in the event of accident or illness. In addition, we strongly recommend that you have cover for personal belongings, delay at your outward or homeward point of departure, personal liability, company insolvency, overseas legal expenses and cancellation. If you are undertaking any sports or adventurous activities, including trekking, on your trip you should also make sure that your policy covers these. Please also ensure you read the policy conditions and exclusions.
+                                <br/><br/>
+                                <strong class="heading">If you do not obtain travel insurance, please note your agreement to the below waiver:</strong>
+                                <br/><br/>
+                                The waiver you agree to includes releasing River of Footsteps Travel from any liability that should arise from but is not limited to any indirect or consequential loss whatsoever arising under or in connection with our provision of your holiday, any injury, illness, death, loss (including loss of enjoyment and loss of business, profits or employment), damage, expense, cost or other claims or liability of any description whatsoever which results from: 
+                                <br/><br/>(i) any fault of you or any member of your party, 
+                                <br/>(ii) any fault of any third party unconnected with us and the provision of services for which you have contracted with us,
+                                <br/>(iii) any force majeure circumstances. ‘Force majeure’ means unusual and unforeseeable circumstances beyond our control, the consequences of which neither us nor our suppliers could avoid.  These may include but are not limited to, war, threat of war, riot, civil strife, terrorist activity (actual or threatened), industrial dispute, technical problems with transports, machinery or equipment, power failure, natural or nuclear disaster, fire, flood, drought or storm, other adverse weather conditions including heavy rainfall, hail, snow or frost. 
+                                <br/><br/> Our total liability to you in respect of all other losses arising under or in connection with the Contract, whether in contract, tort (including negligence), breach of statutory duty, or otherwise shall not exceed the value of your booking (including taxes and deposit), without limiting your statutory rights.
+                                <br/><br/>It is your responsibility to ensure that you and all persons travelling with you have valid passports (with at least 6 months validity beyond the date of return and at least two blank pages or more) appropriate visas and vaccinations.
+                                <br/><br/>All activities you will be carrying out during the holiday are at your own risk.  Any emergency evacuation and repatriation costs are at your own cost and liability.
+                                <a href="" style="text-decoration:none" class="hideshowIn">
+                                    <img src="/s.gif" alt="Unselect" class="downArrowIcon downArrowIcon1"  style=""/>
+                                    <img src="/s.gif" title="To minimise insurance detail click here" alt="Unselect" class="upArrowIcon upArrowIcon1"  style="display:inline;display: none;"/>
+                                </a>
+                            </div>
+                        </div>    
+                    </div>
+                    
+                    <div class="body">
+                        <div style="padding:10px;">
+                            <dt style="text-transform: uppercase;" class="heading">Terms and Conditions</dt> 
+                            <apex:outputPanel rendered="{!Opp.O_RecordType__r.Name == 'SG'}">
+                                The following terms and conditions, and any other terms and
+                                conditions (including, for example, brochure terms) which are
+                                notified to you in writing before departure, apply to all holidays
+                                booked with River of Footsteps Travel Private Limited trading as River of Footsteps
+                                Travel (‘we’, ‘our’ or ‘us’), which is registered in Singapore under
+                                company number 200916093N.<br/><br/><br/>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel rendered="{!Opp.O_RecordType__r.Name == 'HK'}">
+                                The following terms and conditions, and any other terms and
+                                conditions (including, for example, brochure terms) which are
+                                notified to you in writing before departure, apply to all holidays
+                                booked with River of Footsteps Travel (HK) Ltd trading as River of Footsteps Travel
+                                (‘we’, ‘our’ or ‘us’), which is registered in Hong Kong under
+                                company number 53428495-000-12-12-5.<br/><br/><br/>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel rendered="{!Opp.O_RecordType__r.Name == 'DXB'}">
+                                The following terms and conditions, and any other terms and
+                                conditions (including, for example, brochure terms) which are
+                                notified to you in writing before departure, apply to all holidays
+                                booked with River of Footsteps Travel Private Limited trading as River of Footsteps
+                                Travel (‘we’, ‘our’ or ‘us’), which is registered in Singapore under
+                                company number 200916093N. River of Footsteps Travel FZ LLC is a
+                                marketing branch of River of Footsteps Travel Pte Ltd, so by agreeing to
+                                these terms and conditions you are contracting with River of Footsteps
+                                Travel Pte Ltd in Singapore.<br/><br/><br/>
+                            </apex:outputPanel>
+                            
+                            <strong class="heading">By ticking the following box you are confirming</strong> on behalf of the persons listed above, by whom you are authorised to make this
+                            booking, that you/they have read and agreed to the booking terms and conditions and important footnotes as set out by River of Footsteps travel Pte. Ltd. 
+                            <apex:inputCheckbox label="Terms & Conditions" value="{!tc}"  styleClass="form-control input-md tc" style="width: 20px;float: right;"/>
+                            <br/><br/><br/>
+                            <strong class="heading">
+                                Please click to expand and view River of Footsteps Travel&#39;s Terms &amp; Conditions 
+                                <a href="" style="text-decoration:none" class="hideshowtc">
+                                    <img src="/s.gif" title="To maximise terms and conditions click here" alt="Unselect" class="downArrowIcon downArrowIcon0"  style=""/>
+                                    <img src="/s.gif" title="To minimise terms and conditions click here" alt="Unselect" class="upArrowIcon upArrowIcon0"  style="display:inline;display: none;"/>
+                                </a>
+                            </strong>
+                            
+                            <div class="tcContent" style="display:none;">
+                                <hr/>
+                                <apex:outputPanel rendered="{!Opp.O_RecordType__r.Name == 'SG'}">
+                                    <p>Please read these terms and conditions carefully, as they set out
+                                        your contract with us once you have paid your deposit (or other fee
+                                        such as in a last minute booking). In the following terms and
+                                        conditions ‘you’ and ‘your’ means all persons named on the
+                                        booking, including anyone who is added or substituted at a later
+                                        date. Please pay particular attention to Paragraph 5 (Our
+                                    Responsibility).</p>
+                                    
+                                    <font class="tcBulletHeading">1. Booking and Payment</font><br/>
+                                    <p>
+                                        a) To book a holiday you must first call us to discuss your itinerary
+                                        or request a quotation. If you are satisfied with the quotation you
+                                        should complete, sign and return the booking form to us together
+                                        with the non-refundable deposit (see below). The lead client who
+                                        makes the booking is taken to have accepted these terms and
+                                        conditions on behalf of and with the authorization of all the
+                                        persons named on the booking. Written quotations are valid for a
+                                        period of 20 days from the date of our quotation, unless otherwise
+                                        indicated.
+                                    </p>
+                                    <p>
+                                        b) A service fee is chargeable for all bookings and ticketing
+                                        provided by River of Footsteps Travel staf. This is at the discretion of the
+                                        Company, and mutually agreed upon by both parties before
+                                        confirming the booking.
+                                    </p>
+                                    <p>
+                                        c) The deposit, 30% of your total holiday, is non-refundable and
+                                        will be treated as part payment of the holiday. The deposit amount
+                                        will be shown on the quotation page of your itinerary and should
+                                        be paid by the lead client. In addition to the deposit, full or part
+                                        payment may sometimes be required before the balance due date
+                                        (such as for flights).
+                                    </p>
+                                    <p>
+                                        d) Once we receive the deposit we will issue a written confirmation
+                                        of the booking, at which point a binding contract is formed
+                                        between us. Once we are able to confirm all elements of your
+                                        holiday booking, a process that may take several weeks, we will
+                                        send you a confirmation invoice including details of the balance
+                                        payment.
+                                    </p>
+                                    <p>
+                                        e) Unless a last minute booking, the balance payment is due no
+                                        later than 10 weeks prior to departure, or at the time of booking if
+                                        less than 10 weeks prior to departure. The balance due date will be
+                                        included in the confirmation invoice (please note that reminders
+                                        are not sent). If the balance payment is not received by the due
+                                        date we reserve the right to cancel your booking as per the terms
+                                        below.
+                                    </p>
+                                    <p>
+                                        f) Clients should pay all bank charges for bank transfers. Failure to
+                                        do so may lead to you being rebilled.
+                                        </p><p>
+                                        g) We will always quote the price of your holiday by reference to
+                                        the base currency in which the booking would be made by us, on
+                                        the date that the quotation is created. If an adverse currency
+                                        fluctuation occurs, equal to 2% or more of the overall price during
+                                        the period between the date of the quotation and the date(s) for
+                                        payment of the deposit and/or final balance payment for the
+                                        holiday, we reserve the right to adjust the final balance payment
+                                        due to reflect such currency fluctuation.
+                                    </p>
+                                    <br/>
+                                    <font class="tcBulletHeading">2. Alterations and cancellation by you</font>
+                                    <br/>
+                                    <p>
+                                        a) If, after we have confirmed a booking, you wish to make
+                                        alterations to the dates or other details of your booking we will try
+                                        but cannot promise to meet your request. We require the lead
+                                        person to notify us of required changes in writing. We reserve the
+                                        right to charge you 2% of the total holiday booking for changes. If
+                                        we can make the requested changes you will be provided with a
+                                        quote detailing any costs incurred by ourselves and any costs
+                                        imposed by our suppliers.
+                                    </p>
+                                    <p>
+                                        b) Cancellations must be notified to us in writing by the lead client
+                                        and will be efective the day we receive them. As we incur costs
+                                        from the time of your booking, the following cancellation charges
+                                        will be payable. We will not refund to you any deposits,
+                                        administrative fees or alterations fees. You must take out holiday
+                                        insurance that covers cancellation of your booking. We cannot
+                                        guarantee any flight refunds. Cancellation charges apply as a
+                                        percentage of the total holiday price, as follows.
+                                        <ul style="list-style-type:lower-alpha">
+                                            <li>75 days or more Deposit only</li>
+                                            <li>74 – 50 days 40%</li>
+                                            <li>49 – 29 days 60%</li>
+                                            <li>28 – 7 days 90%</li>
+                                            <li>6 days or less 100%</li>
+                                        </ul>
+                                        In the event that the cancellation charges of the suppliers we use
+                                        are more than ours, then the suppliers’ cancellation terms will
+                                        apply.
+                                    </p>
+                                    <p>
+                                        c) If a member of a party is prevented from traveling the person
+                                        concerned may transfer their place to someone else as long as our
+                                        suppliers accept the transfer of names, you sign an authorization
+                                        letter and the transferee signs a booking form. All costs incurred by
+                                        us and any of our suppliers, an amendment fee of Singapore
+                                        Dollars (SGD) 100, and any overdue balance payment must be paid
+                                        before any such transfer is efective. If you decide during the
+                                        course of your holiday to abandon arrangements made by us no
+                                        liability and no refunds will be made for the service you choose not
+                                        to take.
+                                    </p>
+                                    <br/>
+                                    <font class="tcBulletHeading">3. Alterations and cancellation by us</font><br/>
+                                    <p>
+                                        a) It is unlikely we will have to make changes to your travel plans
+                                        and we do our utmost to deliver the holiday we are contracted to
+                                        provide. However, as we make arrangements many months in
+                                        advance we occasionally have to make changes and reserve the
+                                        right to do so.
+                                    </p>
+                                    <p>
+                                        b) Most changes are minor and we will inform you of them if
+                                        possible. Occasionally, we have to make a major change. A major
+                                        change is a change made before departure which, taking account
+                                        of the information you give us at the time of booking and which we
+                                        can reasonably expect to know as a tour operator, we can
+                                        reasonably expect to have a major efect on your holiday. Major
+                                        changes may include: price increases, change of your
+                                        city/resort/place of destination, or change of your accommodation
+                                        to a lower grade. If we make a major change to your holiday we will
+                                        inform you as soon as possible. You will then have the choice of: (i)
+                                        accepting the changes, (ii) accepting an ofer of an alternative 
+                                        holiday from us of a similar standard to that already booked, or (iii)
+                                        cancelling your holiday and receiving a full refund of all monies
+                                        due.
+                                        </p><p>
+                                        c) We will not accept liability if we are forced by ‘force majeure’ to
+                                        change or terminate your holiday. ‘Force majeure’ means unusual
+                                        and unforeseeable circumstances beyond our control, the
+                                        consequences of which neither us nor our suppliers could avoid.
+                                        These may include, but are not limited to, war, threat of war, riot,
+                                        civil strife, terrorist activity (actual or threatened), industrial
+                                        dispute, technical problems with transports, machinery or
+                                        equipment, power failure, natural or nuclear disaster, fire, flood,
+                                        drought or storm, other adverse weather conditions including
+                                        heavy rainfall, hail, snow or frost.
+                                    </p>
+                                    <br/>
+                                    <font class="tcBulletHeading">4. Prices</font><br/>
+                                    <p>
+                                        a) Once the price of your holiday has been confirmed on your
+                                        confirmation invoice then subject to the correction of errors, we
+                                        will only increase the price and request a surcharge in the
+                                        following circumstances: increases in our transportation charges
+                                        (including the cost of fuel), dues, taxes, airport charges or the
+                                        exchange rates used to calculate the cost of your holiday.
+                                        </p><p>
+                                        b) Even in the above cases, only if the amount of any increase in
+                                        our costs exceeds 2% of the total cost of your holiday will we levy
+                                        a surcharge. If the surcharge is greater than 10% you reserve the
+                                        right to cancel your holiday within 14 days of our notifying you of
+                                        the surcharges, after which we reserve the right to add a surcharge
+                                        over the 10% of the total holiday price.
+                                        </p><p>
+                                        c) Quotations will be provided in Singapore Dollars (SGD).
+                                    </p>
+                                    <br/>
+                                    <font class="tcBulletHeading">5. Our responsibility</font><br/>
+                                    <p>
+                                        a) We accept responsibility for ensuring that the holiday
+                                        arrangements that you book with us are supplied as described in
+                                        the itinerary provided, and in accordance with these terms and
+                                        conditions. If you feel that your holiday arrangements are not as
+                                        described in your itinerary, you should notify our appointed local
+                                        supplier or us (where no local supplier is appointed) as soon as
+                                        possible and provide us with details in writing.
+                                        </p><p>
+                                        b) We endeavour to keep the website and any brochures up to date,
+                                        but cannot guarantee their accuracy and, if there is any
+                                        inconsistency between the information on our website and the
+                                        itinerary details provided to you, the itinerary details prevail.
+                                        </p><p>
+                                        c) We accept responsibility for our suppliers and local
+                                        representatives, provided that such suppliers and representatives
+                                        have acted at all times within our authority and in accordance with
+                                        our instructions. We do not accept responsibility for: travel by air,
+                                        sea and rail and the provision of accommodation, to which the
+                                        terms of the relevant travel provider shall apply; or (ii) holidays,
+                                        activities or other bookings or arrangements made directly with
+                                        our suppliers, local representatives or any other third parties.
+                                        </p><p>
+                                        d) Under no circumstances will we accept responsibility for any
+                                        indirect or consequential loss whatsoever arising under or in
+                                        connection with our provision of your holiday.
+                                        </p><p>
+                                        e) Nor do we accept responsibility for any injury, illness, death, loss
+                                        (including loss of enjoyment and loss of business, profits or
+                                        employment), damage, expense, cost or other claims or liability of
+                                        any description whatsoever which results from: (i) any fault of you
+                                        or any member of your party, (ii) any fault of any third party
+                                        unconnected with us and the provision of the services for which
+                                        you have contracted with us; (ii) any force majeure circumstances
+                                        (as described in Paragraph 3 above) which are beyond our or our
+                                        suppliers’ reasonable control.
+                                        </p><p>
+                                        f) Our total liability to you in respect of all other losses arising
+                                        under or in connection with the Contract, whether in contract, tort
+                                        (including negligence), breach of statutory duty, or otherwise shall
+                                        not exceed the value of your booking (including taxes and deposit).
+                                        </p><p>
+                                        g) Nothing in these terms and conditions shall limit or exclude our
+                                        liability where such exclusion is not permitted under applicable
+                                        law.
+                                    </p>
+                                    <p>
+                                        <font class="tcBulletHeading">6. Your responsibility</font><br/>
+                                        It is your responsibility to ensure that you and all persons traveling
+                                        with you have valid passports (with at least 6 months validity
+                                        beyond the date of return and at least two blank pages or more),
+                                        appropriate visas and vaccinations.
+                                        Women who are 28 weeks pregnant or more at the time of travel
+                                        should have a doctor’s certificate confirming they are fit to travel.
+                                    </p>
+                                    
+                                    <p>
+                                        <font class="tcBulletHeading">7. Insurance</font><br/>
+                                        You must be fully insured for your holiday and must make sure that
+                                        all of the activities which you will be carrying out are covered
+                                        under such insurance, protecting against unforeseen
+                                        circumstances that could otherwise spoil your travels. Cover must
+                                        include medical expenses and repatriation in the event of accident
+                                        or illness. In addition, we strongly recommend that you have cover
+                                        for personal belongings, delay at your outward or homeward point
+                                        of departure, personal liability, overseas legal expenses and
+                                        cancellation. If you are undertaking any sports or adventurous
+                                        activities, including trekking, on your trip you should also make
+                                        sure that your policy covers these. Please also ensure you read the
+                                        policy conditions and exclusions.
+                                    </p>
+                                    <p>
+                                        <font class="tcBulletHeading">8. Privacy</font><br/>
+                                        Personal information that you provide when using our website and
+                                        booking holidays will be treated in accordance with our Privacy
+                                        Policy, which can be accessed via the following link -
+                                        http://www.River of Footstepstravel.com/assets/documents/Privacy_Policy.
+                                        pdf Please read this carefully.
+                                    </p>
+                                    <p>
+                                        <font class="tcBulletHeading">9. Governing Law</font><br/>
+                                        These terms and conditions and any disputes arising from them
+                                        shall be governed by Singapore law. You and we agree to submit to
+                                        the exclusive jurisdiction of the courts of Singapore regarding any
+                                        such dispute.
+                                    </p>
+                                    <p>
+                                        <font class="tcBulletHeading">10. Changes to Terms and Conditions</font><br/>
+                                        The terms and conditions which apply to your holiday are those
+                                        which are featured on your booking form at the time of booking,
+                                        and any other terms notified to you in writing before departure. We
+                                        reserve the right to update these terms and conditions from time
+                                        to time. Any such updates shall take efect immediately upon
+                                        posting on our website. 
+                                    </p>
+                                    <div>
+                                        <a href="" title="To minimise terms and conditions click here" class="hideshowtc" style="float: right; margin-top: -20px;text-decoration:none">
+                                            <img src="/s.gif" title="To maximise terms and conditions click here" alt="Unselect" class="downArrowIcon downArrowIcon0"  style=""/>
+                                            <img src="/s.gif" title="To minimise terms and conditions click here" alt="Unselect" class="upArrowIcon upArrowIcon0"  style="display:inline;display: none;"/>
+                                        </a>
+                                    </div>
+                                </apex:outputPanel> 
+                                
+                                <apex:outputPanel rendered="{!Opp.O_RecordType__r.Name == 'HK'}">
+                                    <p>  
+                                        Please read these terms and conditions carefully, as they set out
+                                        your contract with us once you have paid your deposit (or other fee
+                                        such as in a last minute booking). In the following terms and
+                                        conditions ‘you’ and ‘your’ means all persons named on the
+                                        booking, including anyone who is added or substituted at a later
+                                        date. Please pay particular attention to Paragraph 5 (Our
+                                        Responsibility).
+                                    </p>
+                                    <br/>
+                                    
+                                    <font class="tcBulletHeading">1. Booking and Payment</font><br/>
+                                    <p>
+                                        a) To book a holiday you must first call us to discuss your itinerary
+                                        or request a quotation. If you are satisfied with the quotation you
+                                        should complete, sign and return the booking form to us together
+                                        with the non-refundable deposit (see below). The lead client who
+                                        makes the booking is taken to have accepted these terms and
+                                        conditions on behalf of and with the authorization of all the
+                                        persons named on the booking. Written quotations are valid for a
+                                        period of 20 days from the date of our quotation, unless otherwise
+                                        indicated.
+                                        </p><p>
+                                        b) The deposit, 30% of your total holiday, is non-refundable and
+                                        will be treated as part payment of the holiday. The deposit amount
+                                        will be shown on the quotation page of your itinerary and should
+                                        be paid by the lead client. In addition to the deposit, full or part
+                                        payment may sometimes be required before the balance due date
+                                        (such as for flights).
+                                        </p><p>
+                                        c) Once we receive the deposit we will issue a written confirmation
+                                        of the booking, at which point a binding contract is formed
+                                        between us. Once we are able to confirm all elements of your
+                                        holiday booking, a process that may take several weeks, we will
+                                        send you a confirmation invoice including details of the balance
+                                        payment.
+                                        </p><p>
+                                        d) Unless a last minute booking, the balance payment is due no
+                                        later than 10 weeks prior to departure, or at the time of booking if
+                                        less than 10 weeks prior to departure. The balance due date will be
+                                        included in the confirmation invoice (please note that reminders
+                                        are not sent). If the balance payment is not received by the due
+                                        date we reserve the right to cancel your booking as per the terms
+                                        below.
+                                        </p><p>
+                                        e) Clients should pay all bank charges for bank transfers. Failure to
+                                        do so may lead to you being rebilled.</p><p>
+                                        f) We will always quote the price of your holiday by reference to
+                                        the base currency in which the booking would be made by us, on
+                                        the date that the quotation is created. If an adverse currency
+                                        fluctuation occurs, equal to 2% or more of the overall price during
+                                        the period between the date of the quotation and the date(s) for
+                                        payment of the deposit and/or final balance payment for the
+                                        holiday, we reserve the right to adjust the final balance payment
+                                    due to reflect such currency fluctuation.</p>
+                                    
+                                    <br/>
+                                    <font class="tcBulletHeading">2. Alterations and cancellation by you</font><br/>
+                                    <p>
+                                        a) If, after we have confirmed a booking, you wish to make
+                                        alterations to the dates or other details of your booking we will try
+                                        but cannot promise to meet your request. We require the lead
+                                        person to notify us of required changes in writing. We reserve the
+                                        right to charge you 2% of the total holiday booking for changes. If
+                                        we can make the requested changes you will be provided with a
+                                        quote detailing any costs incurred by ourselves and any costs
+                                        imposed by our suppliers.
+                                        </p><p>
+                                        b) Cancellations must be notified to us in writing by the lead client
+                                        and will be efective the day we receive them. As we incur costs
+                                        from the time of your booking, the following cancellation charges
+                                        will be payable. We will not refund to you any deposits,
+                                        administrative fees or alterations fees. You must take out holiday
+                                        insurance that covers cancellation of your booking. We cannot
+                                        guarantee any flight refunds. Cancellation charges apply as a
+                                        percentage of the total holiday price, as follows.
+                                        <ul style="list-style-type:lower-alpha">
+                                            <li>75 days or more Deposit only</li>
+                                            <li>74 – 50 days 40%</li>
+                                            <li>49 – 29 days 60%</li>
+                                            <li>28 – 7 days 90%</li>
+                                            <li>6 days or less 100%</li>
+                                        </ul>
+                                        
+                                        In the event that the cancellation charges of the suppliers we use
+                                        are more than ours, then the suppliers’ cancellation terms will
+                                        apply.</p><p>
+                                        c) If a member of a party is prevented from traveling the person
+                                        concerned may transfer their place to someone else as long as our
+                                        suppliers accept the transfer of names, you sign an authorization
+                                        letter and the transferee signs a booking form. All costs incurred by
+                                        us and any of our suppliers, an amendment fee of Hong Kong
+                                        Dollars (HKD) 750, and any overdue balance payment must be paid
+                                        before any such transfer is efective. If you decide during the
+                                        course of your holiday to abandon arrangements made by us no
+                                        liability and no refunds will be made for the service you choose not
+                                    to take.</p>
+                                    <br/>
+                                    <font class="tcBulletHeading">3. Alterations and cancellation by us</font><br/>
+                                    <p>
+                                        
+                                        a) It is unlikely we will have to make changes to your travel plans
+                                        and we do our utmost to deliver the holiday we are contracted to
+                                        provide. However, as we make arrangements many months in
+                                        advance we occasionally have to make changes and reserve the
+                                        right to do so.
+                                        </p><p>
+                                        b) Most changes are minor and we will inform you of them if
+                                        possible. Occasionally, we have to make a major change. A major
+                                        change is a change made before departure which, taking account
+                                        of the information you give us at the time of booking and which we
+                                        can reasonably expect to know as a tour operator, we can
+                                        reasonably expect to have a major efect on your holiday. Major
+                                        changes may include: price increases, change of your
+                                        city/resort/place of destination, or change of your accommodation
+                                        to a lower grade. If we make a major change to your holiday we will
+                                        inform you as soon as possible. You will then have the choice of: (i)
+                                        accepting the changes, (ii) accepting an ofer of an alternative
+                                        holiday from us of a similar standard to that already booked, or (iii)
+                                        cancelling your holiday and receiving a full refund of all monies
+                                        due.
+                                        </p><p>
+                                        c) We will not accept liability if we are forced by ‘force majeure’ to
+                                        change or terminate your holiday. ‘Force majeure’ means unusual
+                                        and unforeseeable circumstances beyond our control, the 
+                                        consequences of which neither us nor our suppliers could avoid.
+                                        These may include, but are not limited to, war, threat of war, riot,
+                                        civil strife, terrorist activity (actual or threatened), industrial
+                                        dispute, technical problems with transports, machinery or
+                                        equipment, power failure, natural or nuclear disaster, fire, flood,
+                                        drought or storm, other adverse weather conditions including
+                                        heavy rainfall, hail, snow or frost.
+                                    </p><br/>
+                                    <font class="tcBulletHeading">4. Prices</font><br/>
+                                    <p>
+                                        a) Once the price of your holiday has been confirmed on your
+                                        confirmation invoice then subject to the correction of errors, we
+                                        will only increase the price and request a surcharge in the
+                                        following circumstances: increases in our transportation charges
+                                        (including the cost of fuel), dues, taxes, airport charges or the
+                                        exchange rates used to calculate the cost of your holiday.
+                                        </p><p>
+                                        b) Even in the above cases, only if the amount of any increase in
+                                        our costs exceeds 2% of the total cost of your holiday will we levy
+                                        a surcharge. If the surcharge is greater than 10% you reserve the
+                                        right to cancel your holiday within 14 days of our notifying you of
+                                        the surcharges, after which we reserve the right to add a surcharge
+                                        over the 10% of the total holiday price.
+                                        </p><p>
+                                        c) Quotations will be provided in Hong Kong Dollars (HKD).
+                                    </p><br/>
+                                    <font class="tcBulletHeading">5. Our responsibility</font><br/>
+                                    <p>
+                                        a) We accept responsibility for ensuring that the holiday
+                                        arrangements that you book with us are supplied as described in
+                                        the itinerary provided, and in accordance with these terms and
+                                        conditions. If you feel that your holiday arrangements are not as
+                                        described in your itinerary, you should notify our appointed local
+                                        supplier or us (where no local supplier is appointed) as soon as
+                                        possible and provide us with details in writing.
+                                        </p><p>
+                                        b) We endeavour to keep the website and any brochures up to date,
+                                        but cannot guarantee their accuracy and, if there is any
+                                        inconsistency between the information on our website and the
+                                        itinerary details provided to you, the itinerary details prevail.
+                                        </p><p>
+                                        c) We accept responsibility for our suppliers and local
+                                        representatives, provided that such suppliers and representatives
+                                        have acted at all times within our authority and in accordance with
+                                        our instructions. We do not accept responsibility for: travel by air,
+                                        sea and rail and the provision of accommodation, to which the
+                                        terms of the relevant travel provider shall apply; or (ii) holidays,
+                                        activities or other bookings or arrangements made directly with our
+                                        suppliers, local representatives or any other third parties.
+                                        </p><p>
+                                        d) Under no circumstances will we accept responsibility for any
+                                        indirect or consequential loss whatsoever arising under or in
+                                        connection with our provision of your holiday.
+                                        </p><p>
+                                        e) Nor do we accept responsibility for any injury, illness, death, loss
+                                        (including loss of enjoyment and loss of business, profits or
+                                        employment), damage, expense, cost or other claims or liability of
+                                        any description whatsoever which results from: (i) any fault of you
+                                        or any member of your party, (ii) any fault of any third party
+                                        unconnected with us and the provision of the services for which
+                                        you have contracted with us; (ii) any force majeure circumstances
+                                        (as described in Paragraph 3 above) which are beyond our or our
+                                        suppliers’ reasonable control.</p><p>
+                                        f) Our total liability to you in respect of all other losses arising
+                                        under or in connection with the Contract, whether in contract, tort
+                                        (including negligence), breach of statutory duty, or otherwise shall
+                                        not exceed the value of your booking (including taxes and deposit).
+                                        g) Nothing in these terms and conditions shall limit or exclude our
+                                        liability where such exclusion is not permitted under applicable
+                                        law.</p><p>
+                                        <font class="tcBulletHeading">6. Your responsibility</font><br/>
+                                        It is your responsibility to ensure that you and all persons traveling
+                                        with you have valid passports (with at least 6 months validity
+                                        beyond the date of return and at least two blank pages or more),
+                                        appropriate visas and vaccinations.
+                                        Women who are 28 weeks pregnant or more at the time of travel
+                                        should have a doctor’s certificate confirming they are fit to travel.
+                                        </p><p>
+                                        <font class="tcBulletHeading">7. Insurance</font><br/>
+                                        You must be fully insured for your holiday and must make sure that
+                                        all of the activities which you will be carrying out are covered
+                                        under such insurance, protecting against unforeseen
+                                        circumstances that could otherwise spoil your travels. Cover must
+                                        include medical expenses and repatriation in the event of accident
+                                        or illness. In addition, we strongly recommend that you have cover
+                                        for personal belongings, delay at your outward or homeward point
+                                        of departure, personal liability, overseas legal expenses and
+                                        cancellation. If you are undertaking any sports or adventurous
+                                        activities, including trekking, on your trip you should also make
+                                        sure that your policy covers these. Please also ensure you read the
+                                        policy conditions and exclusions.
+                                        </p><p>
+                                        <font class="tcBulletHeading">8. Privacy</font><br/>
+                                        Personal information that you provide when using our website and
+                                        booking holidays will be treated in accordance with our Privacy
+                                        Policy, which can be accessed via the following link -
+                                        http://www.River of Footstepstravel.com/assets/documents/Privacy_Policy.
+                                        pdf Please read this carefully.
+                                        </p><p>
+                                        <font class="tcBulletHeading">9. Governing Law</font><br/>
+                                        These terms and conditions and any disputes arising from them
+                                        shall be governed by Hong Kong law. You and we agree to submit
+                                        to the exclusive jurisdiction of the courts of Hong Kong regarding
+                                        any such dispute.
+                                        </p><p>
+                                        <font class="tcBulletHeading">10. Changes to Terms and Conditions</font><br/>
+                                        The terms and conditions which apply to your holiday are those
+                                        which are featured on your booking form at the time of booking,
+                                        and any other terms notified to you in writing before departure. We
+                                        reserve the right to update these terms and conditions from time to
+                                        time. Any such updates shall take efect immediately upon posting
+                                    on our website.</p>
+                                    <div>
+                                        <a href="" title="To minimise terms and conditions click here" class="hideshowtc" style="float: right; margin-top: -20px;text-decoration:none">
+                                            <img src="/s.gif" alt="Unselect" class="downArrowIcon downArrowIcon0"  style=""/>
+                                            <img src="/s.gif"  title="To minimise terms and conditions click here"  alt="Unselect" class="upArrowIcon upArrowIcon0"  style="display:inline;display: none;"/>
+                                        </a>
+                                    </div>
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="{!Opp.O_RecordType__r.Name == 'DXB'}">
+                                    <p>  
+                                        The following terms and conditions, and any other terms and conditions (including, for example, brochure terms) which are notiﬁed to you in writing before departure, apply to all holidays booked with River of Footsteps Travel Private Limited trading as River of Footsteps Travel (‘we’, ‘our’ or ‘us’), which is registered in Singapore under company number 200916093N. River of Footsteps Travel FZ LLC is a marketing branch of River of Footsteps Travel Pte Ltd, so by agreeing to these terms and conditions you are contracting with River of Footsteps Travel Pte Ltd in Singapore. 
+                                        Please read these terms and conditions carefully, as they set out your contract with us once you have paid your deposit (or other fee such as in a last minute booking). In the following terms and conditions ‘you’ and ‘your’ means all persons named on the booking, including anyone who is added or substituted at a later date. Please pay particular attention to Paragraph 5 (Our Responsibility).
+                                    </p>
+                                    <br/>
+                                    <font class="tcBulletHeading">1. Booking and Payment</font><br/>
+                                    <p>
+                                        a) To book a holiday you must ﬁrst call us to discuss your itinerary or request a quotation. If you are satisﬁed with the quotation you should complete, sign and return the booking form to us together with the non-refundable deposit (see below). The lead client who makes the booking is taken to have accepted these terms and conditions on behalf of and with the authorization of all the persons named on the booking. Written quotations are valid for a period of 20 days from the date of our quotation, unless otherwise indicated.
+                                        </p><p>
+                                        b) A service fee is chargeable for all bookings and ticketing provided by River of Footsteps Travel sta . This is at the discretion of the Company, and mutually agreed upon by both parties before conﬁrming the booking.
+                                        </p><p>
+                                        c) The deposit, 30% of your total holiday, is non-refundable and will be treated as part payment of the holiday. The deposit amount will be shown on the quotation page of your itinerary and should be paid by the lead client. In addition to the deposit, full or part payment may sometimes be required before the balance due date (such as for ﬂights).
+                                        </p><p>
+                                        d) Once we receive the deposit we will issue a written conﬁrmation of the booking, at which point a binding contract is formed between us. Once we are able to conﬁrm all elements of your holiday booking, a process that may take several weeks, we will send you a conﬁrmation invoice including details of the balance payment.
+                                        </p><p>
+                                        e) Unless a last minute booking, the balance payment is due no later than 10 weeks prior to departure, or at the time of booking if less than 10 weeks prior to departure. The balance due date will be included in the conﬁrmation invoice (please note that reminders are not sent). If the balance payment is not received by the due date we reserve the right to cancel your booking as per the terms below.
+                                        </p><p>
+                                        f) Clients should pay all bank charges for bank transfers. Failure to do so may lead to you being rebilled.
+                                        </p><p>
+                                        g) We will always quote the price of your holiday by reference to the base currency in which the booking would be made by us, on the date that the quotation is created. If an adverse currency ﬂuctuation occurs, equal to 2% or more of the overall price during 
+                                        the period between the date of the quotation and the date(s) for payment of the deposit and/or ﬁnal balance payment for the holiday, we reserve the right to adjust the ﬁnal balance payment due to reﬂect such currency ﬂuctuation.
+                                    </p><br/>
+                                    <font class="tcBulletHeading">2. Alterations and cancellation by you</font><br/>
+                                    <p>
+                                        a) If, after we have conﬁrmed a booking, you wish to make alterations to the dates or other details of your booking we will try but cannot promise to meet your request. We require the lead person to notify us of required changes in writing. We reserve the right to charge you 2% of the total holiday booking for changes. If we can make the requested changes you will be provided with a quote detailing any costs incurred by ourselves and any costs imposed by our suppliers.
+                                        </p><p>
+                                        b) Cancellations must be notiﬁed to us in writing by the lead client and will be e ective the day we receive them. As we incur costs from the time of your booking, the following cancellation charges will be payable. We will not refund to you any deposits, administrative fees or alterations fees. You must take out holiday insurance that covers cancellation of your booking. We cannot guarantee any ﬂight refunds. Cancellation charges apply as a percentage of the total holiday price, as follows.
+                                        <ul style="list-style-type:lower-alpha">
+                                            <li>75 days or more Deposit only</li>
+                                            <li>74 – 50 days 40%</li>
+                                            <li>49 – 29 days 60%</li>
+                                            <li>28 – 7 days 90%</li>
+                                            <li>6 days or less 100%</li>
+                                        </ul>
+                                        In the event that the cancellation charges of the suppliers we use are more than ours, then the suppliers’ cancellation terms will apply.
+                                        </p><p>
+                                        c) If a member of a party is prevented from traveling the person concerned may transfer their place to someone else as long as our suppliers accept the transfer of names, you sign an authorization letter and the transferee signs a booking form. All costs incurred by us and any of our suppliers, an amendment fee of United Arab Emirates Dirham (AED) 300, and any overdue balance payment must be paid before any such transfer is effective. If you decide during the course of your holiday to abandon arrangements made by us no liability and no refunds will be made for the service you choose not to take.
+                                    </p><br/>
+                                    <font class="tcBulletHeading">3. Alterations and cancellation by us</font><br/>
+                                    <p>
+                                        a) It is unlikely we will have to make changes to your travel plans and we do our utmost to deliver the holiday we are contracted to provide. However, as we make arrangements many months in advance we occasionally have to make changes and reserve the right to do so.
+                                        </p><p>
+                                        b) Most changes are minor and we will inform you of them if possible. Occasionally, we have to make a major change. A major change is a change made before departure which, taking account of the information you give us at the time of booking and which we can reasonably expect to know as a tour operator, we can reasonably expect to have a major e ect on your holiday. Major changes may include: price increases, change of your city/resort/place of destination, or change of your accommodation to a lower grade. If we make a major change to your holiday we will inform you as soon as possible. You will then have the choice of: (i) 
+                                        accepting the changes, (ii) accepting an o er of an alternative holiday from us of a similar standard to that already booked, or (iii) cancelling your holiday and receiving a full refund of all monies due.
+                                        </p><p>
+                                        c) We will not accept liability if we are forced by ‘force majeure’ to change or terminate your holiday. ‘Force majeure’ means unusual and unforeseeable circumstances beyond our control, the consequences of which neither us nor our suppliers could avoid. These may include, but are not limited to, war, threat of war, riot, civil strife, terrorist activity (actual or threatened), industrial dispute, technical problems with transports, machinery or equipment, power failure, natural or nuclear disaster, ﬁre, ﬂood, drought or storm, other adverse weather conditions including heavy rainfall, hail, snow or frost.
+                                    </p><br/>
+                                    <font class="tcBulletHeading">4. Prices</font><br/>
+                                    <p>
+                                        a) Once the price of your holiday has been conﬁrmed on your conﬁrmation invoice then subject to the correction of errors, we will only increase the price and request a surcharge in the following circumstances: increases in our transportation charges (including the cost of fuel), dues, taxes, airport charges or the exchange rates used to calculate the cost of your holiday.
+                                        </p><p>
+                                        b) Even in the above cases, only if the amount of any increase in our costs exceeds 2% of the total cost of your holiday will we levy a surcharge. If the surcharge is greater than 10% you reserve the right to cancel your holiday within 14 days of our notifying you of the surcharges, after which we reserve the right to add a surcharge over the 10% of the total holiday price.
+                                        </p><p>
+                                        c) Quotations will be provided in United Arab Emirates Dinar (AED)
+                                    </p><br/>
+                                    <font class="tcBulletHeading">5. Our responsibility</font><br/>
+                                    <p>
+                                        a) We accept responsibility for ensuring that the holiday arrangements that you book with us are supplied as described in the itinerary provided, and in accordance with these terms and conditions. If you feel that your holiday arrangements are not as described in your itinerary, you should notify our appointed local supplier or us (where no local supplier is appointed) as soon as possible and provide us with details in writing.
+                                        </p><p>
+                                        b) We endeavour to keep the website and any brochures up to date, but cannot guarantee their accuracy and, if there is any inconsistency between the information on our website and the itinerary details provided to you, the itinerary details prevail.
+                                        </p><p>
+                                        c) We accept responsibility for our suppliers and local representatives, provided that such suppliers and representatives have acted at all times within our authority and in accordance with our instructions. We do not accept responsibility for: travel by air, sea and rail and the provision of accommodation, to which the terms of the relevant travel provider shall apply; or (ii) holidays, activities or other bookings or arrangements made directly with our suppliers, local representatives or any other third parties.
+                                        </p><p>
+                                        d) Under no circumstances will we accept responsibility for any indirect or consequential loss whatsoever arising under or in connection with our provision of your holiday.
+                                        </p><p>
+                                        e) Nor do we accept responsibility for any injury, illness, death, loss (including loss of enjoyment and loss of business, proﬁts or 
+                                        employment), damage, expense, cost or other claims or liability of any description whatsoever which results from: (i) any fault of you or any member of your party, (ii) any fault of any third party unconnected with us and the provision of the services for which you have contracted with us; (ii) any force majeure circumstances (as described in Paragraph 3 above) which are beyond our or our suppliers’ reasonable control.
+                                        </p><p>
+                                        f) Our total liability to you in respect of all other losses arising under or in connection with the Contract, whether in contract, tort (including negligence), breach of statutory duty, or otherwise shall not exceed the value of your booking (including taxes and deposit).
+                                        </p><p>
+                                        g) Nothing in these terms and conditions shall limit or exclude our liability where such exclusion is not permitted under applicable law.
+                                    </p><br/>
+                                    <font class="tcBulletHeading">6. Your responsibility</font><br/>
+                                    <p>
+                                        It is your responsibility to ensure that you and all persons traveling with you have valid passports (with at least 6 months validity beyond the date of return and at least two blank pages or more), appropriate visas and vaccinations.
+                                        Women who are 28 weeks pregnant or more at the time of travel should have a doctor’s certiﬁcate conﬁrming they are ﬁt to travel.
+                                        </p><p>
+                                        <font class="tcBulletHeading">7. Insurance</font><br/>
+                                        You must be fully insured for your holiday and must make sure that all of the activities which you will be carrying out are covered under such insurance, protecting against unforeseen circumstances that could otherwise spoil your travels. Cover must include medical expenses and repatriation in the event of accident or illness. In addition, we strongly recommend that you have cover for personal belongings, delay at your outward or homeward point of departure, personal liability, overseas legal expenses and cancellation. If you are undertaking any sports or adventurous activities, including trekking, on your trip you should also make sure that your policy covers these. Please also ensure you read the policy conditions and exclusions.
+                                        
+                                        </p><p>
+                                        <font class="tcBulletHeading">8. Privacy</font><br/>
+                                        Personal information that you provide when using our website and booking holidays will be treated in accordance with our Privacy Policy, which can be accessed via the following link - http://www.River of Footstepstravel.com/assets/documents/Privacy_Policy. pdf Please read this carefully.
+                                        </p><p>
+                                        <font class="tcBulletHeading">9. Governing Law</font><br/>
+                                        These terms and conditions and any disputes arising from them shall be governed by Hong Kong law. You and we agree to submit to the exclusive jurisdiction of the courts of Hong Kong regarding any such dispute.
+                                        </p><p>
+                                        <font class="tcBulletHeading">10. Changes to Terms and Conditions</font><br/>
+                                        The terms and conditions which apply to your holiday are those which are featured on your booking form at the time of booking, and any other terms notiﬁed to you in writing before departure. We reserve the right to update these terms and conditions from time to time. Any such updates shall take e ect immediately upon posting on our website.
+                                        <div>
+                                            <a href=""  class="hideshowtc" style="float: right; margin-top: -20px;text-decoration:none">
+                                                <img src="/s.gif" alt="Unselect" class="downArrowIcon downArrowIcon0"  style=""/>
+                                                <img src="/s.gif" title="To minimise terms and conditions click here" alt="Unselect" class="upArrowIcon upArrowIcon0"  style="display:inline;display: none;"/>
+                                            </a>
+                                        </div>
+                                    </p>
+                                    
+                                </apex:outputPanel>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>        
+            <br/>
+            <br/><br/>
+            <div class="actions-bottom">
+                <apex:commandButton style="float:right;margin-right: 39%;background: #457098;color: #fff !important;padding: 10px 16px;" styleClass="btn btnBottm saveOpp" onclick="validate();return false;" value="CONFIRM"/> 
+            </div>
+            <div class="wrap">
+                
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

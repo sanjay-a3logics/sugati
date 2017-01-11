@@ -1,0 +1,537 @@
+<apex:component >
+    
+    <style>
+     
+        .multicomCmp h1, .multicomCmp h2, .multicomCmp h3, .multicomCmp h4, .multicomCmp h5, .multicomCmp h6, .multicomCmp .h1, .multicomCmp .h2, .multicomCmp .h3, .multicomCmp .h4, .multicomCmp .h5, .multicomCmp .h6{
+            font-family:Arial,sans-serif;
+            font-weight:500;
+            line-height:1.1;
+            color:inherit
+        }
+        .multicomCmp h1 small, .multicomCmp h1 .small, .multicomCmp h2 small, .multicomCmp h2 .small, .multicomCmp h3 small, .multicomCmp h3 .small, .multicomCmp h4 small, .multicomCmp h4 .small, .multicomCmp h5 small,.multicomCmp h5 .small, .multicomCmp h6 small, .multicomCmp h6 .small, .multicomCmp .h1 small, .multicomCmp .h1 .small, .multicomCmp .h2 small, .multicomCmp .h2 .small, .multicomCmp .h3 small, .multicomCmp .h3 .small, .multicomCmp .h4 small, .multicomCmp .h4 .small, .multicomCmp .h5 small, .multicomCmp .h5 .small, .multicomCmp .h6 small, .multicomCmp .h6 .small{
+            font-weight:normal;
+            line-height:1;
+            color:#999
+        }
+        .multicomCmp h1, .multicomCmp h2, .multicomCmp h3{
+            margin-top:17px;
+            margin-bottom:8.5px
+        }
+        .multicomCmp h1 small, .multicomCmp h1 .small, .multicomCmp h2 small, .multicomCmp h2 .small, .multicomCmp h3 small, .multicomCmp h3 .small{
+            font-size:65%;
+        }
+        .multicomCmp h4, .multicomCmp h5, .multicomCmp h6{
+            margin-top:8.5px;
+            margin-bottom:8.5px
+        }
+        .multicomCmp h4 small, .multicomCmp h4 .small, .multicomCmp h5 small, .multicomCmp h5 .small, .multicomCmp h6 small, .multicomCmp h6 .small{
+            font-size:75%;
+        }
+        .multicomCmp h1, .multicomCmp .h1{
+            font-size:20px
+        }
+        .multicomCmp h2, .multicomCmp .h2{
+            font-size:25px
+        }
+        .multicomCmp h3, .multicomCmp .h3{
+            font-size:21px
+        }
+        .multicomCmp h4, .multicomCmp .h4{
+            font-size:15px
+        }
+        .multicomCmp h5, .multicomCmp .h5{
+            font-size:12px
+        }
+        .multicomCmp h6, .multicomCmp .h6{
+            font-size:11px
+        }
+        .multicomCmp .page-header{
+            padding-bottom:7.5px;
+            margin:34px 0 17px;
+            border-bottom:1px solid #160e3d
+        }
+        
+        .multicomCmp .form-control {
+            display: block;
+            width: 100%;
+            height: 34px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.428571429;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+            -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+        
+        .multicomCmp .add_room_buttonbar {
+            display: block;
+            margin-top: 8px;
+        }
+        
+        .multicomCmp button.close {
+            color: #fff;
+            font-weight: normal;
+            opacity: 1;
+        }
+        .multicomCmp button.close {
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+            border: 0;
+            -webkit-appearance: none;
+        }
+        .multicomCmp .close {
+            float: right;
+            font-size: 21px;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: .2;
+            filter: alpha(opacity=20);
+        }
+        .multicomCmp button.close {
+            color: #666;
+        }
+        .multicomCmp .room_row {
+            background: #fff;
+            padding: 15px 0;
+            margin-bottom: 10px;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            -o-border-radius: 3px;
+            border-radius: 3px;
+            border: solid 1px #ccc;
+        }
+        
+        .multicomCmp .segmented_controls {
+            border-collapse: separate;
+            display: table;
+            position: relative;
+            padding: 0;
+        }
+        
+        .multicomCmp .segmented_controls, .multicomCmp .segmented_controls .form-control {
+            display: table-cell;
+            width: 100%;
+            font-size: 15px;
+            vertical-align: middle;
+        }
+        .multicomCmp .make_field.form-control {
+            line-height: 1;
+        }
+        .multicomCmp .segmented_controls.form-control {
+            box-shadow: none;
+        }
+        .multicomCmp .segmented_controls a {
+            border-radius: 4px;
+            color: #555;
+            display: table-cell;
+            vertical-align: middle;
+            white-space: nowrap;
+            width: 1%;
+            padding: 6px 12px;
+            text-align: center;
+            line-height: 1;
+            font-size: 20px;
+            font-weight: normal;
+            text-align: center;
+        }
+        .multicomCmp .segmented_controls .form-control {
+            margin-bottom: 0;
+            width: 100%;
+            border: 0;
+            box-shadow: none;
+            border-radius: 0;
+            height: 32px;
+            font-weight: bold;
+        }
+        
+        .multicomCmp .segmented_controls a, .segmented_controls .form-control {
+            display: table-cell;
+        }
+        .multicomCmp .segmented_controls, .segmented_controls .form-control {
+            display: table-cell;
+            width: 100%;
+            font-size: 15px;
+            vertical-align: middle;
+        }
+        .multicomCmp .make_field.slds-input {
+            line-height: 1;
+        }
+        .multicomCmp #contentLoading{
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+            position: fixed;
+            display: block;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 11111111;
+            text-align: center;
+        }
+        
+        .multicomCmp #contentLoading1{
+            position: absolute;
+            top:350px;
+            z-index: 100;
+        }
+        
+        .multicomCmp .result-box {
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2);
+            border-radius: 2px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            position: relative;
+            
+        }
+        .multicomCmp .clearfix {
+            display: inline-block;
+        }
+        
+        .multicomCmp .result-box .box-content{
+            position:relative
+        }
+        .multicomCmp .modify-search-box{
+            background-color: #fff;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            -o-border-radius: 3px;
+            border-radius: 3px;
+            padding: 10px;
+            letter-spacing: .1;
+        }
+        .multicomCmp .modify_search_toggle {
+            padding: 7px 10px;
+            font-size: 14px;
+            border: solid 1px #bcbcbc;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 2px;
+            -o-border-radius: 2px;
+            border-radius: 2px;
+            margin-top: 4px;
+        }
+        .multicomCmp a{
+            text-decoration: none !important;
+        }
+        .multicomCmp .animate-show {
+            line-height: 20px;
+            opacity: 1;
+            padding: 10px;
+            background: white;
+        }
+        .multicomCmp #search-wrapper-form {
+            background-color: #e8e7e4;
+            border-top: 1px solid #d4d4d4;
+            margin-top: 0;
+            padding: 10px 0;
+            
+        }
+        .modify-search-wrapper{
+            background-color: #fff;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            -o-border-radius: 3px;
+            border-radius: 3px;
+            border: solid 1px #ccc;
+        }
+        #mfs_bgcover {
+            opacity: .5;
+            background: #000;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .multicomCmp .animate-show.ng-hide-add, .animate-show.ng-hide-remove {
+            transition: all linear 0.5s;
+        }
+        
+        .multicomCmp .animate-show.ng-hide {
+            line-height: 0;
+            opacity: 0;
+            padding: 0 10px;
+        }
+        .multicomCmp search-wrapper-form{
+            background: #f6f6f6;
+        }
+        
+        .multicomCmp .city_name {
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+            padding-top: 10px;
+            color: #160e3d;
+        }
+        .multicomCmp .modify-search-box .has_right_border {
+            border-right: 1px solid #ccc;
+            min-height: 50px;
+        }
+        
+        .multicomCmp .modify_captions {
+            font: normal 10px Tahoma,Geneva,sans-serif;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .multicomCmp .check-dates {
+            position: relative;
+        }
+        .multicomCmp .check-dates .date {
+            font-size: 20px;
+        }
+        .check-dates .month_day {
+            font-size: 14px;
+        }
+        .multicomCmp .month_day {
+            font-size: 13px;
+            color: #838383;
+            line-height: 16px;
+            text-transform: uppercase;
+        }
+        .multicomCmp .check-dates .arrow_greater {
+            background-position: -1px -203px;
+            width: 6px;
+            height: 10px;
+            position: absolute;
+            right: -5px;
+        }
+        .multicomCmp .price_box_bg_no_bottom {
+            background: #f5f5f5;
+            min-height: 146px;
+        }
+        .multicomCmp .append_bottom30 {
+            margin-bottom: 30px!important;
+        }
+        
+        .multicomCmp .GBP:before{
+            
+        }
+        .multicomCmp .city_info {
+            margin-bottom: 5px;
+        }
+        .multicomCmp .hotel_location {
+            margin: 0 4px 0 0;
+            font-size: 12px;
+            line-height: 13px;
+            color: #2f2f2f;
+        }
+        @media (min-width: 1200px){
+            .multicomCmp .actual_price {
+                font-size: 20px;
+                line-height: 20px;
+            }
+            .multicomCmp .city_info {
+                margin-bottom: 8px;
+                font-size: 14px;
+            }
+        }
+        
+        .multicomCmp .actual_price {
+            font-size: 18px;
+            color: #48397d;
+            line-height: 18px;
+        }
+    
+        .multicomCmp .per_room {
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        
+        .multicomCmp .hotel_details {
+            padding-top: 6px;
+        }
+        
+        .multicomCmp .hote_nameinfo {
+            margin-bottom: 6px;
+        }
+        .multicomCmp .hotel_name {
+            font-size: 18px;
+            line-height: 16px;
+            margin-right: 8px;
+            color: #2f2f2f;
+        }
+        .box-has-padding{
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        .hide-in-small-screen {
+            display: none;
+        }
+        
+        .multicomCmp .hotel-price{
+            position: relative;
+        }
+        
+        @media (min-width: 768px){    
+            .multicomCmp .text-align-center{
+                text-align: center;
+            }   
+            .hide-in-small-screen {
+                display: inline-block;
+            }
+            .multicomCmp .result-box .box-title {
+                margin-bottom: 16px;
+            }
+            .multicomCmp .result-box.accomodationOnly .box-content .hotel-image-container {
+                margin-bottom: 0;
+            }
+            
+            .multicomCmp .result-box .box-content .dates {
+                margin-bottom: 16px;
+                font-size: 12px;
+            }
+            
+            .multicomCmp .result-box .box-content{
+                font-size:14px;
+                position:relative;
+                margin-bottom:16px;
+                overflow:hidden
+            }
+            
+            .multicomCmp #searchFilterBox .btn-mod{
+                width:50%;top:auto; bottom:0;left:0;
+                text-align:center;
+                background-color:transparent;
+                color:#fff;
+                padding:8px;
+                text-align:left
+            }
+            .multicomCmp #searchFilterBox .btn-mod{
+                display:block;
+                right:37px;
+                width:auto
+            }
+            .multicomCmp #searchFilterBox .btn-mod span{
+                float: right;
+            }
+            
+            .multicomCmp .result-box .price-box {
+                display: block;
+                position: absolute;
+                bottom: 0px;
+                top: auto;
+            }
+            .multicomCmp .result-box .box-content .price-box .amount-container {
+                line-height: 1;
+                text-align: right;
+            }
+            
+            .multicomCmp .result-box .box-content .price-box .amount-container .amount {
+                font-size: 22px;
+                padding-right: 16px;
+                color: #16325c;
+                margin-bottom: 0;
+            }
+            
+            .padding-sm-right{
+                padding-right: 10px;
+            }
+        }
+        
+        @media (min-width: 980px){
+            .multicomCmp #wrapper-summary .summary-details {
+                padding-right: 0;
+            }
+            
+            .multicomCmp #searchFilterBox .btn-mod{
+                display:block;
+                right:0;
+                width:auto
+            }
+        }
+        
+        .multicomCmp .room-type-dropdown{
+            font-size: 12px;
+        }
+        
+        .multicomCmp .nav-tabs{
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-align: start;
+            align-items: flex-start;
+            border-bottom: 1px solid #d8dde6;
+        }
+        
+        .multicomCmp .uib-tab .nav-item  {
+          overflow: hidden;
+        }
+
+        @media (min-width: 48em) {
+          .multicomCmp .uib-tab .nav-item + .multicomCmp .uib-tab .nav-item {
+            margin-left: 24px;
+          }
+        }
+        
+        
+        
+        .flexslider .slides img {
+            width: auto;
+            display: block;
+            height: auto;
+            margin: auto;
+            -moz-user-select: none;
+        }
+        .flex-control-thumbs{
+            margin-top: 15px !important;
+        }
+        
+        .result-map-view-wrapper{
+            height: 700px;
+            width: 100%;
+        }
+        .custom-marker{
+            background: #00f;
+            color: #fff;
+            border: 1px solid #7F7F7F;
+            border-radius: 5px;
+            padding: 3px;
+        }
+        .custom-marker:before {
+            content: '';
+            position: absolute;
+            border-style: solid;
+            border-width: 7px 6px 0;
+            border-color: #7F7F7F transparent;
+            display: block;
+            width: 0;
+            z-index: 0;
+            margin-left: -6px;
+            bottom: -7px;
+            left: 50%;
+        }
+        .custom-marker:after {
+            content: '';
+            position: absolute;
+            border-style: solid;
+            border-width: 7px 6px 0;
+            border-color: #00f transparent;
+            display: block;
+            width: 0;
+            z-index: 1;
+            margin-left: -6px;
+            bottom: -6px;
+            left: 50%;
+        }
+        
+        .currency-sign:before{
+            font-size:10px
+        }
+        
+        .change-view-wrapper{
+            text-align: right; 
+            padding: 5px; 
+            padding-right: 20px; 
+            background-color:#fff;
+        }
+    </style>
+</apex:component>

@@ -1,0 +1,76 @@
+<apex:page standardStylesheets="false" standardController="Opportunity" sidebar="false">
+    <title>Send Email</title>
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+        <c:BasicResources ></c:BasicResources>
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+        <apex:stylesheet value="https://appssential-sf.s3.amazonaws.com/sugati/css/slds-appssential.css" />
+        <apex:includescript value="https://appssential-sf.s3.amazonaws.com/sugati/js/slds-appssential.js" />
+        
+        
+        <script>
+            var myApp = angular.module('MyApp', ['ui.bootstrap','oi.select','ngSanitize', 'ui.select','checklist-model']);
+            var contrl = myApp.controller('myController' ,function($scope,$http, $timeout,oiSelect){});
+            //CKEditor 
+            myApp.directive('ckEditor', [function () {
+                return {
+                    require: '?ngModel',
+                    link: function ($scope, elm, attr, ngModel) {
+            
+                        var ck = CKEDITOR.inline(elm[0]);
+                        ck.on('pasteState', function () {
+                            $scope.$apply(function () {
+                                ngModel.$setViewValue(ck.getData());
+                            });
+                        });
+            
+                        ngModel.$render = function (value) {
+                            ck.setData(ngModel.$modelValue);
+                        };
+                    }
+                };
+            }]);
+            myApp.directive('jqdatepicker', function () {
+                return {
+                    restrict: 'A',
+                    require: 'ngModel',
+                     link: function (scope, element, attrs, ngModelCtrl) {
+                        $(element).datepicker({
+                            dateFormat: 'dd/mm/yy',
+                            onSelect: function (date) {
+                                ngModelCtrl.$setViewValue(date);
+                                ngModelCtrl.$render();
+                                scope.$apply();
+                            }
+                        });
+                    }
+                };
+            });
+            $( document ).ready(function() {
+                angular.element(document.getElementById('SendEmail')).scope().selectTemplate();
+            });
+            
+        </script>
+        
+        
+        <body>
+            <div ng-app="MyApp">
+                <div id="mycontroller" ng-controller="myController" >
+                    <div class="slds">
+                        <c:Loading ></c:Loading>
+                        <c:AlertBox ></c:AlertBox>
+                    </div>
+                    <c:MailService opportunityId="{!$CurrentPage.parameters.id}" templateName="SendEmail"/>
+                </div>
+            </div>
+        </body>
+    </html>
+      
+</apex:page>

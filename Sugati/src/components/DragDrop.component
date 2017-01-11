@@ -1,0 +1,323 @@
+<apex:component >
+     <apex:attribute name="DragDropHeight" type="String" description="Height in Pixel for Drag and Drop Section"/>
+     <apex:includeScript value="{!URLFOR($Resource.DragDropFiles, 'js/jquery.easy-confirm-dialog.js')}"/>
+     <apex:stylesheet value="{!URLFOR($Resource.DragDropFiles, 'css/FileUploadCSS.css')}"/>
+     <apex:stylesheet value="{!URLFOR($Resource.DragDropFiles, 'css/chatterCore.css')}"/>  
+     <script src="/soap/ajax/15.0/connection.js" type="text/javascript"></script>
+     <script src="/soap/ajax/15.0/apex.js" type="text/javascript"></script>
+     <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+     <style>
+         .dropzone-area{
+             height: 100px;
+             border : 2px dotted #000;
+         }
+         
+         #drop_zone{
+            border: 2px dashed #BBB;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            padding: 55px;
+            text-align: center;
+            font: 20pt bold;
+            color: #BBB;
+            border-image: initial;
+         }
+         
+           #contentLoading2{
+                width: 100%;
+                height: 100%;
+                top: 0px;
+                left: 0px;
+                position: fixed;
+                display: block;
+                opacity: 0.6;
+                background-color: #fff;
+                z-index: 10001;
+                text-align: center;
+            }
+
+            #contentLoading3{
+                position: absolute;
+                top:300px;
+                z-index: 10000;
+            }
+            
+     </style>
+    <script>
+        var j$ = jQuery.noConflict();
+        var attachmentIds = '';
+        var CHUNK_SIZE;
+        var VIEW_URL = '/sfc/#version/';
+        var fileCount = 0;
+        var products='';
+        var title='';
+        var cid='';
+        var count =0;
+        var files;
+        var currentFile;
+        var $upload;
+        var uploadCounter = 0;
+        var progressCounter = 0;
+    
+        j$(document).ready(function()
+        {
+            var dropZone = document.getElementById('drop_zone');
+            var obj = j$("#dragandrophandler");
+            obj.on('dragenter', function (e) 
+            {
+                e.stopPropagation();
+                e.preventDefault();
+                j$(this).css('border', '2px solid #0B85A1');
+            });
+            obj.on('dragover', function (e) 
+            {
+                 e.stopPropagation();
+                 e.preventDefault();
+            });
+            obj.on('drop', function (e) 
+            {   
+                j$(this).css('border', '2px dotted #BEADC1');
+                e.preventDefault();
+                files = e.originalEvent.dataTransfer.files;
+                
+                //Only proceed if there are files selected
+                if(files.length == 0){
+                    alert('Please select a file...');
+                    return; //end function
+                }
+                var uploadMarkup = '';
+                for(i = 0; i < files.length; i++){
+                    //Determine file display size
+                    if(files[i].size < 1000000){
+                        var displaySize = Math.floor(files[i].size/1000) + 'K';
+                        
+                    }else{
+                        var displaySize  = Math.round((files[i].size / 1000000)*10)/10 + 'MB';
+                    }
+        
+                    //For each file being uploaded create a div to represent that file, includes file size, status bar, etc. data-Status tracks status of upload
+                    uploadMarkup += '<div class="upload" data-status="pending" data-index="'+i+'">'; //index used to correspond these upload boxes to records in the files array
+                    uploadMarkup += '<span style="width:550px;display:inline-block;">';
+                    uploadMarkup += '<span class="fileName"><span class="name">'+ files[i].name + '</span> ('+ displaySize+ ')</span>';
+                    uploadMarkup += '<span style="width:250px;position:absolute;"><span class="statusBarPercent"></span></span>';
+                    uploadMarkup += '<span class="percentComplete">0%</span>';
+                    uploadMarkup += '</span>';
+                    uploadMarkup += '<div class="clear"/>';
+                    uploadMarkup += '</div>';
+                    
+                }
+                //Empty earlier contents
+                //Add markup to the upload box
+                checkForUploads();
+                handleFileUpload(files,obj);
+            });
+            
+            j$(document).on('dragenter', function (e) 
+            {
+                e.stopPropagation();
+                e.preventDefault();
+            });
+            
+            j$(document).on('dragover', function (e) 
+            {   
+                e.stopPropagation();
+                e.preventDefault();
+                obj.css('border', '2px dotted #0B85A1');
+            });
+            
+            j$(document).on('drop', function (e) 
+            {
+                e.stopPropagation();
+                e.preventDefault();
+            });
+              dropZone.addEventListener('dragover', handleDragOver, false);
+              dropZone.addEventListener('drop', prepareFileUploads, false);
+        });
+        
+        function handleDragOver(evt){
+            evt.stopPropagation();
+            evt.preventDefault();
+            evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+        }
+        
+        function loadingval(val) {
+                console.log(val);
+                if (val) {
+                    document.getElementById('contentLoading2').style.display = 'inline-block';
+                    //document.getElementById('contentLoading1').style.display = 'none';
+                }
+                else {
+                    document.getElementById('contentLoading2').style.display = 'none';
+                    //document.getElementById('contentLoading1').style.display = 'inline-block';
+                }
+         } 
+         
+        function prepareFileUploads(evt){
+                 
+                evt.preventDefault();
+                
+                //Get the file(s) from the input field
+                files = evt.dataTransfer.files; // FileList object.
+        
+                //Only proceed if there are files selected
+                if(files.length == 0 ){
+                    alert('Please select a file!');
+                    return; //end function
+                }
+                if(files.length > 1 ){
+                    alert('Please select only one file!');
+                    return; //end function
+                }
+                //Build out the upload divs for each file selected
+                var uploadMarkup = '';
+                for(i = 0; i < files.length; i++){
+                    //Determine file display size
+                    if(files[i].size < 1000000){
+                        var displaySize = Math.floor(files[i].size/1000) + 'K';    
+                    }
+                    else{
+                        var displaySize  = Math.round((files[i].size / 1000000)*10)/10 + 'MB';
+                    }
+        
+                    //For each file being uploaded create a div to represent that file, includes file size, status bar, etc. data-Status tracks status of upload
+                    uploadMarkup += '<div class="upload" data-status="pending" data-index="'+i+'">'; //index used to correspond these upload boxes to records in the files array
+                    uploadMarkup += '<span style="width:550px;display:inline-block;">';
+                    uploadMarkup += '<span class="fileName"><span class="name">'+ files[i].name + '</span> ('+ displaySize+ ')</span>';
+                    uploadMarkup += '<span style="width:250px;position:absolute;"><span class="statusBarPercent"></span></span>';
+                    uploadMarkup += '<span class="percentComplete">0%</span>';
+                    uploadMarkup += '</span>';
+                    uploadMarkup += '<div class="clear"/>';
+                    uploadMarkup += '</div>';
+                    
+                }
+                checkForUploads();
+                
+        }
+        function checkForUploads(){
+            //Get div of the first matching upload element that is 'pending', if none, all uploads are complete
+            $upload = j$(".upload:first[data-status='pending']");
+            if(uploadCounter<files.length){
+                currentFile = files[uploadCounter];
+                if(uploadCounter==(files.length-1)){
+                    j$(j$('.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only')[0]).attr('disabled','disabled');   
+                }
+                if(currentFile.size <= 25000000){
+                    //Start processing the byteChunkArray for the current file, parameter is '' because this is the first chunk being uploaded and there is no attachment Id
+                    processCurrentFile();
+                }
+                else {
+                   alert('Please choose a file less than 25 MB ');
+                   return;
+                }
+            }
+            else{
+                console.log("All Files has been uploaded Successfully");
+                performUploadCompleteActions();
+            }
+        }
+        function callUpload(){
+            //update the count variable 
+            count++;
+            progressCounter++;
+            uploadCounter++;
+            if(files != null)
+                checkForUploads();  
+        }
+
+        function performUploadCompleteActions(){
+            j$(j$('.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only')[0]).hide();
+            j$(j$('.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only')[1]).show();
+        }
+        
+        function performUploadCancelActions(){
+            files = null;       
+            
+            j$(".upload:[data-status='incomplete']").find(".percentComplete").html('<font style="color:#C00000;;">Canceled</font>');
+            j$(".upload:[data-status='incomplete']").find(".statusBarPercent").hide();
+            j$(".upload:[data-status='incomplete']").attr('data-status','complete');        
+            
+            j$(".upload:[data-status='pending']").each(function() {j$(this).attr('data-status','complete');j$(this).find(".percentComplete").html('<font style="color:#C00000;;">Canceled</font>');});
+            j$(j$('.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only')[0]).hide();
+            j$(j$('.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only')[1]).show();
+        }   
+        
+        
+        function processCurrentFile(){
+               
+               var __sfdcSessionId = '{!$Api.Session_Id}'; 
+               
+               var reader = new FileReader();
+            
+                        // Keep a reference to the File in the FileReader so it can be accessed in callbacks
+                        reader.file = currentFile;
+                        reader.onload = function(e)
+                        {
+                            if(e.target.readyState == FileReader.DONE){ //Make sure read was successful, DONE == 2
+                                   var att = new sforce.SObject("Attachment");
+                                    att.Name = this.file.name;
+                                    att.ContentType = this.file.type;
+                                    att.ParentId = j$('#attparentID').val();
+                                    j$('.percentComplete'+count).html('<font style="color:#00DA40;">Uploading...</font>');
+                                    var binary = "";
+                                    var bytes = new Uint8Array(e.target.result);
+                                    var length = bytes.byteLength;
+                                    for (var i = 0; i < length; i++){
+                                        binary += String.fromCharCode(bytes[i]);
+                                    }
+                                    //Setting Session Id   
+                                    sforce.connection.sessionId=__sfdcSessionId;
+                                    att.Body = (new sforce.Base64Binary(binary)).toString(); 
+                                    $upload.attr('data-status','complete');
+                                    sforce.connection.create([att],
+                                    {  
+                                        onSuccess : function(result, source)
+                                        {
+                                            
+                                            if (result[0].getBoolean("success"))
+                                            {   
+                                                loadingval(false);
+                                                console.log("new attachment created with id " + result[0].id);
+                                                alert('Document has Uploaded successfully');
+                                            }
+                                            else
+                                            {   loadingval(false);
+                                                alert('An error occurred : '+result[0].errors);
+                                                console.log("failed to create attachment " + result[0]);
+                                            }
+                                        },
+                                        onFailure : function(error, source)
+                                        {  
+                                            loadingval(false);
+                                            alert('An error occurred : '+error);
+                                            console.log("an error has occurred " + error);
+                                        }
+                                        
+                                    });
+                                   }else{
+                                        
+                                        loadingval(false);
+                                        alert('An error occurred : '+error);
+    
+                                    }
+                                };
+                                loadingval(true);
+                                reader.readAsArrayBuffer(currentFile);
+                
+        }
+        
+        
+      </script>
+    <div class="slds" >
+     <div id="contentLoading2" style="display:none; ">
+           <!-- <img id="contentLoading1" src="/img/loading32.gif" alt="Loading graphic" /> src="/assets/images/spinners/slds_spinner_brand.gif" alt="Loading..."-->
+            <apex:image id="contentLoading3" styleclass="slds-spinner--medium" url="{!URLFOR($Resource.SLDS011, '/assets/images/spinners/slds_spinner_brand.gif')}" width="100" height="100" style="top: 50%; position: fixed;" alt="Loading graphic"/>
+      </div>
+    <div id="drop_zone" >Drag and Drop file into this outlined area to upload as File</div>
+    <div id="dragAndDropTargetDiv" class="dragAndDropTargetDiv" style="display: none;">
+        <div class="dragAndDropTargetImg"></div>
+        <div class="dragAndDropTargetTextDiv">Drag and Drop Files Here</div>
+    </div>
+   </div> 
+     
+</apex:component>

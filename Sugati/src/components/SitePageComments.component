@@ -1,0 +1,20 @@
+<apex:component controller="SitePageCommentsController" layout="none">
+    <apex:form >
+        <apex:actionFunction status="loading" name="reloadComment" action="{!reload}" reRender="comments"/>
+        <apex:outputPanel id="comments">
+          <div class="comments-3 group">
+              <table class="list" border="0" cellpadding="10" cellspacing="10" width="100%">
+                    <apex:repeat value="{!rowWrappers}" var="row">
+                       <tr>
+                         <apex:repeat value="{!row.values}" var="value">
+                           <td width="50%" align="center">
+                             <p class="text-style-3"><span class="text-style-2"><apex:outputText escape="false" value="{!value}" label="" styleClass="preformatted" /></span></p>
+                           </td>
+                         </apex:repeat>
+                       </tr>
+                    </apex:repeat>
+              </table>
+          </div>
+      </apex:outputPanel>
+  </apex:form>
+</apex:component>

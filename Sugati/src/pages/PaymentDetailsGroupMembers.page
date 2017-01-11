@@ -1,0 +1,685 @@
+<apex:page standardStylesheets="false" showHeader="false" sidebar="false" id="pg" standardController="Opportunity" 
+extensions="PaymentDetailsGroupMembersController">
+
+ <title>Online Booking Form</title>
+ <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" />
+
+
+<apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js" />
+<apex:stylesheet value="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+<apex:includeScript value="https://code.jquery.com/ui/1.11.0/jquery-ui.js" />
+<!--apex:stylesheet value="/resources/demos/style.css" /-->
+
+<!-- AWS script -->
+<apex:stylesheet value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/css/booking.css"/>
+<apex:includeScript value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/js/booking.js"/>
+
+    
+<head>
+    <meta charset="utf-8" />
+    <title>Booking Summary</title>
+</head> 
+
+<apex:form id="frm">      
+    <style>
+       #contentLoading{
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+            position: fixed;
+            display: block;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 99;
+            text-align: center;
+        }
+        
+        #contentLoading1{
+            position: absolute;
+            top:350px;
+            z-index: 100;
+        }
+
+        .form-payment .form-control {
+             width: 80% !important;
+        }
+        span.add-on {
+            position: relative;
+            background: #FAFAFA;
+            border: 1px solid #ccc;
+            z-index: 2;
+            float: left;
+            display: block;
+            width: auto;
+            min-width: 16px;
+            height: 34px;
+            padding: 7px 4px 4px 5px;
+            margin-right: -1px;
+            font-weight: normal;
+            line-height: 18px;
+            color: #bfbfbf;
+            text-align: center;
+            text-shadow: 0 1px 0 #ffffff;
+            -webkit-border-radius: 3px 0 0 3px;
+            -moz-border-radius: 3px 0 0 3px;
+            border-radius: 3px 0 0 3px;
+        }
+        .table-cost-summary {
+            border: 1px solid #b8b8b8;
+        }
+        .table-cost-summary th {
+            font-weight: normal;
+            font-size: 18px;
+            color: #fff;
+            background: #b8b8b8;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="https://services.postcodeanywhere.co.uk/css/captureplus-2.30.min.css?key=pj63-yt77-tk24-rp45" />
+    <script type="text/javascript" src="https://services.postcodeanywhere.co.uk/js/captureplus-2.30.min.js?key=pj63-yt77-tk24-rp45"></script>
+
+    <script>
+        function showCCDetails() {
+            
+            if (document.getElementById('pg:frm:creditcard').checked) {
+                document.getElementById('dvCC').style.display = 'block';
+            }
+            else {
+                document.getElementById('dvCC').style.display = 'none';
+            }
+        }
+        function creditCardCharge(){
+            if (document.getElementById('pg:frm:componentId').value != 'MAESTRO' && 
+            document.getElementById('pg:frm:componentId').value != 'MCDEBIT' && 
+            document.getElementById('pg:frm:componentId').value != 'DELTA' ) {
+                if(document.getElementById('pg:frm:amountM').value != ''){
+                    document.getElementById('pg:frm:ccCharge').value = (document.getElementById('pg:frm:amountM').value * 3/100 ); 
+                    document.getElementById('pg:frm:amount').value = document.getElementById('pg:frm:ccCharge').value+document.getElementById('pg:frm:amountM').value;      
+                }
+                
+            }
+            else {
+                if(document.getElementById('pg:frm:amountM').value != ''){
+                    document.getElementById('pg:frm:ccCharge').value = 0;
+                    document.getElementById('pg:frm:amount').value = document.getElementById('pg:frm:amountM').value;
+                } 
+            }
+            if('{!isOTUK}' == 'true'){
+                if(document.getElementById('pg:frm:amountM').value != ''){
+                    document.getElementById('pg:frm:ccCharge').value = 0; 
+                    document.getElementById('pg:frm:amount').value = document.getElementById('pg:frm:amountM').value;     
+                } 
+            }
+        }
+    
+        $.widget("ui.tooltip", $.ui.tooltip, {
+            options: {
+                content: function () {
+                    return $(this).prop('title');
+                }
+            }
+        });
+        
+        function setTooltip(c,th) {
+            $('.statusRollup').html(c);
+            $(th).attr('title',$('.statusRollup').html());
+            $(document).tooltip();
+            
+        }
+       
+        
+        function loading(val){
+                    if (val) {
+                        document.getElementById('contentLoading').style.display = 'inline-block';
+                        document.getElementById('contentLoaded').style.display = 'none';
+                    }
+                    else {
+                        document.getElementById('contentLoading').style.display = 'none';
+                        document.getElementById('contentLoaded').style.display = 'inline-block';
+                    }
+        }
+         
+    </script>
+    
+
+    <apex:pageMessages id="msg"></apex:pageMessages>
+    <apex:actionStatus id="loading" onstart="loading(true)" onstop="loading(false)" />
+    <div id="contentLoading" style="display:none; ">
+     
+    <apex:image id="contentLoading1" url="{!$Resource.loading}" width="100" height="100" style="margin-top : 100px;" alt="Loading graphic"/>
+    </div>
+
+    
+    
+    <div  class="statusRollup" style="display:none;width:400px;">
+    </div>
+    <div class="wrap">
+        <c:headerComponent page="Summary"/>
+          
+            <div class="body">
+                <div class="section">
+                <c:BookingDetails />
+                
+            </div>
+            
+            
+            <div class="page-hdr section top-line">
+            <div style="color:red;">{!logDescription }</div> 
+            <div class="hdr">
+                    <h3>Group Members &nbsp;</h3><font color="red">(Please tick to specify the members you wish to make the payment for.)</font>
+                
+                <!--<apex:selectCheckboxes value="{!lstGroupMembers}" layout="pagedirection">
+                    <apex:selectOptions value="{!GroupMembers}"></apex:selectOptions>
+                </apex:selectCheckboxes>-->
+            </div>
+            
+            <div>
+                    <table class="table-cost-summary" cellspacing="1" cellpadding="1" width="100%" border="1"> 
+                         <tr>
+                             <th style="width:18%">Name</th>                         
+                             <th>Select</th>
+                             
+                         </tr>
+                         <apex:repeat value="{!groupMembers}" var="item">
+                             <tr>
+                                <td><apex:outputField value="{!item.gm.GM_Contact__r.name}"/></td>
+                                <td><apex:inputCheckbox value="{!item.isSelected}"/></td>
+                                
+                             </tr>
+                         </apex:repeat>
+                    </table> 
+            
+            </div>
+            </div>
+                
+            <div class="page-hdr section top-line">
+                <h2>Payment Terms</h2>
+            </div>
+                
+            <div class="section top-line">
+                
+                    
+                    <div class="box-terms" id="tremsC">
+                    <apex:outputPanel rendered="{!isOTUK}">
+                        You will be notified at the time of booking of the price of your holiday. You will be required at the time of booking to pay us a non-refundable deposit, typically 30% of the quoted holiday price, and the full holiday price of a booking should be made at least 60 days prior to departure. In certain circumstances (depending on the nature of the booking) we will require a non-refundable deposit in excess of the usual 30%. On occasions, our suppliers require additional amounts up to full payment in advance. On these occasions we will require additional payment in advance. Unless you are making a late booking, the balance owing must be paid to us no later than 60 days before your date of departure. If we do not receive the balance by this time then we will treat the booking as cancelled by you and you will be liable to pay our cancellation charges (see below).
+                         <br/><br/>
+                        We accept cheques, bank transfers and credit or debit cards. 
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!!isOTUK}">
+                        
+                            You will be required at the time of booking to pay us a non-refundable deposit in accordance with our terms and conditions. Typically this amounts to 20% of the quoted holiday price. On occasions, our suppliers require additional amounts up to full payment in advance (for example for Christmas bookings). On these occasions we will require additional payment in advance. These payments will be subject to our cancellation charge schedule. Unless you are making a late booking, the balance owing must be paid to us no later than 60 days before your date of departure. If the booking is made within 60 days of departure, then full payment is required at time of booking.
+    
+    If we do not receive the balance by this time then we will treat the booking as cancelled by you and you will be liable to pay our cancellation charges, as detailed in our terms and conditions (in full on the following pages or online at www.originaltravel.co.uk). Please make cheques payable to Original Travel Company Limited. For Online banking our account is with Handelsbanken bank, a/c 5670 5771, Sort Code 40-51-62.
+    
+    Sale is subject to Original Travel Company Limited terms and conditions.
+                        
+                    </apex:outputPanel>
+                    </div>
+                
+                <br />
+                
+            </div>
+            
+            <div class="page-hdr section top-line">
+                <h2>Payment methods  (please check box next to your payment choice)</h2>
+            </div>
+            
+            
+            
+            <div class="section top-line">
+                 <div class="payment_mode">
+                    <div>
+                        <div class="col-chk"><apex:inputCheckbox value="{!othertypePayment}" /></div>
+                        <div class="col-text">
+                            <label>I wish to pay by cheque payable to Original Travel Company Ltd for 
+                            <image class="imageQ"  onmouseover="setTooltip('<h3>Payment by cheque</h3>
+                                             Please make cheques payable to Original Travel Company Limited and send to Original Travel,
+                                              21 Ransomes Dock, 35-37 Parkgate Road, London, SW11 4NP. Sale is subject to Original Travel 
+                                              Company Limited terms and conditions.', this)"  /> </label><br/>
+                            <div style="float:right;margin-left:30px">
+                                <span class="add-on" style="border-radius: 3px 0px 0px 3px; margin-right: -1px;margin-left: 1px;">{!opp.O_Booking_Currency__c}</span>
+                                <apex:inputText value="{!amount}" styleClass="form-control" style="width:150px" />
+                            
+                            </div>
+                            <span>Please insert payment amount in box. For more details on where to send cheque please hover mouse over question mark</span>
+                        </div>                        
+                    </div>
+                    <div>
+                        <div class="col-chk"><apex:inputCheckbox value="{!othertypePayment2}" /></div>
+                        <div class="col-text">
+                            <label >I wish to pay by bank transfer of 
+                                <apex:outputPanel rendered="{!isOTUK}">
+                                    <image class="imageQ" onmouseover="setTooltip('<h3>Payment by bank transfer</h3>
+                                                 For Online banking our account is with Handelsbanken,A/C Number:15169564,Sort Code : 40-51-62,IBAN : GB17HAND40516215169564, SWIFT : HANDGB22. Any fees in such a transfer should be borne by the payee 
+                                             such that the net amount which reaches Original Travel is the amount requested in full. 
+                                             Sale is subject to Original travel Co Ltd terms and conditions',this)"/> 
+                                 </apex:outputPanel>
+                                 <apex:outputPanel rendered="{!!isOTUK}">
+                                    <image class="imageQ"  onmouseover="setTooltip('<h3>Payment by bank transfer</h3>
+                                                 For Online banking our account is with Handelsbanken, a/c 56705771, 
+                                                 Sort Code 40-51-62. Any fees in such a transfer should be borne by the payee 
+                                             such that the net amount which reaches Original Travel is the amount requested in full. 
+                                             Sale is subject to Original travel Co Ltd terms and conditions',this)"/> 
+                                 </apex:outputPanel>
+                              </label>
+                            <br />
+                            <div style="float:right;margin-left:30px">
+                                <span class="add-on" style="border-radius: 3px 0px 0px 3px; margin-right: -1px;margin-left: 1px;">{!opp.O_Booking_Currency__c}</span>
+                                <apex:inputText value="{!amount1}" styleClass="form-control" style="width:150px" />
+                            </div>
+                            <span>Please insert payment amount in box. For more details on how to make online transfer please hover mouse over question mark</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-chk"><apex:inputCheckbox value="{!Creditcardpayment}" id="creditcard" onclick="showCCDetails();"/></div>
+                        <div class="col-text">
+                            <label>I wish to pay by credit or debit card. 
+                            <apex:image onmouseover="setTooltip('<h3>Payment by credit or debit card</h3>We accept Visa Credit, Visa Debit, Mastercard Credit, Mastercard Debit, Maestro, Switch and American Express.',this)"/> </label>
+                            <br/>
+                            <span>Please note that credit card payments are subject to a fee. Alternatively debit card transactions and wire transfers avoid all fees. For more details on credit and debit card payments please hover mouse over question mark</span>
+                        </div>
+                    </div>
+                    <div  class="section top-line" id="dvCC" style="padding:20px 0px 20px 20px;display:none;">
+                        <div class="form form-payment">
+                            <div class="box-body" >
+                                <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="53%">
+                                        <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                                            <!--<tr>
+                                                <td width="150">We accept the following payment cards</td>
+                                                <td></td>
+                                            </tr>-->
+                                            <tr>
+                                                <td style="width:200px;padding:0px;">
+                                                    <apex:outputLabel value="Type of payment card" /><font color="#0cc">*</font>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image style="float:left" onmouseover="setTooltip('<h3>Card Type</h3>Credit card charges will be applied to the cost of your holiday excluding credit card charges as per the percentages set out in the drop-down list. No additional charge will be made if payment is by debit card.',this)"/>
+                                                    <apex:selectList id="componentId" onchange="creditCardCharge();" style="display: inline-block;" value="{!selectedCardType}" size="1" styleClass="ct form-control col1">
+                                                        <apex:selectOptions value="{!cardTypes}"></apex:selectOptions>
+                                                    </apex:selectList>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Please charge my card to the sum of <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Card Charge</h3>Please insert amount you wish to pay excluding credit card charge. If applicable, credit card charges will be added at the time payment is taken as per schedule of charges in drop down list by payment type.',this)"/>
+                                                    <span class="add-on" style="border-radius: 3px 0px 0px 3px; margin-right: -1px;">{!opp.O_Booking_Currency__c}</span>
+                                                    <apex:inputtext id="amountM" value="{!amount2}" styleClass="amountM form-control col1" style="width:64% !important;" onblur="creditCardCharge()"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel value="Credit card charges"></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Credit card charges</h3>Content',this)"/>
+                                                    <span class="add-on" style="border-radius: 3px 0px 0px 3px; margin-right: -1px;">{!opp.O_Booking_Currency__c}</span>
+                                                    <apex:inputText id="ccCharge" disabled="true" value="{!creditcardcharges}" style="width:64% !important;" styleClass="ccCharge form-control col1"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel value="Total Payment"></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                  <span class="add-on" style="border-radius: 3px 0px 0px 3px; margin-right: -1px;margin-left: 27px;">{!opp.O_Booking_Currency__c}</span>
+                                                  <apex:inputText id="amount" disabled="true" value="{!totalpayment}" style="width:64% !important;" styleClass="total form-control col1"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Payment Card Number <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Card number</h3>Please insert long card number as shown on the front of the payment card',this)"/>
+                                                    <apex:inputtext value="{!creditCardNumber}" styleClass="form-control col1"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Card expiry date <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Card expiry</h3>Please insert payment card expiry date',this)"/>
+                                                    <apex:selectList size="1" value="{!expiryMonth}" style="width: 40%!important;" styleClass="form-control col1">
+                                                        <apex:selectOption itemValue="" itemLabel="Month"></apex:selectOption>
+                                                        <apex:selectOption itemValue="01" itemLabel="Jan"></apex:selectOption>
+                                                        <apex:selectOption itemValue="02" itemLabel="Feb"></apex:selectOption>
+                                                        <apex:selectOption itemValue="03" itemLabel="Mar"></apex:selectOption>
+                                                        <apex:selectOption itemValue="04" itemLabel="Apr"></apex:selectOption>
+                                                        <apex:selectOption itemValue="05" itemLabel="May"></apex:selectOption>
+                                                        <apex:selectOption itemValue="06" itemLabel="Jun"></apex:selectOption>
+                                                        <apex:selectOption itemValue="07" itemLabel="Jul"></apex:selectOption>
+                                                        <apex:selectOption itemValue="08" itemLabel="Aug"></apex:selectOption>
+                                                        <apex:selectOption itemValue="09" itemLabel="Sep"></apex:selectOption>
+                                                        <apex:selectOption itemValue="10" itemLabel="Oct"></apex:selectOption>
+                                                        <apex:selectOption itemValue="11" itemLabel="Nov"></apex:selectOption>
+                                                        <apex:selectOption itemValue="12" itemLabel="Dec"></apex:selectOption>
+                                                    </apex:selectList>
+                                                    
+                                                    <apex:selectList size="1" value="{!expiryYear}" style="width: 40%!important;" styleClass="form-control col1">
+                                                        <apex:selectOption itemValue="" itemLabel="Year"/>
+                                                        <apex:selectOption itemValue="25" itemLabel="2025"/>
+                                                        <apex:selectOption itemValue="24" itemLabel="2024"/>
+                                                        <apex:selectOption itemValue="23" itemLabel="2023"/>
+                                                        <apex:selectOption itemValue="22" itemLabel="2022"/>
+                                                        <apex:selectOption itemValue="21" itemLabel="2021"/>
+                                                        <apex:selectOption itemValue="20" itemLabel="2020"/>
+                                                        <apex:selectOption itemValue="19" itemLabel="2019"/>
+                                                        <apex:selectOption itemValue="18" itemLabel="2018"/>
+                                                        <apex:selectOption itemValue="17" itemLabel="2017"/>
+                                                        <apex:selectOption itemValue="16" itemLabel="2016"/>
+                                                        <apex:selectOption itemValue="15" itemLabel="2015"/>
+                                                        <apex:selectOption itemValue="14" itemLabel="2014"/>
+                                                    </apex:selectList>
+                                                    <!--<apex:inputtext value="{!expiryDate}" styleClass="ccn form-control col1"/>-->
+                                                </td>
+                                            </tr>  
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Security number <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Security number</h3>The security number requested is the last three digits on the reverse of the payment card in the top right hand corner of the signature strip. American Express has a four digit security number which is located on the front of the card on the middle of the right hand side.',this)"/>
+                                                    <apex:inputtext value="{!cvvNumber}" styleClass="form-control col1"/>
+                                                </td>
+                                            </tr>  
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel value="Issue no. (Maestro only)"></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Issue Number</h3>The issue number on a Switch/Maestro card is a single digit on the front of the payment card clearly displayed by the words Issue Number',this)"/>
+                                                    <apex:inputtext value="{!IssueNumber}" styleClass="form-control col1"/>
+                                                </td>
+                                            </tr>  
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Name on card <font color="#0cc">*</font></apex:outputLabel>
+                                                    <br/>
+                                                    <script>
+                                                        var checkTrue = false;
+                                                        function ChangeLead(){
+                                                            if(!checkTrue){
+                                                                checkTrue = true;
+                                                                document.getElementById('pg:frm:nameOnCard').value = '{!leadName}';    
+                                                            }
+                                                            else{
+                                                                checkTrue = false;
+                                                                document.getElementById('pg:frm:nameOnCard').value = '';    
+                                                            }
+                                                            
+                                                        }
+                                                    </script>
+                                                    <apex:inputCheckbox onchange="ChangeLead();" /> Same as lead client
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:image url="" style="float:left" onmouseover="setTooltip('<h3>Name on card</h3>Please detail cardholders name exactly as it appears on the payment card',this)"/>
+                                                    <apex:outputPanel >
+                                                        <apex:inputText id="nameOnCard" value="{!nameoncard}" styleClass="nameOnCard form-control col1"/>
+                                                    </apex:outputPanel>
+                                                </td>
+                                            </tr> 
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <apex:outputPanel id="address">
+                                        <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td colspan="2">Please confirm the name and <strong> billing address </strong> of card holder.<hr style="margin:20px 0 10px" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" height="39">
+                                                
+                                                <apex:inputCheckbox value="{!isAddressSameAsClient}">
+                                                    <apex:actionSupport status="loading" event="onchange" action="{!changeCountry}" reRender="address"/> 
+                                                </apex:inputCheckbox>
+                                                Click here if billing address is same as lead client<br /><br /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:150px;padding:0px;">
+                                                    <apex:outputLabel >Country <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:selectList id="countryname" size="1"  styleClass="form-control country" value="{!country}">
+                                                        <apex:selectOptions id="country" value="{!countryOptions}"  />
+                                                        <apex:actionSupport status="loading" event="onchange" action="{!changeCountry}" reRender="address"/> 
+                                                    </apex:selectList>
+                                                </td>
+                                            </tr> 
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Postcode/Zip <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:inputtext id="zip" value="{!zip}" styleClass="form-control col1 zip"/>
+                                                </td>
+                                            </tr> 
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Address line 1 <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:inputtext id="street1" value="{!street}" styleClass="form-control col1 street"/>
+                                                </td>
+                                            </tr> 
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel value="Address line 2"></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:inputtext id="street2" value="{!address2}" styleClass="form-control col1 add2"/>
+                                                </td>
+                                            </tr> 
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel value="Address line 3"></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:inputtext id="street3" value="{!address3}" styleClass="form-control col1 add3"/>
+                                                </td>
+                                            </tr> 
+                                            <tr>
+                                                <td style="padding:0px;">
+                                                    <apex:outputLabel >Town/City <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:inputtext id="city" value="{!city}" styleClass="form-control col1 city"/>
+                                                </td>
+                                            </tr> 
+                                            
+                                            <tr id="trstate" style="display:{!if(country=='US','','none')};">
+                                            
+                                                <td style="padding:0px;" >
+                                                    <apex:outputLabel >State <font color="#0cc">*</font></apex:outputLabel>
+                                                </td>
+                                                <td style="padding:0px;">
+                                                    <apex:selectList id="state" value="{!state}" size="1" styleClass="form-control state">
+                                                        <apex:selectOption itemLabel="-Select-" itemValue=""></apex:selectOption>
+                                                        <apex:selectoption itemValue="AL" itemLabel="Alabama"></apex:selectoption>
+                                                        <apex:selectoption itemValue="AK" itemLabel="Alaska"></apex:selectoption>
+                                                        <apex:selectoption itemValue="AS" itemLabel="American Samoa"></apex:selectoption>
+                                                        <apex:selectoption itemValue="AZ" itemLabel="Arizona"></apex:selectoption>
+                                                        <apex:selectoption itemValue="AR" itemLabel="Arkansas"></apex:selectoption>
+                                                        <apex:selectoption itemValue="CA" itemLabel="California"></apex:selectoption>
+                                                        <apex:selectoption itemValue="CZ" itemLabel="Canal Zone"></apex:selectoption>
+                                                        <apex:selectoption itemValue="CO" itemLabel="Colorado"></apex:selectoption>
+                                                        <apex:selectoption itemValue="CM" itemLabel="Commonwealth Northern Mariana Islands"></apex:selectoption>
+                                                        <apex:selectoption itemValue="CT" itemLabel="Connecticut"></apex:selectoption>
+                                                        <apex:selectoption itemValue="DE" itemLabel="Delaware"></apex:selectoption>
+                                                        <apex:selectoption itemValue="DC" itemLabel="District of Columbia (Washington)"></apex:selectoption>
+                                                        <apex:selectoption itemValue="FM" itemLabel="Federated States of Micronesia"></apex:selectoption>
+                                                        <apex:selectoption itemValue="FL" itemLabel="Florida"></apex:selectoption>
+                                                        <apex:selectoption itemValue="GA" itemLabel="Georgia"></apex:selectoption>
+                                                        <apex:selectoption itemValue="GU" itemLabel="Guam"></apex:selectoption>
+                                                        <apex:selectoption itemValue="HI" itemLabel="Hawaii"></apex:selectoption>
+                                                        <apex:selectoption itemValue="ID" itemLabel="Idaho"></apex:selectoption>
+                                                        <apex:selectoption itemValue="IL" itemLabel="Illinois"></apex:selectoption>
+                                                        <apex:selectoption itemValue="IN" itemLabel="Indiana"></apex:selectoption>
+                                                        <apex:selectoption itemValue="IA" itemLabel="Iowa"></apex:selectoption>
+                                                        <apex:selectoption itemValue="KS" itemLabel="Kansas"></apex:selectoption>
+                                                        <apex:selectoption itemValue="KY" itemLabel="Kentucky"></apex:selectoption>
+                                                        <apex:selectoption itemValue="LA" itemLabel="Louisiana"></apex:selectoption>
+                                                        <apex:selectoption itemValue="ME" itemLabel="Maine"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MH" itemLabel="Marshall Islands"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MD" itemLabel="Maryland"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MA" itemLabel="Massachusetts"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MI" itemLabel="Michigan"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MN" itemLabel="Minnesota"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MS" itemLabel="Mississippi"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MO" itemLabel="Missouri"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MT" itemLabel="Montana"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NE" itemLabel="Nebraska"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NV" itemLabel="Nevada"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NH" itemLabel="New Hampshire"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NJ" itemLabel="New Jersey"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NM" itemLabel="New Mexico"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NY" itemLabel="New York"></apex:selectoption>
+                                                        <apex:selectoption itemValue="NC" itemLabel="North Carolina"></apex:selectoption>
+                                                        <apex:selectoption itemValue="ND" itemLabel="North Dakota"></apex:selectoption>
+                                                        <apex:selectoption itemValue="MP" itemLabel="Northern Mariana Islands"></apex:selectoption>
+                                                        <apex:selectoption itemValue="OH" itemLabel="Ohio"></apex:selectoption>
+                                                        <apex:selectoption itemValue="OK" itemLabel="Oklahoma"></apex:selectoption>
+                                                        <apex:selectoption itemValue="OR" itemLabel="Oregon"></apex:selectoption>
+                                                        <apex:selectoption itemValue="PW" itemLabel="Palau"></apex:selectoption>
+                                                        <apex:selectoption itemValue="PA" itemLabel="Pennsylvania"></apex:selectoption>
+                                                        <apex:selectoption itemValue="PI" itemLabel="Philippine Islands"></apex:selectoption>
+                                                        <apex:selectoption itemValue="PR" itemLabel="Puerto Rico"></apex:selectoption>
+                                                        <apex:selectoption itemValue="RI" itemLabel="Rhode Island"></apex:selectoption>
+                                                        <apex:selectoption itemValue="SC" itemLabel="South Carolina"></apex:selectoption>
+                                                        <apex:selectoption itemValue="SD" itemLabel="South Dakota"></apex:selectoption>
+                                                        <apex:selectoption itemValue="TN" itemLabel="Tennessee"></apex:selectoption>
+                                                        <apex:selectoption itemValue="TX" itemLabel="Texas"></apex:selectoption>
+                                                        <apex:selectoption itemValue="TT" itemLabel="Trust Territory of the Pacific Islands"></apex:selectoption>
+                                                        <apex:selectoption itemValue="UT" itemLabel="Utah"></apex:selectoption>
+                                                        <apex:selectoption itemValue="VT" itemLabel="Vermont"></apex:selectoption>
+                                                        <apex:selectoption itemValue="VI" itemLabel="Virgin Islands"></apex:selectoption>
+                                                        <apex:selectoption itemValue="VA" itemLabel="Virginia"></apex:selectoption>
+                                                        <apex:selectoption itemValue="WA" itemLabel="Washington"></apex:selectoption>
+                                                        <apex:selectoption itemValue="WV" itemLabel="West Virginia"></apex:selectoption>
+                                                        <apex:selectoption itemValue="WI" itemLabel="Wisconsin"></apex:selectoption>
+                                                        <apex:selectoption itemValue="WY" itemLabel="Wyoming"></apex:selectoption>
+                                                        
+                                                    </apex:selectList>
+                                                    
+                                                </td>
+                                                
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td></td>
+                                                <td style="padding:0px;" colspan="2">
+                                                    <apex:image value=""/>
+                                                </td>
+                                                
+                                            </tr> 
+                                            
+                                            
+                                        </table>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                                </table>
+                            </div>
+                        </div>
+                            
+                    </div>
+                    
+                    <div>
+                        <div class="col-chk"><apex:inputCheckbox value="{!othertypePayment3}" /></div>
+                        <div class="col-text">
+                            <label>I wish to transfer € online, pay by € denominated cheque or pay by € denominated Amex card 
+                            <apex:image url="" onmouseover="setTooltip('<h3>Payment in euro €</h3>
+                                    Original Travel is happy to take payment in € by online transfer or by € denominated credit card. Exchange rates are fixed at the time of booking. We will contact you to make arrangements should you choose this option. Any fees will be born by the payee such that the net amount which clears with Original Travel is the amount requested in full. Sale is subject to Original Travel Company Limited terms and conditions.',this)"/> </label><br/>
+                            
+                            <span>For more details on € payments please hover mouse over question mark</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-chk"><apex:inputCheckbox value="{!othertypePayment4}" /></div>
+                        <div class="col-text">
+                            <label>I wish to transfer US$ online, pay by US$ denominated cheque or pay by US$ denominated Amex card 
+                            <apex:image url="" onmouseover="setTooltip('<h3>Payment in US $</h3>
+                                    Original Travel is happy to take payment in US$ by online transfer or by US$ denominated credit card. Exchange rates are fixed at the time of booking. We will contact you to make arrangements should you choose this option. Any fees will be born by the payee such that the net amount which clears with Original Travel is the amount requested in full. Sale is subject to Original Travel Company Limited terms and conditions.',this)"/> </label>
+                            <br/>
+                            <span>For more details on US$ payments please hover mouse over question mark</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-chk"><apex:inputCheckbox value="{!othertypePayment5}" /></div>
+                        <div class="col-text">
+                            <label>I wish to pay to Original Travel’s offshore bank accounts 
+                            <apex:image url="" onmouseover="setTooltip('<h3>Payment by offshore bank</h3>
+                                    Original Travel is able to take offshore payments in £, € and US$ by online transfer. Exchange rates are fixed at the time of booking. We will contact you to make arrangements should you choose this option. Any fees in such a transfer will be born by the payee such that the net amount which clears with Original Travel is the amount requested in full. Sale is subject to Original Travel Company Limited terms and conditions.',this)"/> </label>
+                            <br/>
+                            <span>For more details on offshore payments please hover mouse over question mark</span>
+                        </div>
+                    </div>
+                 </div>   
+      
+            </div>
+            <apex:outputPanel rendered="{!opp.O_Days_to_Departure__c>60}">
+                <div class="page-hdr section top-line">
+                    <h2>Scheduling Payments</h2>
+                </div>
+                <div class="section top-line">
+                    <div class="col-chk"> <apex:inputCheckbox value="{!isReminder}"/></div>
+                        <strong>Would you like to receive an automated email to remind you as your next payment becomes due?</strong>
+                </div>
+            </apex:outputPanel>
+            <div class="section top-line">
+                <strong>A star (*) indicates that we require this information to fulfill your request</strong>
+            </div>
+            <div class="section top-line gray">
+                <div class="actions-footer">
+                    
+                    <div class="right">
+                        <!--<apex:commandButton value="FINISH" action="{!next}" styleClass="btn btn-primary" />-->
+                        <apex:commandButton value="FINISH" onclick="validatePayment();return false;" styleClass="btn btn-primary" />
+                        <apex:actionFunction action="{!next}" status="loading" name="validatePayment" reRender="opMsg,msg,second" oncomplete="validateSagePay();" />
+                    </div>
+                </div>
+            </div>  
+        </div>  
+        
+        
+        <div class="wrap">
+            <c:BookingFormFooter ></c:BookingFormFooter>
+        </div>
+    </div>
+    
+    <apex:outputPanel id="opMsg">
+        <script>
+            function validateSagePay() {
+               
+                if ('{!displayMessage}' != '') {
+                    alert('{!displayMessage}');
+                    //showCCDetails();
+                }
+                else {
+                    if ({!Creditcardpayment} && {!isRedirectionSuccess}) {
+                       
+                        document.myform.submit();
+                    }
+                    else {
+                        location.href = '/Payment/apex/ProcessingPayment{!queryString}';
+                    }
+                }
+            }
+        </script>
+    
+    </apex:outputPanel>
+</apex:form>  
+<apex:outputPanel id="second">
+        <form id="myform" name="myform" action="{!acsurl}" method="post">
+            <input type="hidden" name="PaReq" value="{!pareq}" />
+            <input type="hidden" name="TermUrl" value="https://c.cs18.visual.force.com/Payment/apex/ProcessingPayment{!queryString}" />
+            <input type="hidden" name="MD" value="{!md}" />
+             <input type="submit" value="." />
+        </form>
+    </apex:outputPanel>  
+</apex:page>

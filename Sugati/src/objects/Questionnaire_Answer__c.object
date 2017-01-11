@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Answers submitted by clients</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableEnhancedLookup>true</enableEnhancedLookup>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>H_S_Defect_Answer__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Created by Appssential in October 2015 so that a report can be run on defects only.</description>
+        <externalId>false</externalId>
+        <label>H&amp;S Defect Answer</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Picklist_Answer__c</fullName>
+        <externalId>false</externalId>
+        <formula>QA_Questionnaire_Answer_Option__r.Name</formula>
+        <label>Picklist Answer</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>QA_Answer__c</fullName>
+        <externalId>false</externalId>
+        <label>Open Text Answer</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>QA_Other__c</fullName>
+        <externalId>false</externalId>
+        <label>Other</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>QA_Questionnaire_Answer_Option__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Questionnaire Answer Option</label>
+        <referenceTo>Questionnaire_Answer_Options__c</referenceTo>
+        <relationshipLabel>Questionnaire Answers</relationshipLabel>
+        <relationshipName>Questionnaire_Answers</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>QA_Questionnaire_Question__c</fullName>
+        <externalId>false</externalId>
+        <label>Questionnaire Question</label>
+        <referenceTo>Questionnaire_Question__c</referenceTo>
+        <relationshipLabel>Questionnaire Answers</relationshipLabel>
+        <relationshipName>Questionnaire_Answers</relationshipName>
+        <relationshipOrder>1</relationshipOrder>
+        <reparentableMasterDetail>true</reparentableMasterDetail>
+        <trackTrending>false</trackTrending>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    </fields>
+    <fields>
+        <fullName>QA_Questionnaire__c</fullName>
+        <externalId>false</externalId>
+        <label>Questionnaire</label>
+        <referenceTo>Questinnaire__c</referenceTo>
+        <relationshipLabel>Questionnaire Answers</relationshipLabel>
+        <relationshipName>Questionnaire_Answers</relationshipName>
+        <relationshipOrder>0</relationshipOrder>
+        <reparentableMasterDetail>true</reparentableMasterDetail>
+        <trackTrending>false</trackTrending>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    </fields>
+    <fields>
+        <fullName>QQ_Translated_Answer__c</fullName>
+        <externalId>false</externalId>
+        <label>Translated Answer</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>Question_Text__c</fullName>
+        <externalId>false</externalId>
+        <formula>QA_Questionnaire_Question__r.QQ_Question__c</formula>
+        <label>Question Text</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <label>Questionnaire Answer</label>
+    <nameField>
+        <displayFormat>QA-{0000000000}</displayFormat>
+        <label>Questionnaire Answer ID</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Questionnaire Answers</pluralLabel>
+    <searchLayouts/>
+    <sharingModel>ControlledByParent</sharingModel>
+</CustomObject>

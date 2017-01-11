@@ -1,0 +1,53 @@
+<apex:component >
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+      <head>  
+      </head>  
+        
+        <div ng-form="airLineMemb">
+          <div aria-hidden="false" style="display:none;" role="dialog" class="slds-modal slds-fade-in-open airlineMemberShip">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header" style="padding: 10px 16px;">  
+                    <h2 class="slds-text-heading--label" >Add Airline Membership Info</h2>
+                    <button class="slds-button slds-button--icon-inverse slds-modal__close closeaddAirlineMember" onclick="return false;">
+                        <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                        </svg>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                </div>
+              <div class="slds-modal__content" style="overflow: visible;">
+                <div class="slds-p-around--medium">
+                 <div class="form-wrap slds-grid slds-wrap">
+                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                        <label class="slds-form-element__label" for="Airline">Airline</label>
+                        <div class="slds-form-element__control">
+                            <!--<input id="Airline" class="slds-input" type="text" ng-model="newAirlineMember.airline" /> -->
+                            <input type="text" id="Airports" class="slds-input" typeahead-editable="false" ng-model="newAirlineMember.airline" typeahead-input-formatter="formatInput($model,'Airport')" 
+                                                    typeahead="state.value as state.label for state in carriers['sb_carrier__c']| filter:$viewValue | limitTo:20"  />
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                        <label class="slds-form-element__label" for="Membershipnumbe">Membership number </label>
+                        <div class="slds-form-element__control">
+                            <input id="Membership number" class="slds-input" type="text" ng-model="newAirlineMember.membershipnumber" />
+                        </div>
+                    </div>
+                    
+                   </div>  
+                   </div>
+
+              </div>
+              <div class="slds-modal__footer">
+                <div class="slds-x-small-buttons--horizontal">
+                  <button class="slds-button slds-button--neutral slds-button--brand" ng-disabled="airLineMemb.$invalid" ng-click="addNewAirlineMember();">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:none;" class="slds-backdrop slds-backdrop--open airlineMemberShip"></div>
+        </div>
+        
+    </html>
+</apex:component>

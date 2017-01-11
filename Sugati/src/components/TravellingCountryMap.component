@@ -1,0 +1,92 @@
+<apex:component layout="block" controller="TravellingCountryMapController">
+    <apex:attribute name="OppId" required="true" type="String" description="Id of opportunity"/>
+    <style>
+        #TC{!OppId}{
+            height: 200px;
+            width: 100%;
+        }
+    </style>
+    <script>
+        myApp.controller('TCCtrl{!OppId}', function($scope, $http){
+            $scope.opportunityId = '{!OppId}'; 
+            $scope.locationMap = [];
+            $scope.totalCountries = 0; 
+            $scope.markerUrl = '{!mapURL}';
+            //console.log($scope.opportunityId);
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.TravellingCountryMapController.getTravellingCountriesLocation}',$scope.opportunityId,
+                function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                        $scope.totalCountries = result.length;
+                        angular.forEach(result, function(location){
+                            $scope.getMapLocation(location);        
+                        });
+                    }else if (event.type === 'exception') 
+                        alert(event.message);
+                }, 
+                {escape: false}
+            ); 
+            
+            $scope.getMapLocation = function(countryName){  
+               var encodedString = encodeURI(countryName);          
+               $http.get("https://maps.googleapis.com/maps/api/geocode/json?address="+ encodedString +"&key=AIzaSyDHt9phvnSUqFmxazAkVdbQAJtFMrARVs8")
+                .success(function(data) {
+                  if(data.status =='OK') {
+                      //console.log(data);
+                      $scope.locationMap.push((data.results[0]));   
+                      if($scope.locationMap.length == $scope.totalCountries)
+                          $scope.renderCountryOnMap($scope.locationMap);     
+                  }        
+               });
+             }
+             
+             $scope.renderCountryOnMap = function(markerList){
+                 //console.log(markerList);
+                 var map;
+                 var bounds = new google.maps.LatLngBounds();
+                 var mapOptions = {
+                    navigationControl: false, 
+                    streetViewControl:false,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                 };
+                 
+                 var marker, i;               
+                 // Display a map on the page
+                 map = new google.maps.Map(document.getElementById("TC{!OppId}"), mapOptions);
+                 map.setTilt(45);
+                 //console.log(markerList);
+                 // Loop through our array of markers & place each one on the map  
+                 for(i =0; i<markerList.length; i++){
+                     var position = new google.maps.LatLng(markerList[i].geometry.location.lat, markerList[i].geometry.location.lng);
+                     bounds.extend(position);
+                     marker = new google.maps.Marker({
+                         position: position,
+                         map: map,
+                         animation: google.maps.Animation.DROP,
+                         icon: $scope.markerUrl,
+                         title: markerList[i]['formatted_address']
+                     });
+                     marker.addListener('click', toggleBounce);
+                 }
+                 // Automatically center the map fitting all markers on the screen
+                 map.fitBounds(bounds);
+                 // Override our map zoom level once our fitBounds function runs (Make sure it only runs once)
+                 var boundsListener = google.maps.event.addListener((map), 'bounds_changed', function(event) {
+                     if($scope.locationMap.length == 1)
+                         this.setZoom(3);
+                     google.maps.event.removeListener(boundsListener);
+                 });
+                 function toggleBounce() {
+                    if (marker.getAnimation() !== null) {
+                        marker.setAnimation(null);
+                    } else {
+                        marker.setAnimation(google.maps.Animation.BOUNCE);
+                    }
+                 }    
+             }
+             
+        });
+    </script>
+    <div ng-controller="TCCtrl{!OppId}" id="TC{!OppId}"/>
+</apex:component>

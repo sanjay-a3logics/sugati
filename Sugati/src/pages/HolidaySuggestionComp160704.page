@@ -1,0 +1,838 @@
+<apex:page sidebar="false" controller="HolidayEnquiryController" cache="false" showHeader="false" >
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <style>
+            .tree {
+            min-height:20px;
+            padding:19px;
+            margin-bottom:20px;
+            background-color:#fbfbfb;
+            border:1px solid #999;
+            -webkit-border-radius:4px;
+            -moz-border-radius:4px;
+            border-radius:4px;
+            -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+            -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+            box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+        }
+        .nodeTreeFilter{
+            max-height: 200px !important;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        .tree li {
+            list-style-type:none;
+            margin:0;
+            padding:10px 5px 0 5px;
+            position:relative
+        }
+        .tree li::before, .tree li::after {
+            content:'';
+            left:-20px;
+            position:absolute;
+            right:auto
+        }
+        .tree li::before {
+            border-left:1px solid #999;
+            bottom:50px;
+            height:100%;
+            top:0;
+            width:1px
+        }
+        .tree li::after {
+            border-top:1px solid #999;
+            height:20px;
+            top:25px;
+            width:25px
+        }
+        .tree li span.leaf {
+            -moz-border-radius:5px;
+            -webkit-border-radius:5px;
+            border:1px solid #999;
+            border-radius:5px;
+            display:inline-block;
+            padding:3px 8px;
+            text-decoration:none
+        }
+        .tree li.parent_li>span {
+            cursor:pointer
+        }
+        .tree>ul>li::before, .tree>ul>li::after {
+            border:0
+        }
+        .tree li:last-child::before {
+            height:30px
+        }
+        
+        .tree li.parent_li>span.leaf:hover, .tree li.parent_li>span.leaf:hover+ul li span.leaf {
+            background:#C8E9CE;
+            border:1px solid #94a0b4;
+            color:#000
+        }
+        @media (min-width: 64em){
+            .divheight {
+              height:170px !important;    
+            }
+            
+        }
+        @media (min-width: 48em){
+            .divheight {
+              height:170px !important;    
+            }
+           
+        }  
+        
+        .checked-heart{
+            color:red;
+            padding-top: 5px;
+            padding-right: 10px;
+        }
+        .unchecked-heart{
+            color:#54698d;
+            padding-top: 5px;
+            padding-right: 10px;
+        }   
+        .hs-content{
+            max-height: 100px !important;
+        }
+        .estimate-label{
+            padding-top: 5px;
+        }
+        .estimate-cost{
+                text-align: left;
+                padding-right: 10px;
+                padding-top: 5px;
+        }
+        </style>
+        <script>
+            
+            $(document).ready(function(){
+                if('{!$CurrentPage.Name}'.indexOf('HolidaySuggestion') != -1){
+                    $('#mySuggestion').trigger('click');
+                }
+            });
+            
+            var contrl = myApp.controller('SuggestionController' ,function($scope,$http, $timeout,oiSelect){
+                $scope.version = oiSelect.version.full;
+                //Travelling Countries 
+                $scope.filter = {!filter};
+                $scope.suggestions = [];
+                $scope.mySuggestions = [];
+                $scope.opportunity = {};
+                $scope.whereToGoFilter = '';
+                $scope.activityFilter = '';
+                $scope.isCollapsed = true;
+                $scope.ErrorMessages = JSON.parse('{!HSPageErrorMessage}');
+                $scope.nameSpacePrefix = '{!nameSpacePrefix}';
+                
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.HolidayEnquiryController.getOpportunityDetail}','{!$CurrentPage.parameters.id}','',
+                    function(result, event){
+                        if (event.status) {
+                        //Result contains list of account names and account id
+                           $scope.opportunity = JSON.parse(result);
+                           $scope.$apply();
+                           $scope.LoadFilter();
+                        }else if (event.type === 'exception') 
+                            alert(event.message, 'error');
+                    }, 
+                    {escape: false}
+                );
+                console.log('{!$CurrentPage.Name}');
+                if('{!$CurrentPage.Name}' != 'HolidayEnquiry'){
+                    $scope.searchEnabled = true;
+                    $scope.multipleDemo = {};
+                    $scope.multipleDemo.selectedCountries = {!TCountries};
+                    $scope.country = {};
+                    $scope.countries = {!countries};
+                    $scope.holidayType = {!holidayType};
+                    
+                    //Formate referrer auto fill
+                    $scope.formatInputPr = function($model,type) {
+                        var objects;
+                        if(type == 'HolidayType'){
+                            objects =    $scope.holidayType;         
+                        }
+                        var inputLabel = '';
+                        console.log(objects);
+                        console.log($model);
+                        angular.forEach(objects, function(state) {
+                            if ($model === state.value) {
+                                inputLabel = state.label;
+                            }
+                        });
+                        return inputLabel;
+                    } 
+                }
+                //Create Filter
+                
+                
+                $scope.LoadFilter = function(){
+                    $scope.filter.holidayType = $scope.opportunity[$scope.nameSpacePrefix+'O_Holiday_Type__c'];     
+                    $scope.filter.countries = $scope.multipleDemo.selectedCountries;     
+                    $scope.LoadData();
+                }
+                $scope.firstTimeLoad = true;
+                $scope.LoadData = function(){
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.HolidayEnquiryController.getSuggestions}',$scope.filter,$scope.firstTimeLoad,
+                        function(result, event){
+                            if (event.status) {
+                            //Result contains list of account names and account id
+                               console.log(result);
+                               $scope.displayTree = result.whereToGoTree;
+                               $scope.$apply();
+                               $scope.firstTimeLoad = false;
+                               $scope.LoadFilteredData();
+                               $scope.LoadFilteredDataAcc();
+                               $scope.addSuggestions({"hs":{}});
+                            }else if (event.type === 'exception') 
+                                alert(event.message, 'error');
+                        }, 
+                        {escape: false}
+                    );
+                }
+                $scope.LoadFilteredData = function(){
+                    if($scope.opportunity.Id != undefined){
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.getCategoies}',removeHashKey($scope.displayTree),removeHashKey($scope.displayTreeCat),$scope.filter,
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   $scope.displayTreeCat = result.catTree;
+                                   $scope.$apply();
+                                   $scope.LoadSuggestions();
+                                }else if (event.type === 'exception') 
+                                    alert(event.message, 'error');
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                }
+                
+                $scope.LoadFilteredDataAcc = function(){
+                    if($scope.opportunity.Id != undefined){
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.getAccommodation}',removeHashKey($scope.displayTree),removeHashKey($scope.displayTreeCat),removeHashKey($scope.displayTreeAcc),$scope.filter,
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   $scope.displayTreeAcc = result.catTree;
+                                   $scope.$apply();
+                                   $scope.LoadSuggestions();
+                                }else if (event.type === 'exception') 
+                                    alert(event.message, 'error');
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                }
+                
+                $scope.LoadSuggestions = function(){
+                    if($scope.opportunity.Id != undefined){
+                        var hType = 'Generic';
+                        if($scope.opportunity[$scope.nameSpacePrefix+'O_Holiday_Type__c'] !== undefined){
+                             hType = $scope.opportunity[$scope.nameSpacePrefix+'O_Holiday_Type__c'];
+                        }
+                        
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.LoadSuggestions}',removeHashKey($scope.displayTree),removeHashKey($scope.displayTreeCat),removeHashKey($scope.displayTreeAcc),$scope.opportunity.Id,hType,
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                   $scope.suggestions = result;
+                                   $scope.$apply();
+                                }else if (event.type === 'exception') 
+                                    alert(event.message, 'error');
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                }
+                
+                $scope.changeSuggestionState = function(state){
+                    console.log(state);
+                }
+                $scope.LoadFilter();
+                
+                $scope.addSuggestions = function(sugg){
+                    $scope.addSugg = [];
+                    $scope.removeSugg = [];
+                    
+                    if(sugg != [] && sugg.selected){
+                        $scope.mySuggestions.push(sugg);
+                        if(sugg.activity !== undefined){
+                            $scope.addSugg.push({"value":""+sugg.activity.Id,"label":"Activity__c"});
+                        }
+                        if(sugg.whereToGo !== undefined){
+                            $scope.addSugg.push({"value":""+sugg.whereToGo.Id,"label":"Where_To_Go__c"});
+                        }
+                        if(sugg.supplier !== undefined){
+                            $scope.addSugg.push({"value":""+sugg.supplier.Id,"label":"Supplier__c"});
+                        }
+                    }
+                    else if(sugg != []){
+                        if(sugg.activity !== undefined){
+                            $scope.removeSugg.push({"value":""+sugg.activity.Id,"label":"Activity__c"});
+                        }
+                        if(sugg.whereToGo !== undefined){
+                            $scope.removeSugg.push({"value":""+sugg.whereToGo.Id,"label":"Where_To_Go__c"});
+                        }
+                        if(sugg.supplier !== undefined){
+                            $scope.removeSugg.push({"value":""+sugg.supplier.Id,"label":"Supplier__c"});
+                        }  
+                        for(var i = $scope.suggestions.length - 1; i >= 0; i--){
+                            if(sugg.activity !== undefined &&  $scope.suggestions[i].activity !== undefined &&  sugg.activity.Id == $scope.suggestions[i].activity.Id){
+                                $scope.suggestions[i].selected = false;
+                            }
+                            if(sugg.whereToGo !== undefined &&  $scope.suggestions[i].whereToGo !== undefined &&  sugg.whereToGo.Id == $scope.suggestions[i].whereToGo.Id){
+                                $scope.suggestions[i].selected = false;
+                            }
+                            if(sugg.supplier !== undefined &&  $scope.suggestions[i].supplier !== undefined &&  sugg.supplier.Id == $scope.suggestions[i].supplier.Id){
+                                $scope.suggestions[i].selected = false;
+                            } 
+                        }
+                        
+                    }
+                    var imgId = '';
+                    if(sugg.imageID !== undefined){
+                        imgId  = sugg.imageID;
+                    }
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.HolidayEnquiryController.saveSuggestion}',sugg.hs,imgId,$scope.addSugg,$scope.removeSugg,$scope.opportunity.Id,
+                        function(result, event){
+                            if (event.status) {
+                            //Result contains list of account names and account id
+                               $scope.mySuggestions = result;
+                               $scope.$apply();
+                               
+                            }else if (event.type === 'exception') 
+                                alert(event.message, 'error');
+                        }, 
+                        {escape: false}
+                    );    
+                }
+                
+                //Tree Component
+                buildEmptyTree();
+                $scope.selectedNode = "";
+                function buildEmptyTree() {
+                    $scope.displayTree = [];
+                    $scope.displayTreeCat = [];
+                    $scope.displayTreeAcc = [];
+                }
+                
+                //ShowEmailSuggestionModal
+                $scope.showSuggestionEmail = function(){
+                    
+                   if($scope.mySuggestions.length == 0){
+                       alert($scope.ErrorMessages['HS_No_Suggestion_Available'],'error');
+                       $('#searchSuggestion').trigger('click');
+                   }
+                   else{
+                    angular.element(document.getElementById('HolidaySuggestions')).scope().loadRcap();
+                    $('#suggestionEmail').toggle('show');
+                    $('#suggestionEmailOverLay').toggle('show');
+                   }
+                }
+                
+                //Darg and Drop Table
+                $scope.sortableOptions = {
+                    stop: function(e, ui) {
+                        console.log('Dropped')
+                        var hsOrder = [];
+                        angular.forEach($scope.mySuggestions, function(sugg,index) {
+                            sugg.hs.HS_Order__c= index; 
+                            hsOrder.push(sugg.hs);
+                        });
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.HolidayEnquiryController.saveSuggestionOrder}',hsOrder,
+                            function(result, event){
+                                if (event.status) {
+                                    //Result contains list of account names and account id
+                                    console.log('Order Saved.');
+                                }else if (event.type === 'exception') 
+                                    alert(event.message, 'error');
+                            }, 
+                            {escape: false}
+                        );
+                    },
+                    axis: 'y'
+                };
+                
+                
+                $scope.filterTree = function(tree){
+                    console.log(tree);
+                    if(tree == 'whereToGo'){
+                        angular.forEach($scope.displayTree, function(country,index) {
+                            angular.forEach(country.children, function(whereToGo,index1) {
+                                if($scope.whereToGoFilter == ''){
+                                    whereToGo.show =  true;
+                                }
+                                else if(whereToGo.name.toUpperCase().indexOf($scope.whereToGoFilter.toUpperCase()) != -1){
+                                    whereToGo.show =  true;
+                                } 
+                                else{
+                                    whereToGo.show =  false;
+                                }       
+                            });
+                        });
+                    }
+                    else{
+                        angular.forEach($scope.displayTreeCat, function(country,index) {
+                            angular.forEach(country.children, function(whereToGo,index1) {
+                                if($scope.activityFilter == ''){
+                                    whereToGo.show =  true;
+                                }
+                                else if(whereToGo.name.toUpperCase().indexOf($scope.activityFilter.toUpperCase()) != -1){
+                                    whereToGo.show =  true;
+                                } 
+                                else{
+                                    whereToGo.show =  false;
+                                }       
+                            });
+                        });    
+                    }
+                }                
+                  
+            });
+            myApp.directive('jqdatepicker', function () {
+                return {
+                    restrict: 'A',
+                    require: 'ngModel',
+                     link: function (scope, element, attrs, ngModelCtrl) {
+                        $(element).datepicker({
+                            dateFormat: 'dd/mm/yy',
+                            onSelect: function (date) {
+                                ngModelCtrl.$setViewValue(date);
+                                ngModelCtrl.$render();
+                                scope.$apply();
+                            }
+                        });
+                    }
+                };
+            });
+            myApp.directive('nodeTree', function() {
+                return {
+                    template: '<node ng-repeat="node in tree"></node>',
+                    replace: true,
+                    transclude: true,
+                    restrict: 'E',
+                    scope: {
+                      tree: '=ngModel',
+                      collapsed: '=ngCollapsed'
+                    }
+                };
+            });
+             //CKEditor 
+            
+            myApp.directive('node', function($compile) {
+                return { 
+                    restrict: 'E',
+                    replace:true,
+                    templateUrl: 'the-tree.html',
+                    link: function(scope, elm, attrs) {
+                    
+                        //$(elm).parent('ul').find('span.leaf').on('click', function (e) {
+                        $(elm).find('span.leaf').on('click', function (e) {
+                            var children = $(elm).find('li');
+                            var objType = $(elm).attr('data-object');
+                            
+                            if($(elm).attr('data-object') == 'Country__c'){
+                                scope.displayTree[$(elm).attr('id')].expanded = true;
+                                angular.forEach(scope.displayTree[$(elm).attr('id')].children, function(child){
+                                    child.expanded = true;
+                                });
+                            }
+                            if (children.is(":visible")) {
+                                children.hide('fast');
+                                $(elm).find('span.leaf i.icon-minus-sign').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+                            }
+                            else{
+                                children.show('fast');
+                                $(elm).find('span.leaf i.icon-plus-sign').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+                            }
+                            scope.$apply();
+                            e.stopPropagation();
+                        });
+                        
+                      
+                        scope.nodeClicked = function(node) {
+                            node.checked = !node.checked;
+                            isCollapsed = false;
+                            function checkChildren(c) {
+                                angular.forEach(c.children, function(c) {
+                                    c.checked = node.checked;
+                                    checkChildren(c);
+                                });
+                            }
+                            checkChildren(node);
+                            
+                            if(node.obj != 'Activity__c' && node.obj != 'Category__c' && node.obj != 'Accommodation'){
+                                scope.LoadFilteredData();
+                                scope.LoadFilteredDataAcc();
+                            }
+                            else{
+                                console.log('DDDDDDDDDDDDDDddd');
+                                scope.LoadSuggestions();    
+                            }
+                        };
+                      
+                      
+                        scope.switcher = function(booleanExpr, trueValue, falseValue) {
+                            return booleanExpr ? trueValue : falseValue;
+                        };
+                        
+                        scope.isLeaf = function(_data) {
+                            if (_data.children.length == 0) {
+                                return true;
+                            }
+                            return false;
+                        };
+                        
+                        if (scope.node.children.length > 0) {
+                            var childNode = $compile('<ul class="slds-tree__group slds-nested"><node-tree ng-model="node.children"></node-tree></ul>')(scope)
+                            elm.append(childNode);
+                            var children = $(elm).find('li');
+                            children.hide('fast');
+                        }
+                    }
+                };
+            });
+
+
+            
+            //Filter the SObject JSON
+            function removeHashKey(data) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    if (typeof item != "object") {
+                        delete data['$$hashKey']; 
+                    } else if (typeof item == "object") {
+                        delete data['$$hashKey'];
+                        removeHashKey(item);
+                    }
+                } return data;   
+            }
+            function removeProperty(data, prop) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    
+                    if (typeof item != "object") {
+                        delete data[prop]; 
+                    } else if (typeof item == "object") {
+                        delete data[prop]; 
+                        removeProperty(item,prop);
+                    }
+                } return data;   
+            }
+            
+            //Collapse all child node from tree when page load
+            function CollapseAll(){
+                $('.leaf').click()
+            }
+                
+        </script>
+        
+        
+         <c:StarRatingComponent > </c:StarRatingComponent>
+        <body>    
+                
+                <div id="SuggestionController" ng-controller="SuggestionController" >
+                    <div class="slds">
+                        <c:AlertBox ></c:AlertBox>
+                        
+                         <div class="slds-tabs--default">
+                            <ul class="slds-tabs--default__nav" role="tablist">
+                                <li class="slds-tabs--default__item slds-text-heading--label slds-active" title="Item One" role="presentation" id="searchSuggestion"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-suggestion-1">Search Suggestions</a></li>
+                                <li class="slds-tabs--default__item slds-text-heading--label" title="Item Two" role="presentation" id="mySuggestion"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-suggestion-2">My Suggestions</a></li>
+                            </ul>
+                            <!--- Search Area -->
+                            <div id="tab-suggestion-1" class="slds-tabs--default__content slds-show" role="tabpanel">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                                            <label class="slds-form-element__label" for="inputSample2">Travelling Countries</label>
+                                            <label class="slds-form-element__control">
+                                                <oi-select oi-options="item.label for item in countries track by item.value"
+                                                    ng-model="multipleDemo.selectedCountries"
+                                                    multiple="multiple"  ng-disabled="true"     
+                                                    placeholder="Select" style="width: 90.5%;">
+                                                </oi-select>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <label class="slds-form-element__label" for="inputNameSample3">Holiday Type</label>
+                                        <div class="slds-form-element__control">
+                                            <label class="slds-input"> {{opportunity[nameSpacePrefix+'O_Holiday_Type__r'].Name}} </label>
+                                            <!--<input type="text" id="Holiday-Type" class="slds-input" ng-model="opportunity.O_Holiday_Type__c" typeahead-input-formatter="formatInputPr($model,'HolidayType')" 
+                                            typeahead="state.value as state.label for state in holidayType | filter:$viewValue | limitTo:20" />
+                                            -->
+                                        </div>
+                                        <br/>
+                                    </div>
+                                    
+                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-4">
+                                        
+                                        <div class="slds-card">
+                                            <div class="slds-card__header slds-grid">
+                                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                                    <div class="slds-media__figure">
+                                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="slds-media__body">
+                                                        <h2 class="slds-text-heading--small slds-truncate">Search Suggestions</h2>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="slds-card__body">
+                                                <ul>
+                                                    <li class="slds-tile slds-hint-parent">
+                                                        
+                                                        <div class="slds-tile__detail">
+                                                            <dl class="dl--horizontal slds-text-body--small">
+                                                                <dt class="slds-dl--horizontal__label">
+                                                                    <p class="">Duration:</p>
+                                                                </dt>
+                                                                <dd class="slds-dl--horizontal__detail slds-tile__meta">
+                                                                    <p class="slds-truncate">{{opportunity[nameSpacePrefix+'O_No_of_Nights__c']}}</p>
+                                                                </dd>
+                                                                
+                                                                <dt class="slds-dl--horizontal__label">
+                                                                    <p class="">Departure Date:</p>
+                                                                </dt>
+                                                                <dd class="slds-dl--horizontal__detail slds-tile__meta">
+                                                                    <p class="slds-truncate">{{opportunity[nameSpacePrefix+'O_Departure_Date__c'] | date:'dd/MM/yyyy'}}</p>
+                                                                </dd>
+                                                                
+                                                                <dt class="slds-dl--horizontal__label">
+                                                                    <p class="">Return Date:</p>
+                                                                </dt>
+                                                                <dd class="slds-dl--horizontal__detail slds-tile__meta">
+                                                                    <p class="slds-truncate">{{opportunity[nameSpacePrefix+'O_Return_Date__c'] | date:'dd/MM/yyyy'}}</p>
+                                                                </dd>
+                                                                
+                                                                <!--<input id="Departure-date"  jqdatepicker="jqdatepicker" class="slds-input" type="text" ng-model="opportunity.O_Departure_Date__c"  placeholder="Departure Date"/>
+                                                                <input id="Return-date"  jqdatepicker="jqdatepicker" class="slds-input" type="text" ng-model="opportunity.O_Return_Date__c"  placeholder="Return Date"/>    -->
+                                                            </dl>
+                                                        </div>
+                                                        <br/>
+                                                        <div class="slds-grid slds-grid--align-spread slds-has-flexi-truncate">
+                                                            <p class="slds-tile__title slds-truncate"><a href="#">Where To Go</a></p>
+                                                        </div>
+                                                        <div class="span5 article-tree">
+                                                            <div ng-style="{'overflow': 'auto'}">
+                                                                <div class="tree slds-tree-container" role="application">
+                                                                    <ul class="slds-tree">
+                                                                        <input type="text" class="slds-input" ng-model="whereToGoFilter" ng-keyup="filterTree('whereToGo')" placeholder="Search" />
+                                                                        <div class="nodeTreeFilter">
+                                                                            <node-tree ng-model="displayTree"></node-tree>
+                                                                        </div>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-grid slds-grid--align-spread slds-has-flexi-truncate">
+                                                            <p class="slds-tile__title slds-truncate"><a href="#">Activities</a></p>
+                                                        </div>
+                                                        <div class="span5 article-tree">
+                                                            <div ng-style="{'overflow': 'auto'}">
+                                                                <div class="tree slds-tree-container" role="application">
+                                                                    <ul class="slds-tree">
+                                                                        <input type="text" class="slds-input" ng-model="activityFilter" ng-keyup="filterTree('activity')" placeholder="Search" />
+                                                                        <div class="nodeTreeFilter">
+                                                                            <node-tree ng-model="displayTreeCat"></node-tree>
+                                                                        </div>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="slds-grid slds-grid--align-spread slds-has-flexi-truncate">
+                                                            <p class="slds-tile__title slds-truncate"><a href="#">Accommodation</a></p>
+                                                        </div>
+                                                        <div class="span5 article-tree">
+                                                            <div ng-style="{'overflow': 'auto'}">
+                                                                <div class="tree slds-tree-container" role="application">
+                                                                    <ul class="slds-tree">
+                                                                        <input type="text" class="slds-input" ng-model="activityFilter" ng-keyup="filterTree('activity')" placeholder="Search" />
+                                                                        <div class="nodeTreeFilter">
+                                                                            <node-tree ng-model="displayTreeAcc"></node-tree>
+                                                                        </div>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="slds-card__footer">
+                                            </div>
+                                        </div>   
+                                         
+                                    </div>
+                                    
+                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--3-of-4">
+                                        
+                                        <div class="slds-card" ng-repeat="sugg in suggestions" style="margin-left:2%;padding:0px">
+                                            <div class="slds-card__body divheight" style="padding: 15px;box-shadow: 0 0 2px rgba(0,0,0,0.2);padding:0px;">
+                                                <div class="slds-grid slds-wrap">
+                                                    <div class="slds-col slds-size--1-of-1 divheight slds-medium-size--1-of-5 image-container" >
+                                                        <img src="/servlet/servlet.FileDownload?file={{sugg.imageID}}" class="divheight" style="width: auto; max-width: 100%;  vertical-align: middle;"/>    
+                                                    </div>
+                                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--4-of-5" style="max-height:170px;padding-left: 10px;" >
+                                                        <div style="padding: 5px;">
+                                                            <dl class="dl--horizontal slds-text-body--small">
+                                                                <h2 class="slds-text-heading--small slds-truncate"><a href="" style="text-decoration: none;">{{sugg.whereToGo.Name}}{{sugg.activity.Name}}{{sugg.supplier.Name}}</a>
+                                                                    <div star-rating ="star-rating" rating-value="sugg.whereToGo[nameSpacePrefix+'W_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                    <div star-rating ="star-rating" rating-value="sugg.activity[nameSpacePrefix+'WH_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                    <div star-rating ="star-rating" rating-value="sugg.supplier[nameSpacePrefix+'S_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                    <div class="slds-form-element" style="float:right">
+                                                                        <a ng-click="sugg.selected = !sugg.selected; addSuggestions(sugg);"> <i class="fa fa-heart" ng-class="{'checked-heart':sugg.selected,'unchecked-heart' : !sugg.selected}" ></i> </a>
+                                                                    </div>
+                                                                </h2>
+                                                                <div class="hs-content slds-scrollable--y">
+                                                                    <textArea ck-Editor="ck-Editor" ng-model="sugg.hs[nameSpacePrefix+'HS_Message__c']" ng-blur="addSuggestions(sugg)"/>
+                                                                </div>
+                                                                
+                                                                <dd class="slds-tile__meta estimate-cost">
+                                                                  <p class="slds-truncate"><span ng-if="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c'] !== undefined"><Strong>Errata Text : </Strong><span ng-bind-html="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c']"/> </span> &nbsp;&nbsp;&nbsp; <Strong>Estimated Cost : </Strong> <span ng-if="sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c'] !== undefined || sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c'] !== undefined || sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c'] !== undefined"> {{sugg.whereToGo[nameSpacePrefix+'CurrencyIsoCode']}}  {{sugg.activity[nameSpacePrefix+'CurrencyIsoCode']}} {{sugg.supplier[nameSpacePrefix+'CurrencyIsoCode']}} </span> {{sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c']}}  {{sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c']}} {{sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c']}} </p><br/>
+                                                                </dd>
+                                                                <!--<p class="slds-truncate" ng-bind-html="sugg.whereToGo.W_Description__c">{{sugg.whereToGo.W_Description__c}} {{sugg.activity.WH_Description__c}}<br/></p> -->
+                                                            </dl>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                         </div> 
+                                         
+                                         <div class="fixed-footer slds-modal__footer">
+                                            <button class="slds-button slds-button--brand" onclick="$('#mySuggestion').trigger('click');return false;">Go To My Suggestion List</button>
+                                        </div>
+                                    </div>
+                                </div>       
+                            </div>
+                            
+                            <!---- My Suggestion List --->
+                            <div id="tab-suggestion-2" class="slds-grid slds-tabs--default__content slds-hide" role="tabpanel">
+                                <div ui-sortable="sortableOptions" ng-model="mySuggestions">
+                                    <div class="slds-card" ng-repeat="sugg in mySuggestions | orderBy : 'hs.{!nameSpacePrefix}HS_Order__c'" style="padding:0px;">
+                                        <div class="slds-card__body divheight " style="padding: 15px;box-shadow: 0 0 2px rgba(0,0,0,0.2); 0px;padding:0px; ">
+                                            <div class="slds-grid slds-wrap">
+                                                <div class="slds-col slds-size--1-of-1 divheight slds-medium-size--1-of-5 image-container">
+                                                    <img src="/servlet/servlet.FileDownload?file={{sugg.imageID}}" class="divheight " style="width: auto; max-width: 100%; vertical-align: middle;"/>    
+                                                </div>
+                                                <div class="slds-col slds-size--1-of-1 slds-medium-size--4-of-5" style="padding-left: 10px; max-height: 170px;">
+                                                    <div style="padding: 5px;">
+                                                        <dl class="dl--horizontal slds-text-body--small">
+                                                            <h2 class="slds-text-heading--small slds-truncate"><a href="">{{sugg.whereToGo.Name}}{{sugg.activity.Name}}{{sugg.supplier.Name}}</a>
+                                                                <div star-rating ="star-rating" rating-value="sugg.whereToGo[nameSpacePrefix+'W_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                <div star-rating ="star-rating" rating-value="sugg.activity[nameSpacePrefix+'WH_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                <div star-rating ="star-rating" rating-value="sugg.supplier[nameSpacePrefix+'S_Rating__c']" data-max="5" style="display: inline-block;"></div>
+                                                                <div class="slds-form-element" style="float:right">
+                                                                   <a ng-click="sugg.selected = !sugg.selected; addSuggestions(sugg); "> <i class="fa fa-heart" ng-class="{'checked-heart':sugg.selected,'unchecked-heart' : !sugg.selected}" ></i> </a>
+                                                                </div>
+                                                            </h2>
+                                                            <div  class="hs-content slds-scrollable--y">
+                                                                <div contenteditable="true" ck-Editor="ck-Editor" ng-model="sugg.hs[nameSpacePrefix+'HS_Message__c']" ng-blur="addSuggestions(sugg)" />
+                                                            </div>
+                                                            <!--<p class="slds-truncate" ng-bind-html="sugg.whereToGo.W_Description__c">{{sugg.whereToGo.W_Description__c}} {{sugg.activity.WH_Description__c}}<br/></p> -->
+                                                            <dd class="slds-tile__meta estimate-cost">
+                                                                  <p class="slds-truncate"><span ng-if="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c'] !== undefined"><Strong>Errata Text : </Strong><span ng-bind-html="sugg.hs[nameSpacePrefix+'HS_Errata_Text__c']"/> </span> <Strong>Estimated Cost : </Strong> <span ng-if="sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c'] !== undefined || sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c'] !== undefined || sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c'] !== undefined"> {{sugg.whereToGo[nameSpacePrefix+'CurrencyIsoCode']}}  {{sugg.activity[nameSpacePrefix+'CurrencyIsoCode']}} {{sugg.supplier[nameSpacePrefix+'CurrencyIsoCode']}} </span>  {{sugg.whereToGo[nameSpacePrefix+'W_Estimated_Cost__c']}}  {{sugg.activity[nameSpacePrefix+'WH_Estimated_Cost__c']}} {{sugg.supplier[nameSpacePrefix+'S_Estimated_Cost__c']}} </p><br/>
+                                                                </dd>
+                                                        </dl>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-has-flexi-truncate">
+                                    <div class="fixed-footer slds-modal__footer">
+                                        <button onclick="return false;" class="slds-button slds-button--brand" ng-click="showSuggestionEmail()">
+                                            Open Suggestions Email
+                                        </button> 
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            
+                        </div>
+                    
+                    </div>   
+                    
+                    <!-- Node Template -->
+                    <script type="text/ng-template" id="the-tree.html">
+                        <li class="parent_li slds-tree__branch slds-is-open" data-object="{{node.obj}}" data-expanded="{{node.expanded}}" id="{{$index}}" style="margin-left: 1.5em !important;" ng-show="(node.expanded || node.obj != 'Where_to_go__c') && node.show">
+                             <span ng-click="nodeClicked(node)">
+                                 <label class="slds-checkbox">
+                                    <input name="checkbox{{$index}}" type="checkbox" id="checkboxSample1{{$index}}" type="checkbox" ng-model="node.checked"/>
+                                    <span class="slds-checkbox--faux"></span>
+                                </label>
+                                 
+                             </span> 
+                             <!-- <span class="leaf"  ng-click="nodeClicked(node)"  >{{node.name}} -->
+                             <span class="leaf slds-form-element__label">{{node.name}} {{node.children.length == 0? '' : ' - ['+node.children.length+']'}}
+                                <i class="{{ switcher( isLeaf(node), '', 'icon-minus-sign' )}}"></i> 
+                                  {{showNode(node)}}
+                             </span>
+                        </li>
+                    
+                    </script> 
+                 </div>    
+             <!--- Suggestion Popup -->
+            <div class="slds">
+                <div aria-hidden="false" role="dialog" style="display:none;" id="suggestionEmail" class="slds-modal slds-modal--large slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <div class="slds-modal__header" style="padding: 10px 16px;">
+                            <h2 class="slds-text-heading--medium" style="float:left;font-size:17px;"><strong>Send Suggestion Email</strong></h2>
+                            <button class="slds-button slds-button--icon-inverse slds-modal__close suggestionEmail_close" onclick="return false;">
+                                <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                    <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                </svg>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </div>
+                        <div class="slds-modal__content" style="overflow: auto !important;">
+                            <c:MailService opportunityId="{!opp.Id}" templateName="Holiday Suggestions" id="suggestion"/>    
+                        </div>
+                        <!--
+                        <div class="slds-modal__footer slds-modal__footer--directional">
+                            <div class="slds-x-small-buttons--horizontal">
+                                <button class="slds-button slds-button--brand" ng-click="saveQuestions(cat.Name)" onclick="return false;">Close</button>&nbsp; 
+                                <button class="slds-button slds-button--brand" ng-click="sendEmail()" onclick="return false;">Send</button>   &nbsp;
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </div>
+                <div style="display:none;" id="suggestionEmailOverLay" class="slds-backdrop slds-backdrop--open"></div>
+            </div>
+            <!--- Popup Closed -->
+            
+            <script>
+                $('.slds-tabs--default__item').on('click', function(){
+                    $(this).addClass('slds-active');
+                    $(this).find('a').attr('aria-selected', true);
+                    var $contentToShow = $('#'+$(this).find('a').attr('aria-controls'));
+                    $contentToShow.removeClass('slds-hide');
+                    $contentToShow.addClass('slds-show');
+                    
+                    $(this).siblings().removeClass('slds-active');
+                    $(this).siblings().find('a').attr('aria-selected', false);
+                    $contentToShow.siblings('.slds-tabs--default__content').removeClass('slds-show');
+                    $contentToShow.siblings('.slds-tabs--default__content').addClass('slds-hide');
+                }); 
+                $('.suggestionEmail_close').on('click', function(){
+                    $('#suggestionEmail').toggle('hide');    
+                    $('#suggestionEmailOverLay').toggle('hide');    
+                });
+                
+            </script> 
+        </body>
+    </html>
+</apex:page>

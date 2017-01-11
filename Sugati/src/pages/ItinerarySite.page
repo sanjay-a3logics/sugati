@@ -1,0 +1,800 @@
+<apex:page title="Your Itinerary" standardController="Opportunity" standardStylesheets="false" extensions="ItinerarySiteController" 
+    sidebar="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <head>
+            <title>Your Itinerary</title>
+            <c:BasicResources ></c:BasicResources>
+            <apex:stylesheet value="{!URLFOR($Resource.Framework,'FrameWork/JS/atc-style-blue.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/atc.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/jstz.min.js')}" />
+            
+            <style>
+                body{
+                    margin:0;
+                    padding:0;
+                }
+                .slds{
+                    padding:0 10px;
+                }
+                .slds:not(html), .slds body{
+                    font-size: 14px !important;
+                }
+                .slds-page-footer{    
+                    position: fixed;
+                    width: 100%;
+                    top: 0;
+                    left: 0;
+                    background-color: rgba(255, 153, 0, 0.82);
+                }
+                .slds-page-header{
+                    position: fixed;
+                    width: 100%;
+                    bottom: 0;
+                    left: 0;  
+                }
+                .slds .slds-card{
+                    overflow:hidden;
+                    margin-bottom:30px;
+                }
+                .destinationList{
+                    margin-left:18px !important;
+                }
+                .destinationTable{
+                    display:inline-block;
+                    vertical-align:middle;
+                }
+                .destinationTable td{
+                    padding-bottom:0 !important;
+                }
+                .tableQuotation td{
+                    padding:12px;
+                }
+                .day-details .img{
+                    display: -webkit-flex;
+                    display: -ms-flexbox;
+                    display: flex;
+                 
+                    -webkit-flex-wrap: wrap;
+                    -ms-flex-wrap: wrap;
+                    flex-wrap: wrap;
+                    margin-bottom:10px;
+                }
+                .day-details .img > .img-item{
+                    /*
+                    display: -webkit-flex;
+                    display: -ms-flexbox;
+                    display: flex;
+                    */
+                    width:50%;
+                    background-size: cover;
+                }
+                .day-details .img > .img-item:first-child{
+                    border-right:2px solid #fff;
+                }
+                .day-details .img > .img-item:last-child{
+                    border-left:2px solid #fff;
+                }
+                .day-details .img > .img-item img{
+                    width:100%;
+                    height:auto;
+                    opacity:0;
+                }
+                .day-row{
+                    margin-bottom:30px;
+                }
+                .day-row .day{
+                    margin-bottom:8px;
+                    font-weight:bold;
+                    font-size:20px;
+                }
+                .day-row .title{
+                    margin-bottom:8px;
+                }
+                .table-light{
+                    margin-top:15px;
+                }
+                @media (min-width: 48em) {
+                    .slds .slds-modal--large .slds-modal__container {
+                        width: 35%;
+                    }
+                }
+                @media (max-width: 480px){
+                    .map-container > div{
+                        float:none !important;
+                        width:100% !important;
+                    }
+                }
+                a.atcb-link {
+                    background-color: #1A9AD6 !important;
+                }
+            </style>
+            <script>
+               $( document ).ready(function() {
+                    var backButton= ((typeof sforce != 'undefined') && (sforce != null));
+                   if(backButton) {
+                        $('.backButton').css('display','inline-block');   
+                   }
+                });
+               
+                function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+                }
+                function saveComment(){
+                    var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                    if(!re.test($('.email').val()) || $('.email').val() == ''){
+                        $('.email').css('border-color','red');    
+                    }
+                    else{
+                        $('.email').css('border-color','#d8dde6');
+                        saveCommentJS();    
+                    }
+                }
+                
+                var timezone = jstz.determine();
+                
+                $( ".atc_timezone" ).each(function( index ) {
+                 $( this ).text(timezone.name());
+                });
+                
+                function showPopup(){
+                    $('.commentText').val('');
+                    $('.email').val('');
+                    $('.comment').toggle('Show')
+                }
+            </script>
+        </head>   
+        <body>
+            <div class="slds">        
+                <c:Loading />
+                <c:AlertBox />
+                <apex:form >
+                    <br/>
+                    <br/>
+                    <br/>
+                    <apex:outputPanel id="test">
+                        <script>
+                            var error = "{!JSENCODE(saveMsg)}";
+                            function saveCommentRt(){
+                                if(error == 'Thanks for your comment.'){
+                                    alert('Thanks for your comment.');
+                                    $('.comment').toggle('hide');
+                                    reloadComment();   
+                                }
+                                else{
+                                    alert(error,'error');
+                                }
+                            }
+                        </script>
+                        <apex:outputText Styleclass="msg">{!saveMsg}</apex:outputText>
+                    </apex:outputPanel>
+                    <apex:actionFunction name="saveCommentJS" status="loading" action="{!saveComment}" reRender="sitePageComment,test" oncomplete="saveCommentRt()"/>
+                    <div class="slds-page-footer" role="banner">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-col slds-has-flexi-truncate">
+                                <div class="slds-media">
+                                    <div class="slds-media__figure">
+                                        <apex:image url="/servlet/servlet.FileDownload?file={!pageLogo}" style="height: 60px;" styleClass="logo" />
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                                            <div class="slds-grid slds-wrap">    
+                                                <div class="slds-col--padded slds-large-size--1-of-3">
+                                                    <label class="slds-form-element__label" style="color:#fff"><strong>ITINERARY:</strong></label>
+                                                    <apex:outputText escape="false" value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}" style="color:#fff" />&nbsp;
+                                                </div>
+                                                <div class="slds-col--padded slds-large-size--1-of-3">
+                                                    <label class="slds-form-element__label" style="color:#fff"><strong>PREPARED FOR:</strong></label>
+                                                    <apex:outputText escape="false" value="{!Opp.Account.Name}"  style="color:#fff" />&nbsp;
+                                                </div>
+                                                <div class="slds-col--padded slds-large-size--1-of-3" style="color:#fff">
+                                                    <apex:outputText escape="false" value="{!Opp.O_No_of_Nights__c+1}" rendered="{!IF(Opp.O_No_of_Nights__c != NULL, true, false)}"/> DAYS / 
+                                                    <apex:outputText escape="false" value="{!Opp.O_No_of_Nights__c}" rendered="{!IF(Opp.O_No_of_Nights__c != NULL, true, false)}"/> NIGHTS
+                                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                                        <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                                    </apex:outputText>&nbsp;
+                                                    <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                                        <apex:param value="{!Opp.O_Return_Date__c}" />
+                                                    </apex:outputText>&nbsp;
+                                                </div>
+                                            </div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!---- Comment Popup ----->
+                    <div aria-hidden="false" role="dialog" style="display:none"  class="comment slds-modal slds-modal--small slds-fade-in-open">
+                        <div class="slds-modal__container">
+                            <div class="slds-modal__header" style="padding: 10px 16px;">
+                                <h2 class="slds-text-heading--medium" style="float:left;font-size:17px;">Comment</h2>
+                                <button class="slds-button slds-button--icon-inverse slds-modal__close" onclick="return false;">
+                                    <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                        <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                    </svg>
+                                    <span class="slds-assistive-text">Close</span>
+                                </button>
+                            </div>
+                            
+                            <div class="slds-modal__content slds-scrollable--x" style="overflow-y : auto !important">
+                                <div class="slds-form-element slds-col" ng-form="gmForm">
+                                    <div class="slds-form">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="inputNameSample1">Email Address</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputText styleClass="slds-input email" value="{!emailAdd}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="inputNameSample1">Comment</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputTextarea styleClass="slds-input commentText" value="{!comment}" style="line-height: inherit !important;height: 300px;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-modal__footer slds-modal__footer">
+                                <div class="slds-x-small-buttons--horizontal">
+                                    <button class="slds-button slds-button--brand"  onclick="saveComment(); return false;">Comment</button>
+                                    <button class="closeButton slds-button slds-button--brand" onclick="return false;">Close</button>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:none;" class="comment slds-backdrop slds-backdrop--open"></div>
+                    
+                    <div class="slds-page-header slds-modal__footer slds-modal__footer" role="banner">
+                        <div class="slds-x-small-buttons--horizontal">
+                            <button type="submit" class="slds-button slds-button--brand"  onclick="showPopup();return false;">Comment</button>
+                           <a href="/apex/{!nameSpacePrefix}BookingForm?id={!oppId}" class="closeButton slds-button slds-button--brand" style="font-size:11px" target="_blank" >Book Now</a>
+                            <button  class="slds-button slds-button--brand backButton" onclick="back();" style="display:none;">Back</button>
+                        </div>
+                    </div>
+                </apex:form>
+                
+                <!--------Body ------->
+                <div class="slds-container--center slds-container--medium">
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'COVER'),mapSelected['COVER'], true)}">
+                        <div class="slds-card" ng-form="IBForm">
+                            <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="padding:0">
+                                <apex:image URL="/servlet/servlet.FileDownload?file={!FileId}" width="100%" height="100%"  />
+                            </div>
+                        </div>
+                    </apex:outputPanel> 
+                
+                    <!--BOOKING PROCESS PAGE  -->
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'BOOKING PROCESS'),mapSelected['BOOKING PROCESS'], true)}">
+                        <div class="slds-card" ng-form="IBForm">
+                            <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="padding:0">
+                                <apex:image rendered="{!opp.stageName ='Enquiry'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Enquiry.jpg')}" style="width:100%;"/>
+                                <apex:image rendered="{!opp.stageName ='Quoted to client'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Quote.jpg')}" style="width:100%;"/>
+                                <apex:image rendered="{!opp.stageName ='Feedback'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Feedback.jpg')}" style="width:100%;"/>
+                                <apex:image rendered="{!opp.stageName ='Booked'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Book.jpg')}" style="width:100%;"/>
+                                <apex:image rendered="{!opp.stageName ='Refine'}" url="{!URLFOR($Resource.Framework,'PDFLogos/Refine.jpg')}" style="width:100%;"/>
+                                
+                            </div>
+                        </div>
+                  </apex:outputPanel>
+                    
+                    
+                    <!--TRAVEL DESIGNER PAGE  -->
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'A NOTE FROM YOUR DESIGNER'),mapSelected['A NOTE FROM YOUR DESIGNER'], true)}">
+                        <div class="slds-card" ng-form="IBForm">
+                            <div class="slds-card__header slds-grid">
+                                A NOTE FROM YOUR TRAVEL DESIGNER
+                            </div>
+                            <div class="slds-card__body" ng-class="{toggle : toggleIB}">
+                                <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="510" rowspan="2">
+                                        <apex:image url="/servlet/servlet.ImageServer?id={!UserPhoto}" width="510" height="300px"/>
+                                    </td>
+                                    <td valign="top" bgcolor="#e6e7e8" height="180px">
+                                        <div style="padding:15px 15px 0">
+                                            <div style="font-size: 20pt;color:#457098;">{!UserDet.FirstName} {!UserDet.LastName}</div>
+                                            <div style="color:#58595b;">
+                                                <p>
+                                                   <apex:outputText style="font-family: sans-serif;" styleClass="ExpMsg" escape="false" value="{!userDet.U_Our_Expertise__c}"></apex:outputText>
+                                                </p>
+                                            </div>       
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign="middle" bgcolor="#959484" height="67px">
+                                        <div style="padding:15px;color:#ffffff;">
+                                           <div><strong>{!UserDet.FirstName} {!UserDet.LastName}</strong></div>
+                                           <div style="margin-top: 10px;"/>
+                                           <div>{!UserDet.Title}</div>
+                                           <div>{!UserDet.Phone}</div>
+                                           <div>{!UserDet.Email}</div>
+                                       </div>
+                                    </td> 
+                                </tr>
+                                </table>
+                               
+                                <div style="margin:15px 40px">
+                                    <apex:outputText escape="false" value="{!tailorDescription}"></apex:outputText> 
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>  
+                       
+                    <!--YOUR TRAVEL ITINERARY PAGE  -->
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'YOUR ITINERARY'),mapSelected['YOUR ITINERARY'], true)}">
+                        <div class="slds-card" ng-form="IBForm">
+                            <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="padding:0">
+                                <apex:image url="{!URLFOR($Resource.Framework,'PDFLogos/YourItinerary.png')}" style="border:0" width="100.5%" height="790"/>
+                           </div>
+                       </div>
+                    </apex:outputPanel>   
+                
+                    <!---- HOLIDAY OVERVIEW --->
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'HOLIDAY OVERVIEW'), mapSelected['HOLIDAY OVERVIEW'], true)}" layout="block">
+                         <div class="slds-card" ng-form="IBForm">
+                             <div class="slds-card__header slds-grid"/>
+                             <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="padding:10px">
+                                 <c:DestinationMap opp="{!opp}"> </c:DestinationMap>
+                             </div>
+                         </div>
+                             
+                    </apex:outputPanel>  
+            
+                    <!-- Travel Summary PAGE  -->
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'TRAVEL SUMMARY'),mapSelected['TRAVEL SUMMARY'], true)}">
+                        <div class="slds-card" ng-form="IBForm">
+                            <div class="slds-card__header slds-grid">
+                                TRAVEL SUMMARY    
+                            </div>
+                            <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="padding:8px 0 0">
+                                <apex:variable value="{!1}" var="flag"/>
+                                <div class="slds-scrollable--x">
+                                    <table class="itinerary slds-table slds-table--bordered SBTable" style="font-size: 12px;">
+                                        <THEAD>  
+                                            <tr>
+                                                <th class="headerRow" align="center" width="5%">DAY</th>
+                                                <th class="headerRow" align="center" width="10%">DATE</th>
+                                                <th class="headerRow" align="center" width="10%">LOCATION / ROUTE</th>
+                                                <th class="headerRow" align="center" width="10%">SERVICES</th>
+                                                <th class="headerRow" align="center" style="min-width:14px;">DETAILS</th>
+                                                <th class="headerRow" align="center" width="10%">ROOM TYPE</th>
+                                                <th class="headerRow" align="center" width="5%">QUANTITY</th>
+                                                <th class="headerRow" align="center" width="5%">NIGHTS</th>
+                                                <th class="headerRow" align="center" style="max-width:14px;">CLASS / BOARD</th>
+                                                <th class="headerRow" align="center" style="max-width:8px; display:{!IF(opp.StageName = 'Booked','','none;')}">EMERGENCY CONTACT</th>
+                                                <th class="headerRow" align="center" style="max-width:8px; display:{!IF(opp.StageName = 'Booked','','none;')}">REFERENCE NO.</th>
+                                            </tr>
+                                        </THEAD> 
+                                        <apex:variable value="{!0}" var="RowCount"/>
+                                        <apex:repeat value="{!SupplierBookings}" var="SB">
+                                            <TBODY>
+                                               <tr class="{!IF( MOD(flag,2) != 0,'','even')}" style="font-size: 11px;">
+                                                   <td class="first" align="center">{!SB.SB_Day__c}</td>
+                                                   <td align="center"> 
+                                                       <apex:outputText escape="false" value="{0,date,dd' 'MMMMM' 'yyyy}">
+                                                           <apex:param value="{!SB.SB_From_Date__c}"/>    
+                                                       </apex:outputText>
+                                                   </td>
+                                                   <td align="center">{!SB.SB_From_Place__c} <apex:outputpanel rendered="{!IF(SB.SB_From_Place__c!=null && SB.SB_To_Place__c != null,true,false)}">&nbsp; - &nbsp; </apex:outputpanel>{!SB.SB_To_Place__c}</td>
+                                                   <apex:variable value="{!SB.recordtypeId}" var="RTID"/>
+                                                   <td align="center">{!SUBSTITUTE(IF(contains(mapContainsIds,RTID),lstRecordTypeIds[RTID], ''),'Int Flight','International Flight')}</td>
+                                                   <td align="center"><apex:outputText value="{!SB.SB_Notes__c}" escape="false"> </apex:outputText></td>
+                                                   <td align="center">{!if(lstRecordTypeIds[RTID] = 'Accommodation',SB.SB_Room_Type__c,'')}</td>
+                                                   <td align="center">{!if(lstRecordTypeIds[RTID] = 'Accommodation',SB.SB_No_of_Rooms__c,'')}</td>
+                                                   <td align="center">{!if(SB.SB_Night__c != null && SB.SB_Night__c > 0,SB.SB_Night__c,'')}</td>
+                                                   <td align="center">{!if((lstRecordTypeIds[RTID] = 'Int Flight' || lstRecordTypeIds[RTID] = 'Domestic Flight' || lstRecordTypeIds[RTID] = 'Light Aircraft' || lstRecordTypeIds[RTID] = 'Rail'),SB.SB_Class__c,'')}{!IF(lstRecordTypeIds[RTID] = 'Accommodation', SB.SB_Meal_Basis__c,'')}</td>
+                                                   <td style="display:{!IF(opp.StageName = 'Booked','','none;')}" align="center">{!IF((lstRecordTypeIds[RTID] = 'Notes' || lstRecordTypeIds[RTID] = 'Bulk Cost' || lstRecordTypeIds[RTID] = 'Description' || lstRecordTypeIds[RTID] = 'Own arrangement'),'', SB.SB_Supplier__r.S_Emergency_Phone__c)}</td>
+                                                   <td style="display:{!IF(opp.StageName = 'Booked','','none;')}" align="center">{!IF((lstRecordTypeIds[RTID] = 'Int Flight' || lstRecordTypeIds[RTID] = 'Domestic Flight' || lstRecordTypeIds[RTID] = 'Light Aircraft' || lstRecordTypeIds[RTID] = 'Rail' || lstRecordTypeIds[RTID] = 'Ferry' || lstRecordTypeIds[RTID] = 'Meet & Greet' || lstRecordTypeIds[RTID] = 'Private Jet' || lstRecordTypeIds[RTID] = 'Private Road Transfer' || lstRecordTypeIds[RTID] = 'Private Speed Boat Transfer' || lstRecordTypeIds[RTID] = 'Private Transfer with Excursion' || lstRecordTypeIds[RTID] = 'Sea Plane' || lstRecordTypeIds[RTID] = 'Sea Plane'),SB.SB_Reservation_Ref__c,'')}{!IF((lstRecordTypeIds[RTID] = 'Accommodation' || lstRecordTypeIds[RTID] = 'Transfer'),SB.SB_Booking_Ref__c,'')}</td>
+                                               </tr>
+                                           </TBODY>
+                                           <apex:variable value="{!flag+1}" var="flag"/>
+                                           <apex:variable value="{!RowCount+1}" var="RowCount"/>
+                                       </apex:repeat>
+                                   </table>
+                               </div>
+                           </div>
+                       </div>
+                   </apex:outputPanel>
+           
+           
+                    <!-- QUOTATION PAGE  --------------->
+                    <apex:outputPanel rendered="{!IF(Opp.StageName != 'Booked',true,false)}">
+                        <apex:outputPanel rendered="{!IF(contains(mapContains,'QUOTATION'),mapSelected['QUOTATION'], true)}">
+                            <div class="slds-card" ng-form="IBForm">
+                                <div class="slds-card__header slds-grid">
+                                    QUOTATION
+                                </div>
+                                <div class="slds-card__body" ng-class="{toggle : toggleIB}">
+                                    <table class="tableQuotation" width="100%" cellpadding="5" cellspacing="1" border="0">
+                                        <tr style="background-color: #B16162;color: white;">
+                                            <td align="Left">
+                                                <strong>TOTAL PRICE</strong>
+                                            </td>
+                                            
+                                            <td style="text-align:right;" align="right">
+                                                <apex:outputPanel rendered="{!opp.O_Itinerary_Display_Price__c == null}">
+                                                    <strong>&nbsp;{!Opp.CurrencyISOCode}&nbsp;
+                                                    <apex:outputText value="{0, number, #,##0.00}">
+                                                        <apex:param value="{!opp.Amount}"/>
+                                                    </apex:outputText>      </strong>
+                                                </apex:outputPanel>
+                                                <strong><apex:outputText value="{!opp.O_Itinerary_Display_Price__c }" rendered="{!opp.O_Itinerary_Display_Price__c != null}" />
+                                              </strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <br/>
+                                    <div style="font-size:12px;">
+                                        <apex:outputText escape="false" value="{!costDescription}"/>
+                                    </div>
+                                </div>
+                           </div>
+                       </apex:outputPanel>
+                    </apex:outputPanel>
+           
+                <!-- QUOTATION PAGE  --------------->
+                <apex:outputPanel rendered="{!IF(Opp.StageName == 'Booked',true,false)}">
+                    <apex:outputPanel rendered="{!IF(contains(mapContains,'QUOTATION'),mapSelected['QUOTATION'], true)}">
+                        <div class="header">
+                            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="200" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                                    <td valign="top" class="divider">
+                                        <div class="header-text1"><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></div>
+                                        <div class="header-text2">
+                                            <apex:outputText value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}"></apex:outputText><br />
+                                            <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                                <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                            </apex:outputText>
+                                            <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                                <apex:param value="{!Opp.O_Return_Date__c}" />
+                                            </apex:outputText>&nbsp;| QUOTE REFERENCE |&nbsp;
+                                            <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}">
+                                            </apex:outputText>
+                                        </div>
+                                    </td>
+                                    <td valign="top" align="right">
+                                        <span class="pagenumber" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="page-container">
+                            <div style="margin-bottom:10px;font-size:20pt;color:#457098;">INCLUSIONS &amp; EXCLUSIONS</div>
+                            <div>
+                                <div style="font-size:12px;">
+                                    <apex:outputText escape="false" value="{!costDescription}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <apex:outputPanel layout="block" style="page-break-after:always;"/>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+           
+           
+                <!-- Detailed Itinerary PAGE  -->
+                <apex:outputPanel rendered="true">
+                    <div class="itinerary-details">
+                        <apex:repeat value="{!SBookings}" var="SBList">
+                            <div class="day-row">
+                                <div class="day">
+                                    DAY {!SBList.lstSupplierBookings[0].SB_Day__c}&nbsp; - &nbsp; 
+                                    <apex:outputText escape="false" value="{0,date,dd' 'MMMMM' 'yyyy}"><apex:param value="{!SBList.lstSupplierBookings[0].SB_From_Date__c}"/></apex:outputText>
+                                    <apex:outputText rendered="{!SBList.lstSupplierBookings[0].recordtype.name = 'Days at Leisure' && SBList.lstSupplierBookings[0].SB_From_Date__c != SBList.lstSupplierBookings[0].SB_To_Date__c && SBList.lstSupplierBookings[0].SB_To_Date__c != null}" escape="false" value="{0,date, - dd' 'MMMMM' 'yyyy}"><apex:param value="{!SBList.lstSupplierBookings[0].SB_To_Date__c}"/></apex:outputText> 
+                                </div>
+                                <apex:variable value="{!0}" var="Imgcount"/>
+                                <apex:variable value="{!0}" var="SBcount"/>
+                                <div class="day-details">
+                                    <apex:repeat value="{!SBList.lstSupplierBookings}" var="SB">
+                                        <apex:outputPanel layout="block" style="{!if(SBcount > 0,'page-break-before:always','')}" rendered="{!IF(SB.SB_New_Page__c, true, false)}" />
+                                        <apex:variable value="{!0}" var="Imgcount" rendered="{!SB.SB_New_Page__c}"/>
+                                        <div layout="block">
+                                            <div class="img">
+                                                <apex:repeat value="{!SB.SupplierBookingImages__r}" var="subrec">
+                                                    <div class="img-item" style="background-image:url(/servlet/servlet.FileDownload?file={!subrec.SBI_Attachement_Id__c})">
+                                                    <apex:outputPanel rendered="{!IF(Imgcount < 2,true,false)}" layout="none">
+                                                        <apex:image value="/servlet/servlet.FileDownload?file={!subrec.SBI_Attachement_Id__c}" height="100"/>
+                                                        <apex:variable value="{!Imgcount + 1}" var="Imgcount"/>
+                                                    </apex:outputPanel>
+                                                    </div>
+                                                </apex:repeat>
+                                            </div>
+                                            <div class="right">
+                                                    <div class="day-detail">
+                                                        <div class="title">
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-col slds-size--1-of-1 slds-medium-size--9-of-12" style="line-height:34px;font-size:20px">
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Int Flight',false,true)}" styleClass="">
+                                                                        <apex:image rendered="{!SB.RecordType.name == 'Accommodation'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Accommodation.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Own arrangement'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/v1-Re-own-arrangement-orange.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Car Hire'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/CarHire.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Rail'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Rail.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name ==  'Dinner Reservation' || SB.RecordType.name == 'Motorbike Ride' || SB.RecordType.name == 'Notes' || SB.RecordType.name == 'Description'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Notes.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Private Road Transfer' || SB.RecordType.name == 'Transfer' || SB.RecordType.name == 'Shared Transfer with Excursion' || SB.RecordType.name == 'Shared Road Transfer' || SB.RecordType.name == 'Private Transfer with Excursion'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/CarHire.png')}" width="30" styleClass="leaf" /> 
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Meet & Greet'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/meet-greet-orange.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'VIP Meet And Greet'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/vip-orange.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Ferry'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Ferry.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name ==  'Days at Leisure'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Leisure.png')}"  width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Excursion'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Excursion.png')}"  width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Commission In' || SB.RecordType.name == 'Commission Out' || SB.RecordType.name == 'Credit Card'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/currency-v2-orange.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Private Speed Boat Transfer' || SB.RecordType.name == 'Shared Speed Boat Transfer' || SB.RecordType.name == 'Shared Speed Boat Transfer'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/speed-boat-orange.png')}"  width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Bulk Cost'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/bulk-cost-orange.png')}"  width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Visa Fast Track'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/visa-track-orange.png')}"  width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Tuck-Tuck'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/tuk-orange.png')}"  width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Sea Plane' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Dom Flights'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/Flight.png')}" width="30" styleClass="leaf"/>
+                                                        <apex:image rendered="{!SB.RecordType.name == 'Cruise'}" url="{!URLFOR($Resource.Framework,'SugatiIcon/speed-boat-orange.png')}" width="35" styleClass="leaf"/>
+                                                                        {!SB.RecordType.name}
+                                                                        
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Int Flight',true,false)}" >
+                                                                        <apex:image url="{!URLFOR($Resource.Framework,'SugatiIcon/Flight.png')}" width="30" styleClass="leaf" />
+                                                                        International Flight 
+                                                                    </apex:outputPanel>
+                                                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Int Flight' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Domestic Flight',true,false)}">
+                                                                        <span style="line-height:26px;color: #888;font-size:20px;font-weight:Normal;"> {!SB.SB_From_Place__c} <apex:outputpanel rendered="{!IF(SB.SB_From_Place__c!= null && SB.SB_To_Place__c!= null,true,false)}">&nbsp; - &nbsp; </apex:outputpanel>{!SB.SB_To_Place__c} </span>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Accommodation',true,false)}">
+                                                                        <span style="line-height:26px;color: #888;font-size:20px;font-weight:Normal;"> {!SB.SB_Supplier_Name__c}  </span>                                                   </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Transfer' || SB.RecordType.name == 'Car Hire',true,false)}">
+                                                                        <span style="line-height:26px;color: #888;font-size:20px;font-weight:Normal;"> {!SB.SB_Transfer_Car_Hire_Option__r.name}  </span>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Excursion',true,false)}">
+                                                                        <span style="line-height:26px;color: #888;font-size:20px;font-weight:Normal;"> {!SB.SB_What_to_do__r.name}  </span>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Days at Leisure',true,false)}">
+                                                                        <span style="line-height:26px;color: #888;font-size:20px;font-weight:Normal;"> {!SB.SB_Where_to_go__r.name}  </span>
+                                                                    </apex:outputPanel>
+                                                                </div>
+                                                                <div class="slds-col slds-size--1-of-1 slds-medium-size--3-of-12" style="text-align:right">
+                                                                    <span class="addtocalendar atc-style-blue">
+                                                                        <var class="atc_event">
+                                                                            <var class="atc_date_start">
+                                                                                <apex:outputText escape="false" value="{0,date,yyyy'-'MM'-'dd}">
+                                                                                    <apex:param value="{!SB.SB_From_Date__c}"/>
+                                                                                </apex:outputText>
+                                                                                {!SB.SB_From_Time__c}
+                                                                            </var>
+                                                                            <var class="atc_date_end">
+                                                                                 <apex:outputText escape="false" value="{0,date,yyyy'-'MM'-'dd}">
+                                                                                    <apex:param value="{!SB.SB_To_Date__c}"/>
+                                                                                </apex:outputText>
+                                                                                 {!SB.SB_To_Time__c}
+                                                                             </var>
+                                                                            <var class="atc_timezone">Europe/London</var>
+                                                                            <var class="atc_title">{!SB.RecordType.name}</var>
+                                                                            <var class="atc_description">
+                                                                                <apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Int Flight',false,true)}">{!SB.RecordType.name}: </apex:outputPanel><apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Int Flight',true,false)}" >International Flight: </apex:outputPanel> 
+                                                                                <apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Int Flight' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Domestic Flight',true,false)}"> {!SB.SB_From_Place__c} <apex:outputpanel layout="none" rendered="{!IF(SB.SB_From_Place__c!= null && SB.SB_To_Place__c!= null,true,false)}"> - </apex:outputpanel>{!SB.SB_To_Place__c}
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Accommodation',true,false)}"> {!SB.SB_Supplier_Name__c}                                                   
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Transfer' || SB.RecordType.name == 'Car Hire',true,false)}"> {!SB.SB_Transfer_Car_Hire_Option__r.name}
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Excursion',true,false)}"> {!SB.SB_What_to_do__r.name}
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel layout="none" rendered="{!IF(SB.RecordType.name == 'Days at Leisure',true,false)}"> {!SB.SB_Where_to_go__r.name}
+                                                                                </apex:outputPanel>
+                                                                                
+                                                                                <!--
+                                                                                <apex:outputText escape="false" value="{!SB.SB_Itinerary_Description__c}" rendered="{!SB.recordType.Name != 'Accommodation'}"></apex:outputText>
+                                                                                <apex:outputText escape="false" value="{!SBQuote[SB.Id].IT_Message__c}" rendered="{!SB.recordType.Name == 'Accommodation'}"></apex:outputText>
+                                                                                -->
+                                                                            </var>
+                                                                            <var class="atc_location">{!SB.SB_From_Place__c}</var>
+                                                                            <var class="atc_organizer">Sugati</var>
+                                                                            <!--<var class="atc_organizer_email">luke@starwars.com</var> -->
+                                                                        </var>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                        </div>
+                                                        <div class="desc">
+                                                            <apex:outputText escape="false" value="{!SB.SB_Itinerary_Description__c}" rendered="{!SB.recordType.Name != 'Accommodation'}"></apex:outputText>
+                                                            <apex:outputText escape="false" value="{!SBQuote[SB.Id].IT_Message__c}" rendered="{!SB.recordType.Name == 'Accommodation'}"></apex:outputText>
+                                                        </div>
+                                                        <div class="table-light">
+                                                            <apex:outputPanel rendered="{!IF(SB.RecordType.name == 'Int Flight' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Domestic Flight',true,false)}">
+                                                                <table class="table" border="0" cellpadding="0" cellspacing="0">
+                                                                    <tr>
+                                                                        <th>FLIGHT NO</th>
+                                                                        <th>FROM</th>
+                                                                        <th>TO</th>
+                                                                        <th>DEPART</th>
+                                                                        <th>ARRIVE</th>
+                                                                        <th>CLASS</th>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="first">{!SB.SB_Flight_No__c}</td>
+                                                                        <td>{!SB.SB_From_Place__c}</td>
+                                                                        <td>{!SB.SB_To_Place__c}</td>
+                                                                        <td>{!SB.SB_From_Time__c}</td>
+                                                                        <td>{!SB.SB_To_Time__c} &nbsp;&nbsp;{!mapSBToFlightDep[SB.id]}</td>
+                                                                        <td>{!SB.SB_Class__c}</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </apex:outputPanel>
+                                                        </div>       
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <apex:variable value="{!SBcount+ 1}" var="SBcount"/>
+                                     </apex:repeat>
+                                </div>
+                            </div>  
+                            <apex:outputPanel layout="block" style="page-break-after:always" />
+                        </apex:repeat>
+                       
+                       <!-------- E-TICKET PAGE  ----------->
+                       <apex:outputPanel rendered="{!IF(Opp.StageName == 'Booked' && showEticket,true,false)}">
+                           <apex:outputPanel layout="block" style="page-break-before:always; "/>
+                           <div class="page-with-heading"> 
+                               <div class="header">
+                                <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td width="200" valign="middle"><apex:image URL="{!URLFOR($Resource.Framework,'LogoROF/rof-logo-blue.png')}" width="140" height="63" styleClass="logo" /></td>
+                                        <td valign="top" class="divider">
+                                            <div class="header-text1"><apex:outputText value="{!Opp.O_Country__c}"></apex:outputText></div>
+                                            <div class="header-text2">
+                                                <apex:outputText value="{!IF(Opp.O_Itinerary_Cover_Name__c != null,opp.O_Itinerary_Cover_Name__c,Opp.Name)}"></apex:outputText><br />
+                                                <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy ' - '}">
+                                                    <apex:param value="{!Opp.O_Departure_Date__c}" />
+                                                </apex:outputText>
+                                                <apex:outputText escape="false" value="{0, date, EEEEEEEEE MMMM d','  yyyy}">
+                                                    <apex:param value="{!Opp.O_Return_Date__c}" />
+                                                </apex:outputText>&nbsp;| QUOTE REFERENCE |&nbsp;
+                                                <apex:outputText escape="false" value="{!Opp.O_Reference_Number__c}">
+                                                </apex:outputText>
+                                            </div>
+                                        </td>
+                                        <td valign="top" align="right">
+                                            <span class="pagenumber" />
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div style="margin:20px 0 0 30px;font-size: 25px;color:#457098;">E-TICKET</div>
+                            </div>
+                            <div style="margin-top:10px"> 
+                                <apex:variable value="{!1}" var="SBcount"/>
+                                <apex:repeat value="{!SupplierBookings}" var="SB">
+                                    <apex:outputPanel rendered="{!if((SB.RecordType.name == 'Int Flight' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Domestic Flight'),'true','false')}"> <!--rendered="{!IF(SB.Show_ETicket__c && (SB.RecordType.name == 'Int Flight' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Domestic Flight'),'true','false')}"> -->
+                                        <apex:variable value="{!SBcount+1}" var="SBcount"/>
+                                        <table class="table" border="0" cellpadding="0" cellspacing="0" style="border-bottom: none;padding: 10px;width:50%;float:left;display:{!IF(SB.RecordType.name == 'Int Flight' || SB.RecordType.name == 'Light Aircraft' || SB.RecordType.name == 'Private Jet' || SB.RecordType.name == 'Domestic Flight','table','none')}">
+                                           <tr>
+                                               <th width="50%" align="left" colspan="2">
+                                                   <span class="title1">FLIGHT : {!SB.SB_From_Place__c} TO {!SB.SB_To_Place__c} ({!SB.SB_Flight_No__c})</span>
+                                               
+                                                   <span class="title1" style="float:right;"><apex:outputText escape="false" value="{0,date,EEEE, MMMM d}"><apex:param value="{!SB.SB_From_Date__c}"/></apex:outputText></span>
+                                               </th>
+                                           </tr>    
+                                           <tr>
+                                               <td class="first" align="left">
+                                                   DATE: <apex:outputText value="{0, date, MMMM d','  yyyy (EEE)}">
+                                                            <apex:param value="{!SB.SB_From_Date__c}" /> 
+                                                        </apex:outputText>
+                                                   
+                                               </td>
+                                               <td class="first" align="right">
+                                                   DEPARTS:{!SB.SB_From_Time__c}
+                                               </td>
+                                           </tr>
+                                           <tr class="even">
+                                               <td class="first" align="left">
+                                                   AIRLINE: {!SB.SB_Carrier__c}
+                                               </td>
+                                               <td class="first veer" align="right">
+                                                   <apex:variable value=" +{!mapDaysFlights[SB.Id]}" var="time"/>
+                                                   ARRIVES:{!if(SB.SB_From_Date__c != SB.SB_To_Date__c && SB.SB_From_Date__c != null && SB.SB_To_Date__c != null,SB.SB_To_Time__c+time,''+SB.SB_To_Time__c)}
+                                               </td>
+                                           </tr>
+                                           <tr>
+                                               <td class="first" align="left" >
+                                                   FLIGHT: {!SB.SB_Flight_No__c}
+                                               </td>
+                                                <td class="first" align="right">
+                                                   AIRPORT:{!SB.SB_Departure_Terminal__c}
+                                               </td>
+                                           </tr>
+                                           <tr class="even">
+                                               <td class="first" align="left" colspan="2">
+                                                   FROM: {!SB.SB_From_Place__c}
+                                               </td>
+                                              
+                                           </tr>
+                                           <tr>
+                                               <td class="first" align="left" colspan="2">
+                                                   TO: {!SB.SB_To_Place__c}
+                                               </td>
+                                               
+                                           </tr>
+                                           <tr class="even">
+                                               <td class="first" align="left" >
+                                                   CLASS: {!SB.SB_Class__c}
+                                               </td>
+                                               <td class="first" align="right">
+                                                   BAGGAGE:{!SB.SB_Luggage_Note__c}
+                                               </td>
+                                           </tr>
+                                           <tr style="border-bottom: 1pt solid #b26062;" >
+                                               <td class="first" align="left" style="border-bottom: 1pt solid #b26062;">
+                                                   STATUS: {!SB.SB_Booking_Status__c}
+                                               </td>
+                                               <td align="right" class="first" style="border-bottom: 1pt solid #b26062;">
+                                                   AIRCRAFT:{!SB.SB_Carrier__c}
+                                               </td>
+                                           </tr>
+                                           <tr>
+                                               <td style="color: #457098;border-left:none;">
+                                                   IMPORTANT NOTES         
+                                               </td>
+                                           </tr>
+                                           <tr>
+                                               <td colspan="2" style="border-left:none;font-size: 13.5px;text-align: justify;text-justify: inter-word;">
+                                                   <apex:outputPanel rendered="{!MOD(SBcount,2) != 0 && SBcount !=1 }">
+                                                       ALL FARES &amp; TEXES QUOTED SUBJECT TO CHANGE UNLESS TICKETED. IT IS YOUR RESPONSIBILITY TO ENSURE YOU HAVE VALID VISAS AND RE-ENTRY PERMITS. ANYFINES PENALITIES PAYMENTS OR EXPENDITURES INCURRED AS A RESULT OF SUCH DOCUMENTS NOT MEETING THE REQUIREMENTS OF THOSE AUTHORITIES WILL BE THE TRAVELLERS RESPONSIBILITY.
+                                                   </apex:outputPanel>
+                                                   <apex:outputPanel rendered="{!!(MOD(SBcount,2) != 0)}">
+                                                     <!--  ENSURE YOUR PASSPORT HAS AT LEAST 6 MONTHS VAILIDITY FROM THE DATE OF RETURN TO THE COUNTRY OF ORIGIN. VERIFY VISA REQUIREMENT FOR JOURNEY PRIOR DEPARTURE. PLEASE ENSURE THE NAME IN THE FLIGHT RESERVATION MATCHES THE NAME IN THE PASSPORT.     
+                                                      
+                                                      {!UPPER(SB.SB_Important_Notes__c)}-->
+                                                   </apex:outputPanel>
+                                                   <div style="height:15px;"></div>
+                                               </td>
+                                           </tr>
+                                        </table>
+                                        <apex:outputPanel layout="block" rendered="{!MOD(SBcount,2) != 0 && SBcount !=1 }" style="page-break-after:always;"/>
+                                    </apex:outputPanel>
+                                </apex:repeat> -->
+                            </div>
+                        </div>
+                        <apex:outputPanel layout="block" style="page-break-after:always" />
+                        </apex:outputPanel>
+                        <div style="clear:both" />
+                    </div>
+                </apex:outputPanel>
+                <!-- ITINERARY END PAGE  --> 
+                   
+                <div>
+                    <div style="font-size: 20pt;color:#457098;">
+                        COMMENTS
+                    </div>
+                    <br/>
+                    <apex:outputPanel >
+                        <c:SitePageComments id="sitePageComment"/>
+                    </apex:outputPanel>
+                </div>
+            
+                <!--YOUR TRAVEL ITINERARY PAGE  -->
+               <apex:outputPanel layout="none" rendered="{!IF(contains(mapContains,'ITINERARY END'),mapSelected['ITINERARY END'], true)}">
+                   <apex:outputPanel layout="block" style="page-break-after:always; "></apex:outputPanel>
+                   <div class="enddiv">
+                       <div class="slds-card">
+                           <div class="slds-card__body" style="padding:0">
+                               <div style="display:none" class="footer"/>
+                               <apex:image url="{!URLFOR($Resource.Framework,'PDFLogos/EndOfItinerary.png')}" style="border:0" width="100.5%" height="790"/>
+                           </div>
+                       </div>
+                   </div>
+              </apex:outputPanel>   
+              </div>
+            </div>
+        </body>
+         <script>
+            $('.comment .slds-modal__close').on('click', function(){
+                $('.comment').toggle('hide');    
+            });
+            $('.comment .closeButton').on('click', function(){
+                $('.comment').toggle('hide');    
+            });
+            
+        </script>
+        <br/>
+        <br/>
+        <br/>
+    </html>
+</apex:page>

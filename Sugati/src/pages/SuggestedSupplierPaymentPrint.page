@@ -1,0 +1,101 @@
+<apex:page controller="SuggestedSupplierPaymentController" renderAs="pdf" applyHtmlTag="false" applyBodyTag="false" sidebar="false"  showHeader="false" 
+title="Suggested Supplier Payment Report">
+  <html>
+   <head>
+       <style>
+           @page {
+                size: A3;
+                margin-top: 22mm;
+                margin-left: 10mm;
+                margin-right: 5mm;
+                margin-bottom: 12mm;
+                counter-increment: pagecounter;
+                @bottom-left {
+                    content: element(footer);
+                    Font-size: 10px;
+                }
+                 @top-left {
+                    content: element(header);
+                 
+                }
+            }
+       </style>
+   </head>
+   <body>
+   <div style="pedding:0px;font-family: Arial,Helvetica,sans-serif;">Suggested Supplier Payment Report</div>
+                    <table class="table table-hover" style="font-size:10px;pedding:0px;font-family: Arial,Helvetica,sans-serif;">        
+                        <tr>
+                            <th style="width:7%;">Supplier Name</th>
+                            <!--<th style="width:8%;">Property</th>-->
+                            <th style="width:7%;">Book Ref</th>
+                            <th style="width:6%;">Serv Date</th>
+                            <th style="width:6%;">Date Due</th>
+                            <th style="width:4%;">Currency</th>
+                            <th style="width:6%;">Inv Total</th>
+                            <th style="width:6%;"> Paid</th>
+                            <th style="width:6%;">Due Amount</th>
+                            <th style="width:6%;">Bank</th>
+                            <th style="width:14%;">Rem Comm</th>
+                            <th style="width:14%;">Supp Comm</th>
+                            <th style="width:10%;">In Dispute Reason</th>
+                            
+                        </tr> 
+                           
+                        <apex:variable value="{!0}" var="invTotal"/>
+                        <apex:variable value="{!0}" var="paidTotal"/>
+                        <apex:variable value="{!0}" var="dueTotal"/>
+                        <apex:repeat value="{!supplierPayments}" var="sp">
+                            <tr>
+                                <td>{!sp.SP_Supplier_Name__c}</td>
+                                
+                                
+                                <td>{!sp.SP_Opportunity__c}</td>
+                                <!--<td>{!sp.SP_Serv_Date__c}</td>
+                                <td>{!sp.SP_Due_Date__c}</td>-->
+                               <!-- <td>
+                                    <apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+                                        <apex:param value="{!sp.SP_Serv_Date__c}" />
+                                    </apex:outputText>
+                                </td>-->
+                              
+                                <td>
+                                    <apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+                                        <apex:param value="{!sp.SP_Due_Date__c}" />
+                                    </apex:outputText>
+                                </td>
+                                
+                                <td>{!sp.CurrencyIsoCode}</td>
+                                <td>{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Total__c}</td>
+                                <td>{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Total_Payment__c}</td>
+                                <td>{!sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Outstanding_Amount__c}</td>
+                                <td>{!sp.SP_Bank_Accounts__r.Name}</td>
+                                <td>{!sp.SP_Comment__c}</td>
+                                <!--<td>{!sp.SP_Supplier__r.S_Supplier_Comments__c}</td>
+                                <td>{!sp.SP_Supplier__r.S_In_Dispute_Reason__c}</td>-->
+                                
+                                <apex:variable value="{!invTotal+sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Total__c}" var="invTotal"/>
+                                <apex:variable value="{!paidTotal+sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Total_Payment__c}" var="paidTotal"/>
+                                <apex:variable value="{!dueTotal+sp.SBP_Supplier_Cost_Currency_Value__r.SCP_Outstanding_Amount__c}" var="dueTotal"/>
+                            </tr>    
+                        </apex:repeat>
+                        
+                        <tr style="display:{!IF(bankAccountNumber=='All','none','')}">
+                        <td/>
+                        <td/>
+                        <td/>
+                        <td/>
+                        <td/>
+                        <td style="font-weight: bold;"> Total </td>
+                        <td class="invTotal" style="font-weight: bold;">{!invTotal}</td>
+                        <td class="paidTotal" style="font-weight: bold;">{!paidTotal}</td>
+                        <td class="dueTotal" style="font-weight: bold;">{!dueTotal}</td>
+                        <td/>
+                        <td/>
+                        <td/>
+                        <td/>
+                    </tr>
+                    </table>
+                 </body>
+             </html>       
+    
+</apex:page>

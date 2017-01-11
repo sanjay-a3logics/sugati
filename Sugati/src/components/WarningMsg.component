@@ -1,0 +1,64 @@
+<apex:component >    
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <script>
+            var allow = false;
+            function warning(message, type){
+                console.log(type);
+                if(type !== undefined && (type == 'error' || type == 'Error' || type.indexOf('error') != -1)){
+                    $('.warning-box').show();
+                    console.log('aaaa');
+                    $('.warning-box .slds-modal__header').removeClass().addClass('slds-modal__header slds-theme--error');
+                }   
+                else{
+                    $('.warning-box').show();
+                    console.log('bbbb');
+                    $('.warning-box .slds-modal__header').removeClass().addClass('slds-modal__header slds-theme--success');    
+                } 
+                if(message !== undefined && message.length > 1 && message.indexOf('Assertion Failed:') != -1)
+                    message = message.replace('Assertion Failed:','');
+                $('.warning-box .message-text').html(message);
+            }
+            
+            function allowPayments(ap){
+                console.log(ap);
+                allow = ap; 
+                allowPayment();   
+            }
+            
+            
+            function closeAlert(){
+                $('.warning-box').hide();    
+            }
+            
+            
+        </script>
+        <div class="warning-box" style="display: none;">
+        <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open" style="z-index:1111111111111111">
+          <div class="slds-modal__container">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">
+                    <svg aria-hidden="true" class="slds-icon slds-icon--small slds-m-right--small slds-col slds-no-flex">
+                        <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/warning_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                    </svg>
+                    Sugati
+                </h2>
+                <button class="slds-button slds-button--icon-inverse slds-modal__close">
+                  <svg aria-hidden="true" class="slds-button__icon slds-button__icon--medium">
+                    <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/action-sprite/svg/symbols.svg#close')}"></use>
+                  </svg>
+                  <span class="slds-assistive-text">Close</span>
+                </button>
+              </div>
+            <div class="slds-modal__content slds-p-around--medium">
+                <p class="message-text" ></p>
+            </div>
+            <div class="slds-modal__footer">
+              <button class="slds-button slds-button--neutral" onclick="allowPayments(false);$('.warning-box').hide(); return false;">Cancel</button>
+              <button class="slds-button slds-button--neutral slds-button--brand" onclick="allowPayments(true);$('.warning-box').hide();  return false;">Save</button>
+            </div>
+          </div>
+            </div>
+          <div class="slds-backdrop slds-backdrop--open" style="z-index:111111111"></div>
+        </div>
+    </html>
+</apex:component>

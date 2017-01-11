@@ -1,0 +1,2371 @@
+<apex:component controller="ItineraryBuilderController">
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+    
+    <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+    <c:BasicResources ></c:BasicResources>
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+    
+   
+                      
+    <style>
+        body{
+            font-size: 11px !important;
+        }
+        .ib-buttons button.slds-button.slds-button--brand,
+        .ib-buttons a.slds-button.slds-button--brand {
+            margin-bottom:5px;
+            font-size: 11px !important;
+        }
+        .ib-buttons{
+            margin-left:-8px;
+        }
+        .slds-tabs--path__title{
+            transform: rotateX(0deg) !important;
+        }
+        .blink{
+            padding: 0 2px 0 2px !important;
+        }
+        .itinerary th, .itinerary td{
+            padding: 4px !important;
+        }
+        @media (min-width: 48em)
+        .slds .slds-modal--large .slds-modal__container {
+            width: 70% !important;
+        }
+        
+        .slds-form-element {
+            padding: 2.5px !important;
+        }
+        .selectedAcc{
+            background-color : #D6E2F3;;
+        }
+        .select2-choices{
+            border : none !important;
+            background-images : none !important;
+        }
+        .SBTable{
+            font-size : 11px !important;
+        }
+        .SBTable textarea{
+            min-height: calc(25px + 2px) !important;
+            line-height:25px !important;
+        }
+        .SBTable select{
+            min-height: calc(25px + 2px) !important;
+            line-height:25px !important;
+        }
+        .SBTable input{
+            min-height: calc(25px + 2px) !important;
+            line-height:25px !important;
+        }
+        .dropdown-menu {
+            min-width: 60px !important;
+        }
+        .slds-large-size--1-of-3 {
+            padding-right: 5% !important;
+        }
+        .cke_editable {
+            border: 1px dashed;
+        }
+        .groupMemberRed{
+            background-color: red !important;
+            color:white;
+        }
+        .dropdown-menu {
+            position: absolute !important;        
+        }
+        .ng-invalid{
+            border: 1px solid red !important;
+        }
+        .toggle{
+            display:none !important;
+        }
+        .textCenter{
+            text-align: center !important;
+        }
+        .cke_textarea_inline{
+            padding: 10px !important;
+        }
+        .day1{
+            background-color : #E4E5E6;
+        }
+        .day2{
+            //background-color : #ABCCDC;
+            background-color : white;
+        }
+        .day3{
+            background-color : #D3D4D6;
+        }
+        .iconsIB{
+            width: 33px !important;
+            height: 31px !important;
+        }
+        
+    </style>
+    <!-- Angular Controller -->
+    <script>
+        
+        var myApp = angular.module('MyApp', ['ui.sortable','ui.bootstrap','oi.select', 'ui.select','checklist-model','ngSanitize']);
+        
+        var contrl = myApp.controller('IBController' ,function($scope,$modal,$filter,$timeout,oiSelect,$templateCache,$http, filterFilter){
+        $scope.supplierBookings = '';
+        $scope.supplierCosts;
+        $scope.opp = {!oppStr};
+        $scope.recordTypes = {!recordType};
+        $scope.isOTUK = {!isOTUK};
+        $scope.autoSuggestSupplier = {!autoSuggestSupplier};
+        $scope.autoSuggestTime = {!autoSuggestTime};
+        $scope.autoSuggestWTG = {!autoSuggestWhereToGo};
+        $scope.autoSuggestTerminal = {!autoSuggestTerminal};
+        $scope.autoSuggestClass = {!autoSuggestClass};
+        $scope.holidayType = {!holidayType};
+        $scope.mapRecordtype = {!StrRecordtype};
+        $scope.pickList = {!pickLists};
+        $scope.autoSuggestRoom = {!autoSuggestRoom};
+        $scope.autoSuggestAirport = {!autoSuggestAirport};
+        $scope.itineraryTextTemplate = {!itineraryTextTemplate};
+        $scope.itineraryTextTemplateWC = {!itineraryTextTemplateWC};
+        $scope.clientGroups = {!clientGroupstr};
+        $scope.groupMemberRed = {!groupMemberRed};
+        $scope.IBPageMessages = {!IBPageMessages};
+        $scope.autoSuggestTransfer = ($scope.autoSuggestAirport.concat($scope.autoSuggestWTG)).concat($scope.autoSuggestSupplier);
+        $scope.fieldSets = {!fieldSets};
+        $scope.SBsAdded = 0;
+        $scope.oldComponent;
+        $scope.nameSpacePrefix = '{!nameSpacePrefix}';
+        $scope.mapSupplierPayment = {!mapSupplierPayment};
+        $scope.mapSBSupplierPayment = {!mapSBSupplierPayment};
+        $scope.carriers = $scope.pickList;
+        $scope.ErrorMessages = JSON.parse('{!HEPageErrorMessage}');
+        $scope.totalCMemoAmount = 0;
+        /*** Added for Widgety  ***/
+        $scope.widgetyReferences = {!widgetyReferences};
+        $scope.lstCountries = {!loadCountries};
+        
+        $scope.O_Booking_Note = $scope.opp['{!nameSpacePrefix}O_Booking_Note_Internal__c'];
+        
+        $scope.filteredSuppliersList = [];
+        
+        
+        $scope.OppforDates = function(){
+            $scope.CopyForDates = angular.copy($scope.opp);
+            $scope.nightsDates = $scope.opp['{!nameSpacePrefix}O_No_of_Nights__c'];
+            $scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'] = moment($scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c']).format('DD/MM/YYYY');
+            $scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c'] = moment($scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c']).format('DD/MM/YYYY');
+        }
+        
+        $scope.includeFlightMargin = function(){
+            $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.includeFlightMargin}',$scope.opp['{!nameSpacePrefix}O_Include_Flight_Margin__c'],'{!$CurrentPage.parameters.id}',
+                 function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                       $scope.loading("hide");
+                       location.reload();
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                }, 
+                {escape: false}
+            );    
+        }
+        //Change Dates of Supplier Booking and Opp
+        $scope.openChangeDatePopup = function(){
+            $scope.OppforDates();
+            $('.changeDates').toggle('Show');
+        }
+        $scope.changeDates = function(){
+            angular.forEach($scope.supplierBookings, function(record,index) {
+                record['{!nameSpacePrefix}SB_Order__c'] = index;    
+                var DepartureDate = moment($scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');
+                if(record['{!nameSpacePrefix}SB_Day__c'] !== undefined && record['{!nameSpacePrefix}SB_Day__c'] != ''){
+                    record['{!nameSpacePrefix}SB_From_Date__c'] = moment(DepartureDate,'DD/MM/YYYY').add(record['{!nameSpacePrefix}SB_Day__c']-1, 'days').format('DD/MM/YYYY'); 
+                    if(record['{!nameSpacePrefix}SB_Duration__c'] !== undefined && record['{!nameSpacePrefix}SB_Duration__c'] != ''){
+                        var forDate = moment(record['{!nameSpacePrefix}SB_From_Date__c'],'DD/MM/YYYY').format('YYYY-MM-DD');
+                        record['{!nameSpacePrefix}SB_To_Date__c'] = moment(forDate).add(record['{!nameSpacePrefix}SB_Duration__c'],'days').format('DD/MM/YYYY'); 
+                    }
+                }
+                
+                if(record['{!nameSpacePrefix}SB_Duration__c'] == 0){
+                    record['{!nameSpacePrefix}SB_To_Date__c'] = record['{!nameSpacePrefix}SB_From_Date__c'];
+                }
+            });
+            //Save Opportunity with Updated dates
+            $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.saveOpportunity}',JSON.stringify(changeDateInSalesforceDate($scope.CopyForDates)),
+                 function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                       $scope.opp  = JSON.parse(result);  
+                       $scope.loading("hide");
+                       $scope.OppforDates();
+                       $scope.saveSB();
+                       angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+                       oppDetail();   
+                       
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                }, 
+                {escape: false}
+            );
+            $('.changeDates').toggle('Hide'); 
+            angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+        }
+        
+        //Notes Popup From Itinerary Builder
+        $scope.openNotesPopup = function(){
+            $('.NotesPopup').toggle('Show');
+        }
+        
+        $scope.saveNotes = function(){
+            $scope.loading("show");
+            var O_Booking_Note = '';
+            var Other_Invoice_Comments = '';
+            var Additional_Reps = '';
+            if($scope.opp['{!nameSpacePrefix}O_Booking_Note_Internal__c'] !== undefined){
+                O_Booking_Note  =  $scope.opp['{!nameSpacePrefix}O_Booking_Note_Internal__c'];
+                $scope.O_Booking_Note = O_Booking_Note;
+            }
+            if($scope.opp['{!nameSpacePrefix}O_Other_Invoice_Comments__c'] !== undefined){
+                Other_Invoice_Comments =  $scope.opp['{!nameSpacePrefix}O_Other_Invoice_Comments__c'];    
+            }
+            if($scope.opp['{!nameSpacePrefix}O_Additional_Reps_Agents_Arrival_report__c'] !== undefined){
+                Additional_Reps =  $scope.opp['{!nameSpacePrefix}O_Additional_Reps_Agents_Arrival_report__c'];    
+            }
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.saveOpportunityNOtes}',$scope.opp.Id,O_Booking_Note,Other_Invoice_Comments,Additional_Reps,
+                 function(result, event){
+                    if (event.status) {
+                        $scope.loading("hide");
+                        alert($scope.ErrorMessages['IB_Notes_Saved'],'success');
+                    //Result contains list of account names and account id
+                       $('.NotesPopup').toggle('hide');
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                }, 
+                {escape: false}
+            );    
+        }
+        
+         
+        //Fill Return Date or Night Of Opp
+        $scope.fillReturnDate = function(field){
+            if(field == 'night'){
+                $scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c'] = moment($scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'],'DD/MM/YYYY').add($scope.nightsDates, 'days').format('DD/MM/YYYY'); ;
+            }
+            else if(field == 'return' &&  $scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c'] !== undefined && $scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'] !== undefined){
+                var a = moment($scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c'],'DD/MM/YYYY');
+                var b = moment($scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'],'DD/MM/YYYY');
+                $scope.nightsDates = a.diff(b, 'days');
+            }
+            else if(field == 'departure' &&  $scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c'] !== undefined && $scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'] !== undefined){
+                var b = moment($scope.CopyForDates['{!nameSpacePrefix}O_Departure_Date__c'],'DD/MM/YYYY').add('days', $scope.nightsDates).format('DD/MM/YYYY');
+                $scope.CopyForDates['{!nameSpacePrefix}O_Return_Date__c'] = b;
+            }
+        }
+        
+        
+        //Load Holiday Type for Template Saving
+        if($scope.opp['{!nameSpacePrefix}O_Holiday_Type__c'] !== undefined){
+            $scope.selectedHT =  $scope.opp['{!nameSpacePrefix}O_Holiday_Type__c'];
+        }
+        
+        $scope.loading = function(action){
+            if(action == "show"){
+                $('#contentLoading').css("display","block");
+            }
+            else{
+                $('#contentLoading').css("display","none");
+            }
+        }
+        
+        
+        //Client Group Popup and save
+        if($scope.groupMemberRed){
+            $('.groupMembers').show('Show');
+        }
+        $scope.saveClientGroup = function(){
+            var gm = [];
+            if($scope.opp['{!nameSpacePrefix}Group_Members__r'].records !== undefined){
+                gm = angular.copy($scope.opp['{!nameSpacePrefix}Group_Members__r'].records);
+                console.log(gm);
+                $scope.loading("show");
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItineraryBuilderController.saveGroupMembers}',JSON.stringify(removeProperty(gm,'attributes')),
+                    function(result, event){
+                        if (event.status) {
+                        //Result contains list of account names and account id
+                           console.log(result);
+                           $scope.groupMemberRed = result;
+                           $('.groupMembers').hide('show');
+                           angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+                           $scope.$apply();
+                           $scope.loading("hide");
+                        }
+                        else if (event.type === 'exception'){
+                            alert(event.message,'error');
+                            $scope.loading("hide");
+                        }
+                    }, 
+                    {escape: false}
+                
+                );     
+            }
+        }
+        
+        
+        $scope.loading("show");
+        Visualforce.remoting.Manager.invokeAction(
+           '{!$RemoteAction.ItineraryBuilderController.getSupplierBookings}','{!$CurrentPage.parameters.id}',
+            function(result, event){
+                if (event.status) {
+                //Result contains list of account names and account id
+                   $scope.supplierBookings  = JSON.parse(result);
+                   //Set Date if IB load first time
+                   angular.forEach($scope.supplierBookings, function(record) {
+                       if(record.Id === undefined){
+                           $scope.changeDayDuration(record);
+                       }
+                   });
+                   $scope.$apply();
+                   $scope.loading("hide");
+                }
+                else if (event.type === 'exception'){
+                    alert(event.message,'error');
+                    $scope.loading("hide");
+                }
+            }, 
+            {escape: false}
+        
+        ); 
+        
+        $scope.updateDate = function(sb){
+            //From
+            if(sb !== undefined && sb['{!nameSpacePrefix}SB_From_Date__c'] !== undefined && typeof sb['{!nameSpacePrefix}SB_From_Date__c'] === 'number')
+                sb['{!nameSpacePrefix}SB_From_Date__c'] = moment(sb['{!nameSpacePrefix}SB_From_Date__c']).format('DD/MM/YYYY');    
+            else if(sb !== undefined && sb['{!nameSpacePrefix}SB_From_Date__c'] !== undefined && sb['{!nameSpacePrefix}SB_From_Date__c'].indexOf('-') != -1)
+                sb['{!nameSpacePrefix}SB_From_Date__c'] = moment(sb['{!nameSpacePrefix}SB_From_Date__c']).format('DD/MM/YYYY');    
+            else if(sb !== undefined && sb['{!nameSpacePrefix}SB_From_Date__c'] !== undefined )
+                sb['{!nameSpacePrefix}SB_From_Date__c'] = moment(sb['{!nameSpacePrefix}SB_From_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+            //To 
+            if(sb !== undefined && sb['{!nameSpacePrefix}SB_To_Date__c'] !== undefined && typeof sb['{!nameSpacePrefix}SB_To_Date__c'] === 'number')
+                sb['{!nameSpacePrefix}SB_To_Date__c'] = moment(sb['{!nameSpacePrefix}SB_To_Date__c']).format('DD/MM/YYYY');
+            else if(sb !== undefined && sb['{!nameSpacePrefix}SB_To_Date__c'] !== undefined && sb['{!nameSpacePrefix}SB_To_Date__c'].indexOf('-') != -1)
+                sb['{!nameSpacePrefix}SB_To_Date__c'] = moment(sb['{!nameSpacePrefix}SB_To_Date__c']).format('DD/MM/YYYY');  
+            else if(sb !== undefined && sb['{!nameSpacePrefix}SB_To_Date__c'] !== undefined)
+                sb['{!nameSpacePrefix}SB_To_Date__c'] = moment(sb['{!nameSpacePrefix}SB_To_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+            
+        }
+        
+        //Darg and Drop Table
+        $scope.sortableOptions = {
+            stop: function(e, ui) {
+                var newIndex = ($(ui.item).index());
+                if($scope.supplierBookings[newIndex+1] !== undefined && $scope.supplierBookings[newIndex+1].RecordTypeId !== undefined && $scope.supplierBookings[newIndex+1]['{!nameSpacePrefix}SB_From_Date__c'] !== undefined){
+                    $scope.supplierBookings[newIndex]['{!nameSpacePrefix}SB_Day__c'] = $scope.supplierBookings[newIndex+1]['{!nameSpacePrefix}SB_Day__c'];
+                    $scope.changeDayDuration($scope.supplierBookings[newIndex]);
+                }
+                else if($scope.supplierBookings[newIndex-1] !== undefined && $scope.supplierBookings[newIndex-1].RecordTypeId !== undefined && $scope.supplierBookings[newIndex-1]['{!nameSpacePrefix}SB_From_Date__c'] !== undefined){
+                    $scope.supplierBookings[newIndex]['{!nameSpacePrefix}SB_From_Date__c'] = $scope.supplierBookings[newIndex-1]['{!nameSpacePrefix}SB_From_Date__c'];
+                    $scope.changeDayDuration($scope.supplierBookings[newIndex]);
+                }
+                $scope.$apply();
+                angular.forEach($scope.supplierBookings, function(sb,index) {
+                    sb['{!nameSpacePrefix}SB_Order__c'] = index;    
+                });
+            },
+            axis: 'y'
+        };
+        
+        
+        
+        //Filter Supplier For Accommodation Popup
+        $scope.filterAcc = function(wtgId,search) {
+            var filteredSuppliers = [];
+            $scope.filteredRecommendedSuppliers = [];
+            $scope.filteredGeneralSuppliers = [];
+            var filtered = filterFilter(angular.copy($scope.autoSuggestSupplier), {label:search});
+            
+            angular.forEach(filtered, function(state) {
+                if((state.type == 'Accommodation' || state.type == 'Hotel' || state.type == 'DMC') && state.wtg == wtgId){
+                    if(state.recommend){
+                        state['group_label'] = 'Recommended';     
+                        $scope.filteredRecommendedSuppliers.push(state);      
+                        //console.log(state);
+                    }
+                    else{
+                        state['group_label'] = 'General';   
+                        $scope.filteredGeneralSuppliers.push(state);
+                        //console.log(state);
+                    }
+                }
+            });
+            if($scope.filteredRecommendedSuppliers.length > 0)
+                $scope.filteredRecommendedSuppliers[0]['firstInGroup'] = true;
+            if($scope.filteredGeneralSuppliers.length > 0)
+                $scope.filteredGeneralSuppliers[0]['firstInGroup'] = true;
+            Array.prototype.push.apply(filteredSuppliers, $scope.filteredRecommendedSuppliers);
+            Array.prototype.push.apply(filteredSuppliers, $scope.filteredGeneralSuppliers);
+            
+            return filteredSuppliers;
+        }
+        
+        //Filter Supplier when user press a key in inputbox
+        $scope.getFilteredSuppliers = function(search, wtgId) {
+            var filteredSuppliers = [];
+            $scope.filteredRecommendedSuppliers = [];
+            $scope.filteredGeneralSuppliers = [];
+            var filtered = filterFilter(angular.copy($scope.autoSuggestSupplier), {label:search});
+            angular.forEach(filtered, function(state) {
+                if(state.wtg == wtgId || wtgId == ''){
+                    if(state.recommend){
+                        state['group_label'] = 'Recommended';     
+                        $scope.filteredRecommendedSuppliers.push(state);      
+                        //console.log(state);
+                    }
+                    else{
+                        state['group_label'] = 'General';   
+                        $scope.filteredGeneralSuppliers.push(state);
+                        //console.log(state);
+                    }
+                }
+            });
+            if($scope.filteredRecommendedSuppliers.length > 0)
+                $scope.filteredRecommendedSuppliers[0]['firstInGroup'] = true;
+            if($scope.filteredGeneralSuppliers.length > 0)
+                $scope.filteredGeneralSuppliers[0]['firstInGroup'] = true;
+            Array.prototype.push.apply(filteredSuppliers, $scope.filteredRecommendedSuppliers);
+            Array.prototype.push.apply(filteredSuppliers, $scope.filteredGeneralSuppliers);
+            $scope.filteredSuppliersList = filteredSuppliers;
+            return filteredSuppliers;
+        }
+        
+        $scope.formatInputSupplier = function($model,rid) {
+           var inputLabel = '';
+           angular.forEach($scope.autoSuggestSupplier, function(state) {
+                if ($model === state.value) {
+                    inputLabel = state.label;
+                }
+            });
+            return inputLabel;
+        }   
+        
+        $scope.formatInputRoom = function($model, supplierId, field) {
+            var inputLabel = '';
+            if($scope.autoSuggestRoom[supplierId] != undefined){
+                angular.forEach($scope.autoSuggestRoom[supplierId][field], function(state) {
+                    if ($model === state.value) {
+                        inputLabel = state.label;
+                    }
+                });
+                if(inputLabel  == ''){
+                    inputLabel = $model; 
+                    $scope.autoSuggestRoom[supplierId][field].push({'value':$model,'label':$model});  
+                }
+            }
+            return inputLabel;
+        }
+        $scope.formatInputTime = function($model) {
+            var inputLabel = '';
+            angular.forEach($scope.autoSuggestTime, function(state) {
+                if ($model === state.value) {
+                    inputLabel = state.label;
+                }
+            });
+            return inputLabel;
+        }
+       
+        
+        //Formate referrer auto fill
+        $scope.formatInput = function($model,type) {
+            var objects;
+            if(type == 'Airport'){
+                objects =    $scope.carriers[$scope.nameSpacePrefix+'sb_carrier__c'];
+            }
+            var inputLabel = '';
+            angular.forEach(objects, function(state) {
+                if ($model === state.value) {
+                    inputLabel = state.label;
+                }
+            });
+            return inputLabel;
+        } 
+        $scope.getDataFrom = function(rtId){
+            var rdType = $scope.mapRecordtype[rtId];
+            if(rdType == 'Int Flight' || rdType == 'Light Aircraft' || rdType == 'Dom Flights' || rdType == 'Sea Plane' ){
+                return $scope.autoSuggestAirport;
+            }
+            else if( rdType == 'Transfer' || rdType == 'Car Hire'){
+                return $scope.autoSuggestTransfer;
+            }
+            else if(rdType == 'Accommodation' ||  rdType == 'Days at Leisure' || rdType == 'Description' || rdType == 'Notes' || rdType == 'Excursion'){
+                return $scope.autoSuggestWTG;
+            }
+            else{
+                return ($scope.autoSuggestAirport.concat($scope.autoSuggestWTG));
+            }
+        }
+        $scope.globalFormateInputLabel = function($model,list) {
+            var inputLabel = '';
+            angular.forEach(list, function(state) {
+                if ($model === state.label) {
+                    inputLabel = state.label;
+                }
+            });
+            return inputLabel;
+        }
+        $scope.globalFormateInput = function($model,list) {
+            var inputLabel = '';
+            angular.forEach(list, function(state) {
+                if ($model === state.value) {
+                    inputLabel = state.label;
+                }
+            });
+            return inputLabel;
+        }
+        $scope.globalFormateInputExtended = function($model) {
+            var inputLabel = '';
+            if($model == undefined)
+                return inputLabel;
+            console.log('$model   '+$model);
+            angular.forEach($scope.autoSuggestSupplier, function(state) {
+                if ($model === state.value) {
+                    inputLabel = state.label;
+                }
+            });
+            return inputLabel;
+        }
+        
+        
+        $scope.onSelectedCallback = function ($item, $model, $label) {
+            console.log($item);
+            console.log($model);
+            console.log($label);
+            $scope.selectedSupplier = $item;
+            $scope.loadItineraryDescription('Supplier');
+        }
+        
+        
+        $scope.globalFormateInputTerminal = function() {
+            if($scope.items['{!nameSpacePrefix}SB_Departure_Terminal__c'] !== undefined ){
+                var value = $scope.items['{!nameSpacePrefix}SB_Departure_Terminal__c'];
+                var inputLabel = '';
+                angular.forEach($scope.autoSuggestTerminal, function(state) {
+                    if (value === state.label) {
+                        inputLabel = state.label;
+                    }
+                });
+                if(inputLabel == '' &&  value != '' && $scope.items !== undefined){
+                    $scope.autoSuggestTerminal.push({'value': value ,'label': value , type : $scope.items['{!nameSpacePrefix}SB_Departure_Airport_l__c']}); 
+                }
+            }
+            if($scope.items['{!nameSpacePrefix}SB_Arrival_Terminal__c'] !== undefined){
+                var value = $scope.items['{!nameSpacePrefix}SB_Arrival_Terminal__c'];
+                var inputLabel = '';
+                angular.forEach($scope.autoSuggestTerminal, function(state) {
+                    if (value === state.label) {
+                        inputLabel = state.label;
+                    }
+                });
+                if(inputLabel == '' && value != '' && $scope.items !== undefined){
+                    $scope.autoSuggestTerminal.push({'value': value ,'label': value , type : $scope.items['{!nameSpacePrefix}SB_Arrival_Airport_l__c']}); 
+                }
+            }
+        }
+        
+        $scope.checkOtherComponent = function(rdType){
+            var array = [];
+            array.push('Accommodation');
+            array.push('Bulk Cost');
+            array.push('Car Hire');
+            array.push('Credit Memo');
+            array.push('Complimentary');
+            array.push('Commission In');
+            array.push('Commission Out');
+            array.push('Days at Leisure');
+            array.push('Credit Card');
+            array.push('Description');
+            array.push('Light Aircraft');
+            array.push('Dom Flights');
+            array.push('Excursion');
+            array.push('Int Flight');
+            array.push('Notes'); 
+            array.push('Own arrangement');
+            array.push('Rail');
+            array.push('Cruise');
+            array.push('Transfer');
+            if(array.indexOf(rdType) == -1){
+                return true;    
+            }
+            return false;
+        }
+        $scope.notShow = function(rdType,tyep){
+            var array = [];
+            array.push('Bulk Cost');
+            array.push('Complimentary');
+            array.push('Commission In');
+            array.push('Commission Out');
+            array.push('Credit Card');
+            array.push('Credit Memo')
+            if(tyep == 'Itinerary'){
+                if(array.indexOf(rdType) == -1){
+                    return true;    
+                }
+                return false;
+            }
+        }
+        
+        $scope.checkFlightsComponent = function(rdType){
+            var array = [];
+            array.push('Dom Flights');
+            array.push('Int Flight');
+            array.push('Light Aircraft');
+            array.push('Private Jet');
+            array.push('Sea Plane');
+            if(array.indexOf(rdType) != -1){
+                return true;    
+            }
+            return false;
+        }
+        
+        $scope.formatInputSB = function($model,sb,column) {
+            var inputLabel = '';
+            if(sb !== undefined && sb.RecordTypeId !== undefined){
+                if($scope.mapRecordtype[sb.RecordTypeId] == 'Accommodation'){
+                    angular.forEach($scope.autoSuggestWTG, function(state) {
+                        if ($model === state.label) {
+                            inputLabel = state.label;
+                            if(column == 'From'){
+                                if(state.type != 'Country'){
+                                    sb['{!nameSpacePrefix}SB_Where_to_go__c'] = state.value;
+                                }
+                                else{
+                                    sb['{!nameSpacePrefix}SB_Where_to_go__c'] = '';
+                                }
+                            }
+                        }
+                    });
+                }
+                else if($scope.mapRecordtype[sb.RecordTypeId] == 'Int Flight' || $scope.mapRecordtype[sb.RecordTypeId] == 'Light Aircraft' || $scope.mapRecordtype[sb.RecordTypeId] == 'Dom Flights' || $scope.mapRecordtype[sb.RecordTypeId] == 'Sea Plane'){
+                    if(column == 'From'){
+                        angular.forEach($scope.autoSuggestAirport, function(state) {
+                            if ($model === state.label) {
+                                inputLabel = state.label;
+                                sb['{!nameSpacePrefix}SB_Departure_Airport_l__c'] = state.value;
+                            }
+                        });
+                    }
+                    else{
+                        angular.forEach($scope.autoSuggestAirport, function(state) {
+                            if ($model === state.label) {
+                                inputLabel = state.label;
+                                sb['{!nameSpacePrefix}SB_Arrival_Airport_l__c'] = state.value;
+                            }
+                        });    
+                    }
+                }
+                else{
+                    angular.forEach($scope.autoSuggestTransfer, function(state) {
+                        if ($model === state.label) {
+                            inputLabel = state.label;
+                            if(column == 'From'){
+                                if(state.type == 'WTG'){
+                                sb['{!nameSpacePrefix}SB_Where_to_go__c'] = state.value;
+                                }
+                                else{
+                                    sb['{!nameSpacePrefix}SB_Where_to_go__c']  = '';
+                                }
+                            }
+                        }
+                    });
+                    if(column == 'From'){
+                        angular.forEach($scope.autoSuggestAirport, function(state) {
+                            if ($model === state.label) {
+                                inputLabel = state.label;
+                                sb['{!nameSpacePrefix}SB_Departure_Airport_l__c'] = state.value;
+                            }
+                        });
+                    }
+                }
+            }    
+                
+            return inputLabel;
+        }
+        
+        $scope.savePopupSB = function(sb){
+           if($scope.popupForm.$valid && $scope.validateCreditMemo()){
+                $scope.NotesText(); //TO save notes value by default.
+                var sbRecord = angular.copy(sb); 
+                $scope.loading("show");
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItineraryBuilderController.savePopupSB}',JSON.stringify(changeDateInSalesforceDate(sbRecord)),'{!$CurrentPage.parameters.id}',$scope.currentRt,JSON.stringify($scope.supplierCosts),removeHashKey($scope.flightMembers),
+                     function(result, event){
+                        if (event.status) {
+                        //Result contains list of account names and account id
+                           $scope.supplierBookings[$scope.popupIndex] = result;
+                           $scope.updateDate($scope.supplierBookings[$scope.popupIndex])
+                           $scope.getCost(result.Id);
+                           $scope.globalFormateInputTerminal();
+                           $scope.$apply();
+                           $scope.loading("hide");
+                           angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+                           $('.accountAddrees').hide('show');
+                           
+                        }
+                        else if (event.type === 'exception'){
+                            alert(event.message,'error');
+                            $scope.loading("hide");
+                        }
+                    }, 
+                    {escape: false}
+                );
+            }
+            else if(!$scope.validateCreditMemo()){
+                alert($scope.IBPageMessages['IB_Credit_Memo_Error'],'error');
+            }
+            else{
+                alert($scope.IBPageMessages['IB_Fill_Required_Fields'],'error');
+            }    
+        }
+        //Delete Supplier Cost Rows.
+        $scope.deleteCost = function(cost,index,clientGroup){
+            if(cost.Id !== undefined){
+                $scope.loading("show");
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItineraryBuilderController.deleteSupplierCost}',cost.Id,
+                     function(result, event){
+                        if (event.status) {
+                        //Result contains list of account names and account id
+                           if(result == 'Success'){
+                               clientGroup.splice(index,1);    
+                           }
+                           else{
+                               alert(result);
+                           }
+                           $scope.$apply();
+                           $scope.loading("hide");
+                           angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+                        }
+                        else if (event.type === 'exception'){
+                            alert(event.message,'error');
+                            $scope.loading("hide");
+                        }
+                    }, 
+                    {escape: false}
+                ); 
+            }
+            else{
+                clientGroup.splice(index,1);        
+            }
+        }
+        
+        //Add more SBs
+        $scope.addMoreSB = function(){
+            console.log($scope.SBsAdded);     
+            for(var i=1; i<=$scope.SBsAdded;i++) {
+                $scope.supplierBookings.push({"{!nameSpacePrefix}SB_Opportunity__c":"{!$CurrentPage.parameters.id}","{!nameSpacePrefix}SB_Is_Standard__c ":true});   
+                console.log(i);     
+            };
+            angular.forEach($scope.supplierBookings, function(sb,index) {
+                sb['{!nameSpacePrefix}SB_Order__c'] = index;    
+            });
+            $scope.SBsAdded = 0;
+        }
+        
+        //Save SB AS
+        $scope.openSBFor = function(){
+            if(!$scope.items['{!nameSpacePrefix}SB_Is_Standard__c']){
+                $('.SBSaveFor').toggle('show');        
+            }    
+        }
+        
+        //update All SBS Date 
+        $scope.updateDateFormat = function(){
+            angular.forEach($scope.supplierBookings, function(sb) {
+                $scope.updateDate(sb)    
+            })
+        }
+        
+        //Save All Supplier Bookings   
+        $scope.saveSB = function(){
+           angular.forEach($scope.supplierBookings, function(sb) {
+                if(sb.Id === undefined &&  $scope.mapRecordtype[sb.RecordTypeId] != 'Bulk Cost' && $scope.mapRecordtype[sb.RecordTypeId] != 'Credit Memo' && $scope.mapRecordtype[sb.RecordTypeId] != 'Commission Out' && $scope.mapRecordtype[sb.RecordTypeId] != 'Commission In' && $scope.mapRecordtype[sb.RecordTypeId] != 'Complimentary'){
+                    sb['{!nameSpacePrefix}SB_Show_in_Itinerary__c'] = true;
+                }
+           });
+           $scope.SBSave = $scope.supplierBookings;
+           
+           $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.saveSB}',JSON.stringify(changeDateInSalesforceDate($scope.SBSave)),'{!$CurrentPage.parameters.id}',
+                function(result, event){
+                    if (event.status) {
+                        $scope.supplierBookings  = result;
+                        $scope.$apply();
+                        $scope.loading("hide");
+                        alert($scope.ErrorMessages['IB_SB_Saved'],'success');
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                },{escape: false}
+            );    
+        }
+        
+        //Model popup open function
+        $scope.currentRt;
+        $scope.items;
+        $scope.popupIndex;
+        $scope.ItineraryDescription = {"lstOptions":[],"mapDescriptions":[]};
+        $scope.selectedParent = '';
+        
+        $scope.getCost = function(sbId){
+            $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.getSupplierCost}',sbId,'{!$CurrentPage.parameters.id}',
+                 function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                       $scope.supplierCosts = result;
+                       $scope.loading("hide");
+                       $scope.fillNightValue();
+                       $scope.$apply();
+                       
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                }, 
+                {escape: false}
+            );  
+        }
+        $scope.getFlightMembers = function(sbId){
+            $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.getFlightMembers}',sbId,'{!$CurrentPage.parameters.id}',
+                 function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                       $scope.flightMembers= result;
+                       $scope.loading("hide");
+                       $scope.$apply();
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                }, 
+                {escape: false}
+            );  
+        }
+        $scope.getTotalCMemo = function(sID){
+            $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.getTotalCMemo}','{!$CurrentPage.parameters.id}',sID,
+                 function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                       $scope.totalCMemoAmount = result;
+                       $scope.loading("hide");
+                       $scope.$apply();
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                }, 
+                {escape: false}
+            );  
+        }
+        
+        
+        $scope.fillNightValue = function(){
+            angular.forEach($scope.supplierCosts, function(scb) {
+                angular.forEach(scb.lstSupplierCost, function(sc) {
+                   if(sc['{!nameSpacePrefix}SC_Margin__c'] === undefined && $scope.opp['{!nameSpacePrefix}O_Target_Mark_Up_Value__c'] !== undefined){
+                       sc['{!nameSpacePrefix}SC_Margin__c'] = $scope.opp['{!nameSpacePrefix}O_Target_Mark_Up_Value__c'];
+                       if($scope.checkFlightsComponent($scope.currentRt) && !$scope.opp['{!nameSpacePrefix}O_Include_Flight_Margin__c']){
+                           sc['{!nameSpacePrefix}SC_Margin__c'] = 0;
+                           sc['{!nameSpacePrefix}SC_Margin_Type__c'] = 'Percentage';
+                       }
+                       if($scope.opp.Type == 'Journalist' || $scope.opp.Type == 'Farm Trip'){
+                            sc['{!nameSpacePrefix}SC_Margin__c'] = 0;
+                        }
+                   } 
+                   if(sc.CurrencyIsoCode === undefined){
+                       sc.CurrencyIsoCode = $scope.opp.CurrencyIsoCode;
+                   } 
+                   if($scope.currentRt == 'Accommodation' && (sc['{!nameSpacePrefix}SC_Nights__c'] === undefined || sc['{!nameSpacePrefix}SC_Nights__c'] == '')){
+                        sc['{!nameSpacePrefix}SC_Nights__c'] = $scope.night;  
+                   }
+                   if($scope.currentRt == 'Credit Memo' || $scope.currentRt == 'Commission Out' || $scope.currentRt == 'Commission In' || $scope.currentRt == 'Complimentary'){
+                       sc['{!nameSpacePrefix}SC_Margin__c'] = 0;
+                   }
+               });
+               
+               if(scb.lstClients !== undefined && scb.lstClients.length == 1){
+                   scb.selectedClient = scb.lstClients[0].value;
+               } 
+            });
+        }
+        
+        $scope.openSB = function (size,index,recordTypeSelected) {
+            $scope.popupIndex = index;
+            $scope.night = 0;
+            $scope.fDuration = '';
+            $scope.items = $scope.supplierBookings[index];
+             $scope.items['{!nameSpacePrefix}SB_Order__c'] = index;
+            $scope.currentRt = $scope.mapRecordtype[recordTypeSelected];
+            if($scope.itineraryTextTemplate[$scope.currentRt] !== undefined && ($scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] == '' || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] === undefined)){
+                //$scope.convertMergeFields($scope.itineraryTextTemplate[$scope.currentRt],$scope.items,$scope.currentRt);
+            }
+            $('.accountAddrees').toggle();
+            if($scope.currentRt == 'Transfer' || $scope.currentRt == 'Car Hire' || $scope.currentRt == 'Excursion' ||  $scope.currentRt == 'Days at Leisure'){
+                $scope.loadItineraryDescription('WTG');
+            }
+            //Load Supplier Cost
+            var sbId = '';
+            if($scope.items.Id !== undefined){
+                sbId = $scope.items.Id;
+            }
+            else if($scope.currentRt != 'Bulk Cost' && $scope.currentRt != 'Credit Memo' && $scope.currentRt != 'Commission Out' && $scope.currentRt != 'Commission In' && $scope.currentRt != 'Complimentary'){
+                $scope.items['{!nameSpacePrefix}SB_Show_in_Itinerary__c'] = true;
+            }
+            $scope.getCost(sbId);
+            $scope.getFlightMembers(sbId);
+            $scope.getTotalCMemo(sbId);
+            
+            //Night Diff
+            var a = moment($scope.items['{!nameSpacePrefix}SB_To_Date__c'],'DD/MM/YYYY');
+            var b = moment($scope.items['{!nameSpacePrefix}SB_From_Date__c'],'DD/MM/YYYY');
+            $scope.night = a.diff(b, 'days');
+            if($scope.currentRt == 'Int Flight' || $scope.currentRt == 'Dom Flights' || $scope.currentRt == 'Light Aircraft'|| $scope.currentRt == 'Sea Plane'){
+                console.log($scope.items['{!nameSpacePrefix}SB_From_Time__c']);
+                if($scope.items['{!nameSpacePrefix}SB_From_Time__c'] !== undefined && $scope.items['{!nameSpacePrefix}SB_To_Time__c'] !== undefined){
+                    $scope.fDuration =  diff($scope.items['{!nameSpacePrefix}SB_From_Time__c'],$scope.items['{!nameSpacePrefix}SB_To_Time__c']);   
+                    console.log($scope.flightDuration );    
+                }
+                $scope.checkInTime();
+            }
+            
+            if($scope.opp.O_Holiday_Type__c !== undefined){
+                $scope.selectedHT =  $scope.opp['{!nameSpacePrefix}O_Holiday_Type__c'];
+            }
+            
+            //Transfer Option Lookup 
+            if($scope.items['{!nameSpacePrefix}SB_Transfer_Car_Hire_Option__c'] !== undefined){
+                $scope.TypeAheadData[0] = {label:$scope.items['{!nameSpacePrefix}SB_Transfer_Car_Hire_Option__r'].Name,value:$scope.items['{!nameSpacePrefix}SB_Transfer_Car_Hire_Option__r'].Id};
+            }
+            $(".slds-modal__content").scrollTop("0")
+        }
+        
+        $scope.loadWidgetyDesc = function(supplierItem){
+            console.log(supplierItem);
+            var supplierValue = supplierItem[$scope.nameSpacePrefix+'SB_Supplier__c'];
+            if(supplierValue === undefined)
+                return;    
+            console.log(supplierValue);
+            if($scope.widgetyReferences[supplierValue] != ''){
+               
+                 /** Call a web service to get description content **/
+                if($scope.currentRt == 'Cruise' ){
+                    $scope.loading("show");
+                    $http.get('https://www.widgety.co.uk/api/cruises/'+ $scope.widgetyReferences[supplierValue] +'.json?app_id={!$Setup.Site__c.Widgety_AppId__c}&token={!$Setup.Site__c.Widgety_Token__c}').
+                      success(function(data, status, headers, config) {
+                        console.log('Fetched cruise information');
+                        console.log(data);
+                        $http.get(data.ship+'?app_id={!$Setup.Site__c.Widgety_AppId__c}&token={!$Setup.Site__c.Widgety_Token__c}').
+                          success(function(data, status, headers, config) {
+                            var widgetyDescription = '';
+                            widgetyDescription = data.introduction;
+                            widgetyDescription = widgetyDescription + '<br/><br/>';
+                            widgetyDescription = widgetyDescription + 'For more information visit - <a href="' + data.html_href + '">' + data.title + '</a>';
+                            $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = widgetyDescription;
+                            $scope.loading("hide");
+                          }).
+                          error(function(data, status, headers, config) {
+                            $scope.loading("hide");
+                            console.log("error with initial fetch");    
+                        });
+                      }).
+                      error(function(data, status, headers, config) {    
+                        $scope.loading("hide");
+                        console.log("error with initial fetch");    
+                    });
+                }
+            }
+            else{
+                $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = '';
+                alert($scope.IBPageMessages['IB_NO_WIDGETY'],'error');
+            }
+        }
+        $scope.checkInTime = function(){
+            if($scope.items['{!nameSpacePrefix}SB_From_Time__c'] !== undefined && $scope.items['{!nameSpacePrefix}SB_From_Time__c'] != null){
+                console.log($scope.items['{!nameSpacePrefix}SB_From_Time__c']);
+                var start = $scope.items['{!nameSpacePrefix}SB_From_Time__c'].split(":");
+                var hrs = start[0]-2;
+                if(hrs < 0){
+                    hrs = 24+hrs;
+                }
+                $scope.items['{!nameSpacePrefix}SB_Check_In_Time__c'] = (hrs < 9 ? "0" : "")+(hrs)+':'+start[1];
+                console.log($scope.items['{!nameSpacePrefix}SB_Check_In_Time__c']);    
+            }
+        }
+        
+        $scope.loadDescription = function(calledFrom){
+            if(($scope.currentRt == 'Car Hire' || $scope.currentRt == 'Transfer') && ($scope.items.Id === undefined || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] === undefined || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] == '')){
+                $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = $scope.ItineraryDescription.mapDescriptions[ $scope.items['{!nameSpacePrefix}SB_Transfer_Car_Hire_Option__c']];     
+            }
+            if($scope.currentRt == 'Excursion' && ($scope.items.Id === undefined || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] === undefined || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] == '')){
+                $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = $scope.ItineraryDescription.mapDescriptions[ $scope.items['{!nameSpacePrefix}SB_What_to_do__c']];     
+            }
+            if($scope.currentRt == 'Days at Leisure' && ($scope.items.Id === undefined || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] === undefined || $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] == '')){
+                if(calledFrom == 'WTG'){
+                    $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = $scope.ItineraryDescription.mapDescriptions[ $scope.items['{!nameSpacePrefix}SB_Where_to_go__c']];     
+                } 
+                if(calledFrom == 'Supplier'){
+                    $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = $scope.ItineraryDescription.mapDescriptions[ $scope.items['{!nameSpacePrefix}SB_Supplier__c']];     
+                }
+                else if($scope.ItineraryDescription.mapDescriptions[$scope.items['{!nameSpacePrefix}SB_What_to_do__c']] !== undefined){
+                    $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] = $scope.ItineraryDescription.mapDescriptions[$scope.items['{!nameSpacePrefix}SB_What_to_do__c']];     
+                }   
+            }
+        }
+        $scope.DeleteRow = function(index){
+            if($scope.supplierBookings[index].Id !== undefined){
+                $scope.loading("show");
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.ItineraryBuilderController.deleteSB}',$scope.supplierBookings[index].Id,
+                    function(result, event){
+                       if (event.status) {
+                           if(result == 'Success'){
+                               $scope.supplierBookings.splice(index,1);
+                               $scope.saveSBOrder();
+                           }
+                           else{
+                               alert(result);
+                           }
+                           $scope.loading("hide");
+                           angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+                       }
+                       else if (event.type === 'exception'){
+                           alert(event.message,'error');
+                           $scope.loading("hide");
+                       }
+                    },{escape: false}
+                );
+            }
+            else{
+                $scope.supplierBookings.splice(index,1);    
+            }
+            
+        }
+        $scope.CloneRow= function(index){
+            var clone = angular.copy($scope.supplierBookings[index]);
+            delete clone["Id"];
+            $scope.supplierBookings.splice(index+1,0,clone);
+            $scope.saveSBOrder();
+            angular.element(document.getElementById('IBCalculation')).scope().loadBySupplier();
+        }
+        $scope.AddRow= function(index){
+            $scope.supplierBookings.splice(index,0,{"{!nameSpacePrefix}SB_Opportunity__c":"{!$CurrentPage.parameters.id}"});
+            angular.forEach($scope.supplierBookings, function(sb,index) {
+                sb['{!nameSpacePrefix}SB_Order__c'] = index;    
+            });
+        }
+        $scope.saveSBOrder = function(){
+            angular.forEach($scope.supplierBookings, function(sb,index) {
+                sb['{!nameSpacePrefix}SB_Order__c'] = index;    
+            });
+            $scope.SBSave = $scope.supplierBookings;
+            $scope.loading("show");
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.ItineraryBuilderController.saveOrder}',JSON.stringify(changeDateInSalesforceDate($scope.SBSave)),'{!$CurrentPage.parameters.id}',
+                function(result, event){
+                    if (event.status) {
+                        $scope.supplierBookings  = result;
+                        
+                        $scope.$apply();
+                        $scope.loading("hide");
+                    }
+                    else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide");
+                    }
+                },{escape: false}
+            );
+        }
+        
+        $scope.loadItineraryDescription = function(calledFrom){
+            //Load Itinerary Description
+            var popupSB = angular.copy($scope.items);
+            if($scope.opp['{!nameSpacePrefix}O_Holiday_Type__c'] !== undefined){
+                $scope.loading("show");
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItineraryBuilderController.loadItineraryDescription}',JSON.stringify(changeDateInSalesforceDate(popupSB)),$scope.currentRt,JSON.parse('{!travellingCountries}'),$scope.opp['{!nameSpacePrefix}O_Holiday_Type__c'],
+                    function(result, event){
+                       if (event.status) {
+                           $scope.ItineraryDescription = JSON.parse(result);
+                           $scope.loadDescription(calledFrom);
+                           console.log($scope.ItineraryDescription);
+                           $scope.$apply();
+                           $scope.loading("hide");
+                       }
+                       else if (event.type === 'exception'){
+                           alert(event.message,'error');
+                           $scope.loading("hide");
+                       }
+                    },{escape: false}
+                );
+            }
+            else{
+                alert('Please fill the holiday type for enquiry.');
+            }
+        }
+        
+        $scope.checkComposeCondition = function(lstTemps, sb){
+            var tempBody;
+            angular.forEach(lstTemps, function(temp) {
+                var tempB;
+                if(temp['{!nameSpacePrefix}ET_Condition__c'] !== undefined)
+                    tempB = $scope.templateCon(sb,temp['{!nameSpacePrefix}ET_Condition__c'],'');    
+                if(temp['{!nameSpacePrefix}ET_Condition__c'] !== undefined && tempB !== undefined &&  tempB.indexOf('{{') == -1  && eval(tempB)){
+                    if(temp['{!nameSpacePrefix}ET_Email_Intro__c'] !== undefined)
+                        tempBody = temp['{!nameSpacePrefix}ET_Email_Intro__c'];
+                    if(temp['{!nameSpacePrefix}ET_Email_Closing__c'] !== undefined)
+                        tempBody = tempBody+'<br/>'+temp['{!nameSpacePrefix}ET_Email_Closing__c'];
+                }
+                else if(tempBody === undefined){
+                    if(temp['{!nameSpacePrefix}ET_Email_Intro__c'] !== undefined)
+                        tempBody = temp['{!nameSpacePrefix}ET_Email_Intro__c'];
+                    if(temp['{!nameSpacePrefix}ET_Email_Closing__c'] !== undefined)
+                        tempBody = tempBody+'<br/>'+temp['{!nameSpacePrefix}ET_Email_Closing__c'];
+                }
+            });
+            return tempBody;    
+        }
+        
+        //Convert Itinerary Description Merge Fields
+        $scope.convertMergeFields = function(template, sb, currentRt){
+            template = $scope.checkComposeCondition($scope.itineraryTextTemplateWC[currentRt], sb);
+            if(template !== undefined){
+                sb['{!nameSpacePrefix}SB_Itinerary_Description__c'] = $scope.templateCon(sb,template,'');   
+                
+                if(currentRt == 'Accommodation' && sb['{!nameSpacePrefix}SB_Itinerary_Description__c'].indexOf('{{Tonight}}') != -1){
+                    if($scope.night > 1){
+                        sb['{!nameSpacePrefix}SB_Itinerary_Description__c'] = sb['{!nameSpacePrefix}SB_Itinerary_Description__c'].replaceAll('{{Tonight}}','For the next '+$scope.night+' nights');    
+                    }
+                    else if($scope.night == 1){
+                        sb['{!nameSpacePrefix}SB_Itinerary_Description__c'] = sb['{!nameSpacePrefix}SB_Itinerary_Description__c'].replaceAll('{{Tonight}}','Tonight');    
+                    }
+                }
+                if(currentRt == 'Int Flight' && sb['{!nameSpacePrefix}SB_Itinerary_Description__c'].indexOf('{{next}}') != -1){
+                    if(sb['{!nameSpacePrefix}SB_From_Date__c'] != sb['{!nameSpacePrefix}SB_To_Date__c']){
+                        sb['{!nameSpacePrefix}SB_Itinerary_Description__c'] = sb['{!nameSpacePrefix}SB_Itinerary_Description__c'].replaceAll('{{next}}','next day');    
+                    }
+                    else{
+                        sb['{!nameSpacePrefix}SB_Itinerary_Description__c'] = sb['{!nameSpacePrefix}SB_Itinerary_Description__c'].replaceAll('{{next}}','');        
+                    }    
+                } 
+            }
+        }
+        //Template Merge Field
+        
+        $scope.saveAsTemplate = function() {
+            $('.saveAsTemplate').hide();
+            if($scope.selectedParent != '' && $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] != '' && $scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'] !== undefined){
+                var popupSB = angular.copy($scope.items);
+                $scope.transferOption = false;
+                if($scope.selectedParent == $scope.items['{!nameSpacePrefix}SB_From_Place__c'] || ($scope.currentRt == 'Car Hire' || $scope.currentRt == 'Transfer')){
+                    $scope.transferOption = true;
+                }
+                $scope.loading("show");
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.ItineraryBuilderController.saveAsTemplate}',JSON.stringify(changeDateInSalesforceDate(popupSB)),$scope.selectedParent,$scope.items['{!nameSpacePrefix}SB_Itinerary_Description__c'],$scope.selectedHT,$scope.transferOption,
+                    function(result, event){
+                       if (event.status) {
+                           $scope.loading("hide");
+                           alert(result);
+                           
+                       }
+                       else if (event.type === 'exception'){
+                           alert(event.message,'error');
+                           $scope.loading("hide");
+                       }
+                    },{escape: false}
+                );    
+            }      
+        }
+        
+        //Template Merge Field
+        $scope.templateCon = function(data,template,parent) {
+            for (var key in data) {
+                var item = data[key]; 
+                var field = '';
+                if(parent == ''){
+                    field = '{{'+key+'}}';
+                }
+                else{
+                    field = parent+'.'+key;
+                    field = '{{'+field+'}}';
+                }
+                if(data['{!nameSpacePrefix}SB_Ground_Handler__c'] != '' && data['{!nameSpacePrefix}SB_Ground_Handler__c'] != null && data['{!nameSpacePrefix}SB_Ground_Handler__c'] !== undefined && key == '{!nameSpacePrefix}SB_Supplier__c'){
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Supplier__r.Name}}',$scope.globalFormateInput(data['{!nameSpacePrefix}SB_Ground_Handler__c'],$scope.autoSuggestSupplier));
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Supplier__c}}',$scope.globalFormateInput(data['{!nameSpacePrefix}SB_Ground_Handler__c'],$scope.autoSuggestSupplier));
+                }
+                else if(key == '{!nameSpacePrefix}SB_Supplier__c' && template.indexOf('{{{!nameSpacePrefix}SB_Supplier__r.Name}}') != -1 || template.indexOf('{{SB_Supplier__c}}') != -1){
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Supplier__r.Name}}',$scope.globalFormateInput(item,$scope.autoSuggestSupplier));
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Supplier__c}}',$scope.globalFormateInput(item,$scope.autoSuggestSupplier));
+                }
+                if(key == '{!nameSpacePrefix}SB_Departure_Airport_l__c' && template.indexOf('{{{!nameSpacePrefix}SB_Departure_Airport}}') != -1){
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Departure_Airport_l__r.Name}}',$scope.globalFormateInput(item,$scope.autoSuggestAirport));
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Departure_Airport_l__c}}',$scope.globalFormateInput(item,$scope.autoSuggestAirport));
+                }
+                if(key == '{!nameSpacePrefix}SB_Arrival_Airport_l__c' && template.indexOf('{{{!nameSpacePrefix}SB_Arrival_Airport}}') != -1){
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Arrival_Airport_l__r.Name}}',$scope.globalFormateInput(item,$scope.autoSuggestAirport));
+                    template = template.replaceAll('{{{!nameSpacePrefix}SB_Arrival_Airport_l__c}}',$scope.globalFormateInput(item,$scope.autoSuggestAirport));
+                }
+                
+                if (typeof item != "object") {
+                    template = template.replaceAll(field,item);
+                } 
+                else if (typeof item == "object") {
+                    template = $scope.templateCon(item,template,key);
+                }
+                
+                
+            } return template;   
+        }
+        
+        //Pre-fill client group
+        $scope.changeClientGroup = function(cg){
+            console.log(cg.lstSupplierCost.length);
+            if(cg.selectedClient !== undefined && cg.selectedClient != null && (cg.lstSupplierCost.lenght === undefined || cg.lstSupplierCost.length <= 0)){
+                console.log(cg.lstSupplierCost.length <= 0);
+                console.log(cg.lstSupplierCost.length);
+                if(cg.lstSupplierCost.length <= 0){
+                    var cgId = cg.selectedClient;
+                    var margin = $scope.opp['{!nameSpacePrefix}O_Target_Mark_Up_Value__c'];
+                    if( !$scope.opp['{!nameSpacePrefix}O_Include_Flight_Margin__c'] && ($scope.currentRt == 'Int Flight' || $scope.currentRt == 'Dom Flights' || $scope.currentRt == 'Light Aircraft'|| $scope.currentRt == 'Sea Plane')){
+                        margin = 0;
+                    }
+                    if($scope.currentRt == 'Commission In' || $scope.currentRt == 'Commission Out' || $scope.currentRt == 'Credit Memo' || $scope.currentRt == 'Complimentary'){
+                        margin = 0;
+                    }
+                    if($scope.opp.Type == 'Journalist' || $scope.opp.Type == 'Farm Trip'){
+                        margin = 0;
+                    }
+                    if($scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Adult_Members__c'] != 0 && $scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Adult_Members__c'] !== undefined){
+                        cg.lstSupplierCost.push({'{!nameSpacePrefix}SC_Selected__c':true,'{!nameSpacePrefix}SC_Option__c':'1','{!nameSpacePrefix}SC_Margin__c' : margin, 'CurrencyIsoCode' : $scope.opp.CurrencyIsoCode, '{!nameSpacePrefix}SC_Occupancy_Type__c' : 'Adult', '{!nameSpacePrefix}SC_Occupancy_No__c' : $scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Adult_Members__c'], '{!nameSpacePrefix}SC_Margin_Type__c' : 'Percentage'});
+                    }
+                    if($scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Child_Members__c'] != 0 && $scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Child_Members__c'] != null){
+                        cg.lstSupplierCost.push({'{!nameSpacePrefix}SC_Selected__c' : true,'{!nameSpacePrefix}SC_Option__c':'1','{!nameSpacePrefix}SC_Margin__c' : margin, 'CurrencyIsoCode' : $scope.opp.CurrencyIsoCode, '{!nameSpacePrefix}SC_Occupancy_Type__c' : 'Child', '{!nameSpacePrefix}SC_Occupancy_No__c' : $scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Child_Members__c'], '{!nameSpacePrefix}SC_Margin_Type__c' : 'Percentage'});
+                    }
+                    if($scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Infant_Members__c'] != 0 && $scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Infant_Members__c'] != null){
+                        cg.lstSupplierCost.push({'{!nameSpacePrefix}SC_Selected__c' : true, '{!nameSpacePrefix}SC_Option__c':'1', '{!nameSpacePrefix}SC_Margin__c' : margin, 'CurrencyIsoCode' : $scope.opp.CurrencyIsoCode, '{!nameSpacePrefix}SC_Occupancy_Type__c' : 'Infant', '{!nameSpacePrefix}SC_Occupancy_No__c' : $scope.supplierCosts[0].mapClientGroup[cgId]['{!nameSpacePrefix}CG_Total_Infant_Members__c'], '{!nameSpacePrefix}SC_Margin_Type__c' : 'Percentage'});
+                    }
+                }
+            }
+            $scope.fillNightValue();
+        }
+        //Add more cost 
+        $scope.addCost = function(clientGroupWrappper){
+            var margin = $scope.opp['{!nameSpacePrefix}O_Target_Mark_Up_Value__c'];
+            if( !$scope.opp['{!nameSpacePrefix}O_Include_Flight_Margin__c'] && ($scope.currentRt == 'Int Flight' || $scope.currentRt == 'Dom Flights' || $scope.currentRt == 'Light Aircraft'|| $scope.currentRt == 'Sea Plane')){
+                margin = 0;
+            }
+            if($scope.currentRt == 'Commission In' || $scope.currentRt == 'Commission Out' || $scope.currentRt == 'Credit Memo' || $scope.currentRt == 'Complimentary'){
+                margin = 0;
+            }
+            if($scope.opp.Type == 'Journalist' || $scope.opp.Type == 'Farm Trip'){
+                margin = 0;
+            }
+           
+            clientGroupWrappper.lstSupplierCost.push({'{!nameSpacePrefix}SC_Selected__c' : true,'{!nameSpacePrefix}SC_Option__c':'1','{!nameSpacePrefix}SC_Margin__c' : margin, 'CurrencyIsoCode' : $scope.opp.CurrencyIsoCode, '{!nameSpacePrefix}SC_Margin_Type__c' : 'Percentage'});
+            $scope.fillNightValue();
+        }
+        //Add Client Group
+        $scope.addClientGroup = function(){
+            var cg = {};
+            cg["selectedClient"] = "";
+            cg["lstClients"] = angular.copy($scope.supplierCosts[0].lstClients);
+            cg["lstSupplierCost"] = [];
+            //cg.lstSupplierCost.push({'{!nameSpacePrefix}SC_Selected__c' : true, '{!nameSpacePrefix}SC_Option__c':'1','{!nameSpacePrefix}SC_Margin__c' : $scope.opp['{!nameSpacePrefix}O_Target_Mark_Up_Value__c'], 'CurrencyIsoCode' : $scope.opp.CurrencyIsoCode, '{!nameSpacePrefix}SC_Margin_Type__c' : 'Percentage'});
+            $scope.supplierCosts.push(cg);
+        }
+        
+        $scope.changeCost = function(cost,type){
+            if(type == 'Acc' && cost['{!nameSpacePrefix}SC_Occupancy_No__c'] !== undefined && cost['{!nameSpacePrefix}SC_Nights__c'] !== undefined && cost['{!nameSpacePrefix}SC_Shared_Cost_Per_Night__c'] !== undefined){
+                cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] = cost['{!nameSpacePrefix}SC_Shared_Cost_Per_Night__c']*cost['{!nameSpacePrefix}SC_Nights__c'];
+                cost['{!nameSpacePrefix}SC_Total_Net_Cost_PP__c'] = Number((cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c']/cost['{!nameSpacePrefix}SC_Occupancy_No__c']).toFixed(2));
+                
+            }
+            if(type == 'PP' && cost['{!nameSpacePrefix}SC_Occupancy_No__c'] !== undefined && cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined){
+                cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] = cost['{!nameSpacePrefix}SC_Total_Net_Cost_PP__c']*cost['{!nameSpacePrefix}SC_Occupancy_No__c'];
+            }
+            else if(type == 'Total'&& cost['{!nameSpacePrefix}SC_Occupancy_No__c'] !== undefined && cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined){
+                cost['{!nameSpacePrefix}SC_Total_Net_Cost_PP__c'] = Number((cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c']/cost['{!nameSpacePrefix}SC_Occupancy_No__c']).toFixed(2));
+            }
+            else if(cost['{!nameSpacePrefix}SC_Total_Net_Cost_PP__c'] !== undefined && cost['{!nameSpacePrefix}SC_Occupancy_No__c'] !== undefined){
+                cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] = cost['{!nameSpacePrefix}SC_Total_Net_Cost_PP__c']*cost['{!nameSpacePrefix}SC_Occupancy_No__c'];
+            }
+            
+            
+        }
+        
+        $scope.changeDayDuration = function(record){
+            var DepartureDate = moment($scope.opp['{!nameSpacePrefix}O_Departure_Date__c']).format('DD/MM/YYYY');
+            if(record['{!nameSpacePrefix}SB_Day__c'] !== undefined && record['{!nameSpacePrefix}SB_Day__c'] != ''){
+                record['{!nameSpacePrefix}SB_From_Date__c'] = moment(DepartureDate,'DD/MM/YYYY').add(record['{!nameSpacePrefix}SB_Day__c']-1, 'days').format('DD/MM/YYYY'); 
+                if(record['{!nameSpacePrefix}SB_Duration__c'] !== undefined && record['{!nameSpacePrefix}SB_Duration__c'] != ''){
+                    var forDate = moment(record['{!nameSpacePrefix}SB_From_Date__c'],'DD/MM/YYYY').format('YYYY-MM-DD');
+                    record['{!nameSpacePrefix}SB_To_Date__c'] = moment(forDate).add(record['{!nameSpacePrefix}SB_Duration__c'],'days').format('DD/MM/YYYY'); 
+                }
+            }
+            
+            if(record['{!nameSpacePrefix}SB_Duration__c'] == 0){
+                record['{!nameSpacePrefix}SB_To_Date__c'] = record['{!nameSpacePrefix}SB_From_Date__c'];
+            }
+        }
+        $scope.changeDate = function(record){
+            if(record['{!nameSpacePrefix}SB_To_Date__c'] !== undefined && record['{!nameSpacePrefix}SB_From_Date__c'] !== undefined){
+                var a = moment(record['{!nameSpacePrefix}SB_To_Date__c'],'DD/MM/YYYY');
+                var b = moment(record['{!nameSpacePrefix}SB_From_Date__c'],'DD/MM/YYYY');
+                record['{!nameSpacePrefix}SB_Duration__c'] = a.diff(b, 'days');    
+            }
+        }
+        
+        $scope.range = function(count){
+    
+          var ratings = []; 
+        
+          for (var i = 0; i < count; i++) { 
+            ratings.push(i) 
+          } 
+        
+          return ratings;
+        }
+        
+        //Create Notes Text
+        $scope.NotesText = function(refresh){
+            
+            if($scope.items['{!nameSpacePrefix}SB_Notes__c'] === undefined ||  $scope.items['{!nameSpacePrefix}SB_Notes__c'] == '' || $scope.items['{!nameSpacePrefix}SB_Notes__c'] == null  || refresh){
+                
+                $scope.items['{!nameSpacePrefix}SB_Notes__c'] = '';
+                if($scope.currentRt == 'Int Flight' || $scope.currentRt == 'Dom Flights' || $scope.currentRt == 'Light Aircraft' || $scope.currentRt == 'Sea Plane'){
+                    if($scope.items['{!nameSpacePrefix}SB_Carrier__c'] !== undefined )
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] = $scope.items['{!nameSpacePrefix}SB_Carrier__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Flight_No__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_Flight_No__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Class__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_Class__c'];      
+                }
+                else if($scope.currentRt == 'Accommodation'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] = $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Room_Type__c'] != null)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c']  += ','+$scope.items['{!nameSpacePrefix}SB_Room_Type__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Meal_Basis__c'] != null)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.items['{!nameSpacePrefix}SB_Meal_Basis__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Room_Details__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_Room_Details__c'];   
+                }
+                else if($scope.currentRt == 'Car Hire'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] = $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Drop_off_Point__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c']  += ','+$scope.items['{!nameSpacePrefix}SB_Drop_off_Point__c'];  
+                    if($scope.items['{!nameSpacePrefix}SB_Pickup_Point__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c']  += ','+$scope.items['{!nameSpacePrefix}SB_Pickup_Point__c'];
+                }
+                else if($scope.currentRt == 'Transfer'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Transfer_Car_Hire_Option__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_Transfer_Car_Hire_Option__r'].Name;  
+                }
+                else if($scope.currentRt == 'Rail'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_From_Station__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_From_Station__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_To_Station__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_To_Station__c'];
+                }
+                else if($scope.currentRt == 'Cruise'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_From_Station__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_From_Station__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_To_Station__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ','+$scope.items['{!nameSpacePrefix}SB_To_Station__c'];
+                }
+                else if($scope.currentRt == 'Private Road Transfer' || $scope.currentRt == 'Shared Road Transfer' || $scope.currentRt == 'Private Transfer with Excursion' || $scope.currentRt == 'Shared Transfer with Excursion'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Length_of_Journey__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Length_of_Journey__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Ground_Handler__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Ground_Handler__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'];
+                }
+                else if($scope.currentRt == 'Ferry' || $scope.currentRt == 'Private Speed Boat Transfer' || $scope.currentRt == 'Shared Speed Boat Transfer'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Length_of_Journey__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Length_of_Journey__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'];
+                }
+                else if($scope.currentRt == 'Meet & Greet' || $scope.currentRt == 'VIP Meet & Greet' || $scope.currentRt == 'Visa Fast Track'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Ground_Handler__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Ground_Handler__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'];
+                }
+                else if($scope.currentRt == 'Private Jet'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Length_of_Journey__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Length_of_Journey__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Jet_Model__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Jet_Model__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Pilot_Details__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Pilot_Details__c'];
+                    if($scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'] !== undefined)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'];
+                }
+                else if($scope.currentRt == 'Sea Plane'){
+                    if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] != null)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                    if($scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'] != null)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += ', '+$scope.items['{!nameSpacePrefix}SB_Reservation_Ref__c'];
+                }
+                else if($scope.currentRt == 'Excursion'){
+                    if($scope.items['{!nameSpacePrefix}SB_Name__c'] != null)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.items['{!nameSpacePrefix}SB_Name__c'];
+                }
+                else{
+                     if($scope.items['{!nameSpacePrefix}SB_Supplier__c'] != null)
+                        $scope.items['{!nameSpacePrefix}SB_Notes__c'] += $scope.globalFormateInput($scope.items['{!nameSpacePrefix}SB_Supplier__c'],$scope.autoSuggestSupplier);
+                }
+                console.log($scope.items);
+            }
+        }
+        
+        //Validation Supplier Booking Popup $scope
+        $scope.checkSupplierRequired = function(){
+            var returnVar = false;
+            angular.forEach($scope.supplierCosts, function(scb) {
+                angular.forEach(scb.lstSupplierCost, function(sc) {
+                    if(sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined && sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != '' && sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != 0){
+                        returnVar = true;
+                    }
+                });
+            });
+            return returnVar;
+        }
+        
+        
+        $scope.checkClientGroup = function(cg){
+            var returnVar = false;
+            angular.forEach(cg.lstSupplierCost, function(sc) {
+                if(sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined && sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != '' && sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != 0){
+                    returnVar = true;
+                } 
+            });
+            return returnVar;
+        }
+        
+        $scope.checkSBRequired = function(sb,field){
+            if(sb.RecordTypeId !== undefined && sb.RecordTypeId != '' && sb.RecordTypeId != null){
+                var selectedCom = $scope.mapRecordtype[sb.RecordTypeId];
+                //From Date
+                if(field == 'From Date'){
+                    if(!(selectedCom == 'Complimentary' || selectedCom == 'Bulk Cost' || selectedCom == 'Credit Memo' || selectedCom == 'Commission In' || selectedCom == 'Commission Out' || selectedCom == 'Credit Card' 
+                            || selectedCom== 'Days at Leisure' || selectedCom == 'Notes' || selectedCom == 'Description' || selectedCom == 'Own arrangement')){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                //To Date
+                if(field == 'To Date'){
+                    if(selectedCom == 'Accommodation' || selectedCom == 'Dom Flights' || 
+                                selectedCom == 'Int Flight' || selectedCom == 'Light Aircraft' || selectedCom == 'Sea Plane'){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                //From Place
+                if(field == 'From Place'){
+                    if(selectedCom == 'Dom Flights' || selectedCom == 'Int Flight' || selectedCom == 'Private Jet' || selectedCom == 'Light Aircraft' || selectedCom == 'Excursion' ||
+                                 selectedCom =='Accommodation' || selectedCom =='Description' || selectedCom =='Days at Leisure' || selectedCom =='Transfer' || selectedCom == 'Sea Plane'){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                //From Place
+                if(field == 'To Place'){
+                    if(selectedCom == 'Dom Flights' || 
+                                selectedCom == 'Int Flight' || selectedCom == 'Private Jet' || selectedCom == 'Light Aircraft' || selectedCom =='Transfer' || selectedCom == 'Sea Plane'){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                
+                //From Time To Time
+                if(field == 'To Time' || field == 'From Time'){
+                    if(selectedCom == 'Dom Flights' || selectedCom == 'Int Flight' || selectedCom == 'Light Aircraft' || selectedCom == 'Private Jet' || selectedCom == 'Sea Plane'){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        //Validate Cost Options
+        $scope.validateOptions = true;
+        $scope.validateCostOption = function(){
+            var options = [];
+            $scope.validateOptions = true;
+            angular.forEach($scope.supplierCosts, function(clientGroup) {
+                if(!options.hasOwnProperty(clientGroup.selectedClient)){
+                    options[clientGroup.selectedClient] = [];
+                }
+                angular.forEach(clientGroup.lstSupplierCost, function(cost) {
+                    if(cost['{!nameSpacePrefix}SC_Selected__c'] && cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined && cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != 0 && cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != null &&  options[clientGroup.selectedClient].indexOf('Option '+cost.SC_Option__c) == -1 && cost['{!nameSpacePrefix}SC_Option__c'] !== undefined && cost['{!nameSpacePrefix}SC_Option__c'] != null){
+                        options[clientGroup.selectedClient].push('Option '+cost['{!nameSpacePrefix}SC_Option__c']);
+                    }
+                });
+            });
+            angular.forEach($scope.supplierCosts, function(clientGroup) {
+                if(options.hasOwnProperty(clientGroup.selectedClient)){
+                    if(options[clientGroup.selectedClient].length > 1){
+                        $scope.validateOptions = false;
+                        $('.chk'+clientGroup.selectedClient).css('border-color','red');
+                    }
+                    else{
+                        $('.chk'+clientGroup.selectedClient).css('border-color','#d8dde6');
+                    }
+                }
+            });
+            return $scope.validateOptions;
+        }
+        
+        //Toggle IB 
+        $scope.toggleIB = false;
+        $scope.toggleTotal = false;
+        $scope.toggleAdditional = false;
+        $scope.toggleClient= false;
+        $scope.toggleSupplier= false;
+        $scope.toggleSDetail = false;
+        $scope.toggleSelling = false;
+        
+        $scope.collapse = function(type){
+            if(type == 'IB'){
+                if($scope.toggleIB)
+                    $scope.toggleIB = false;
+                else
+                    $scope.toggleIB= true;
+            }
+            if(type == 'Total'){
+                if($scope.toggleTotal)
+                    $scope.toggleTotal = false;
+                else
+                    $scope.toggleTotal = true;
+            }
+            if(type == 'Additional'){
+                if($scope.toggleAdditional)
+                    $scope.toggleAdditional = false;
+                else
+                    $scope.toggleAdditional = true;
+            }
+            if(type == 'Client'){
+                if($scope.toggleClient)
+                    $scope.toggleClient= false;
+                else
+                    $scope.toggleClient = true;
+            }
+            if(type == 'Supplier'){
+                if($scope.toggleSupplier)
+                    $scope.toggleSupplier = false;
+                else
+                    $scope.toggleSupplier = true;
+            }
+            if(type == 'Selling'){
+                if($scope.toggleSelling)
+                    $scope.toggleSelling = false;
+                else
+                    $scope.toggleSelling = true;
+            }
+        }
+        
+        $scope.showError = function(error,sbVar){
+             console.log($scope.IBForm['row'+error].$invalid);
+             if($scope.IBForm['row'+error].$invalid){
+                 alert($scope.IBPageMessages['IB_Fill_Required_Fields'],'error');
+             }
+             else if(sbVar.RecordTypeId == null){
+                 alert($scope.IBPageMessages['IB_Fill_Required_Fields'],'error');
+             }
+        }
+        
+        //Change BG Color Of IB table
+        $scope.getBGColor = function(sb){
+            if(sb.SB_Day__c%2 == 0){
+                return 'day3';
+            }
+            else if(sb.SB_Day__c%2 == 1){
+                return 'day2';
+            }
+            else{
+                return 'day1';
+            }
+        }
+        
+        $scope.showSaveTemplate = function(){
+            if(($scope.items['{!nameSpacePrefix}SB_Supplier__c'] != null && $scope.items['{!nameSpacePrefix}SB_Supplier__c'] !== undefined) || ($scope.items['{!nameSpacePrefix}SB_From_Place__c'] != '' && $scope.items['{!nameSpacePrefix}SB_From_Place__c'] !== undefined) || ($scope.items['{!nameSpacePrefix}SB_Where_to_go__c'] != null && $scope.items['{!nameSpacePrefix}SB_Where_to_go__c'] !== undefined) || ($scope.items['{!nameSpacePrefix}SB_What_to_do__c']   != '' && $scope.items['{!nameSpacePrefix}SB_What_to_do__c']  !== undefined)){
+                $('.saveAsTemplate').show();
+            }
+            else{
+                alert($scope.IBPageMessages['IB_Fill_Supplier_WTG_WTD_Airport'],'error');
+            }
+        }
+        $scope.checkFromValue  = function(sbVar){
+            if(sbVar['{!nameSpacePrefix}SB_From_Place__c'] == '' || sbVar['{!nameSpacePrefix}SB_From_Place__c'] === undefined){
+               sbVar['{!nameSpacePrefix}SB_Where_to_go__c'] = null;
+            }
+        }
+        $scope.TypeAheadData = [];
+        $scope.TypeAheadText = '';
+        $scope.typeHeadAjax  = function(txt){
+            console.log($scope.TypeAheadText);
+            $http({method: 'Get', url: 'Account_JSON?TO='+$scope.TypeAheadText}).
+                success(function(data, status) {
+                $scope.TypeAheadData = data;
+                console.log($scope.TypeAheadData);
+            }) ;  
+        }
+        $scope.changeOccType = function(selectedCG,cost){
+            if(cost['{!nameSpacePrefix}SC_Occupancy_No__c'] === undefined || cost['{!nameSpacePrefix}SC_Occupancy_No__c'] == ''){
+                if(cost['{!nameSpacePrefix}SC_Occupancy_Type__c'] == 'Adult'){
+                    cost['{!nameSpacePrefix}SC_Occupancy_No__c'] = $scope.supplierCosts[0].mapClientGroup[selectedCG]['{!nameSpacePrefix}CG_Total_Adult_Members__c'];    
+                }
+                if(cost['{!nameSpacePrefix}SC_Occupancy_Type__c'] == 'Child'){
+                    cost['{!nameSpacePrefix}SC_Occupancy_No__c'] = $scope.supplierCosts[0].mapClientGroup[selectedCG]['{!nameSpacePrefix}CG_Total_Child_Members__c'];    
+                }
+                if(cost['{!nameSpacePrefix}SC_Occupancy_Type__c'] == 'Infant'){
+                    cost['{!nameSpacePrefix}SC_Occupancy_No__c'] = $scope.supplierCosts[0].mapClientGroup[selectedCG]['{!nameSpacePrefix}CG_Total_Infant_Members__c'];    
+                }
+            }
+        }
+        $scope.checkMax = function(selectedCG,cost){
+            if(cost['{!nameSpacePrefix}SC_Occupancy_Type__c'] == 'Adult'){
+                return $scope.supplierCosts[0].mapClientGroup[selectedCG]['{!nameSpacePrefix}CG_Total_Adult_Members__c'];    
+            }
+            if(cost['{!nameSpacePrefix}SC_Occupancy_Type__c'] == 'Child'){
+                return $scope.supplierCosts[0].mapClientGroup[selectedCG]['{!nameSpacePrefix}CG_Total_Child_Members__c'];    
+            }
+            
+        }  
+        $scope.checkRequiredType = function(cost){
+            
+                if(cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined && cost['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != ''){
+                     return true;    
+                }
+                else{
+                    return false;
+                }
+            
+        }
+        
+        //Flush Field Values When Component Change?
+        $scope.sbToBeFlushed;
+        $scope.setComponentId = function(sbVar){
+            $scope.oldComponent = sbVar.RecordTypeId;
+        }
+        $scope.changeComponent = function(sb,index){
+            if(sb.RecordTypeId != $scope.oldComponent && sb['{!nameSpacePrefix}SB_Itinerary_Description__c'] != undefined && sb['{!nameSpacePrefix}SB_From_Date__c'] != undefined && sb['{!nameSpacePrefix}SB_To_Date__c'] != undefined){
+                $scope.sbToBeFlushed = index;
+                $('.changeComponent').show('show');
+            }
+            if($scope.supplierBookings[index-1] !== undefined &&  $scope.mapRecordtype[$scope.supplierBookings[index-1].RecordTypeId] == 'Int Flight' && sb.Id === undefined && $scope.mapRecordtype[sb.RecordTypeId] == 'Transfer'){
+                if(sb['{!nameSpacePrefix}SB_From_Date__c'] !== undefined && $scope.supplierBookings[index-1]['{!nameSpacePrefix}SB_From_Date__c'] !== undefined && sb['{!nameSpacePrefix}SB_From_Date__c'] == $scope.supplierBookings[index-1]['{!nameSpacePrefix}SB_From_Date__c']){
+                console.log((sb['{!nameSpacePrefix}SB_From_Time__c']  === undefined));
+                    if((sb['{!nameSpacePrefix}SB_From_Time__c'] === undefined || sb['{!nameSpacePrefix}SB_From_Time__c'] == '')){
+                        var time = $scope.supplierBookings[index-1]['{!nameSpacePrefix}SB_To_Time__c'].split(':');
+                        console.log(time);
+                        var hrs = parseInt(time[0]);
+                        var mins = parseInt(time[1]);
+                        var updatedTime;
+                        
+                        if(hrs == 23){
+                            updatedTime = '00:'+time[1];
+                        }
+                        else{
+                            if((hrs+1) < 10){
+                                updatedTime = '0'+(hrs+1)+':'+time[1];  
+                            }
+                            else{
+                                updatedTime = (hrs+1)+':'+time[1];      
+                            }  
+                        }
+                        
+                        sb['{!nameSpacePrefix}SB_From_Time__c'] = updatedTime;
+                        
+                    }
+                }
+                if((sb['{!nameSpacePrefix}SB_From_Place__c'] === undefined || sb['{!nameSpacePrefix}SB_From_Place__c'] == '')){
+                    sb['{!nameSpacePrefix}SB_From_Place__c'] = $scope.supplierBookings[index-1]['{!nameSpacePrefix}SB_To_Place__c'];
+                }
+            }
+        }
+        $scope.flushValues = function(){
+            if($scope.sbToBeFlushed != undefined){
+                for (var key in $scope.supplierBookings[$scope.sbToBeFlushed]) {
+                    var item = $scope.supplierBookings[$scope.sbToBeFlushed][key]; 
+                    if (typeof item != "object" && key.indexOf('SB_Order__c') == -1  && key.indexOf('SB_Order__c') == -1 && key.indexOf('SB_Opportunity__c') == -1
+                        && key.indexOf('SB_To_Place__c') == -1 && key.indexOf('SB_Departure_Airport_l__c') == -1 && key.indexOf('SB_To_Time__c') == -1 
+                        && key.indexOf('SB_From_Place__c') == -1 && key.indexOf('SB_Where_To_Go__c') == -1 && key.indexOf('SB_From_Date__c') == -1
+                        && key.indexOf('SB_From_Time__c') == -1 && key.indexOf('SB_Day__c') == -1 && key.indexOf('RecordTypeId') == -1  
+                        && key.indexOf('Id') == -1 && key.indexOf('SB_Duration__c') == -1 && key.indexOf('SB_To_Date__c') == -1
+                        && item != false && item != true){
+                        $scope.supplierBookings[$scope.sbToBeFlushed][key] = null;
+                    }
+                }
+                $('.changeComponent').hide('hide');  
+            }
+        }
+        
+        //Check Supplier Payment to disable supplier field on popup
+        $scope.checkSupplierPayment = function(item){
+            var returnStr = false;
+            if(item !== undefined && $scope.mapSupplierPayment.length > 0){
+                var spId = item['{!nameSpacePrefix}SB_Supplier__c'];
+                var sbId = item.Id;
+                angular.forEach($scope.mapSBSupplierPayment, function(mapSP,key) {
+                    if(spId != null && spId !== undefined && spId.indexOf(key) != -1){
+                        angular.forEach($scope.mapSBSupplierPayment[key], function(mapSB,key) {
+                            if(sbId != null && sbId !== undefined && sbId.indexOf(mapSB) != -1){
+                                returnStr = true;
+                            }
+                        });
+                    }    
+                });
+            }
+            return returnStr ;
+        }
+        
+        // ShowAddressContactModal
+        $scope.addressContact;
+        $scope.showAddressContactModal = function(contactId){
+            $scope.loading("show");
+            console.log(contactId);
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.getContactDetail}',contactId,
+                function(result, event){
+                   if (event.status) {
+                       $scope.loading("hide");
+                       $scope.addressContact = $scope.formatJSONData(JSON.parse(result));
+                       var splittedAdd = ['', '', ''];
+                        if($scope.addressContact[$scope.nameSpacePrefix+'C_Prefered_Name__c'] == null){
+                            $scope.addressContact[$scope.nameSpacePrefix+'C_Prefered_Name__c'] = $scope.addressContact.FirstName;
+                        }
+                        if($scope.addressContact.MailingStreet != null && $scope.addressContact.MailingStreet != undefined)
+                            splittedAdd = $scope.addressContact.MailingStreet.split(','); 
+                        if(splittedAdd.length > 0 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] === undefined) )
+                            $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] = splittedAdd[0];
+                        if(splittedAdd.length > 1 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] === undefined))
+                            $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_2__c'] = splittedAdd[1];
+                        if(splittedAdd.length > 2 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] === undefined) )
+                            $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_3__c'] = splittedAdd[2];
+                       $scope.$apply();
+                   }
+                   else if (event.type === 'exception'){
+                       alert(event.message,'error');
+                       $scope.loading("hide");
+                   }
+                },{escape: false}
+            );
+            $('.contactAddress').toggle('show')                        
+        }
+        
+        //Save Contact Address
+        $scope.saveContactAddress = function(){
+            $timeout(function(){
+                //validateForm($scope.frmContactAdd);
+                if($scope.frmContactAdd.$valid){
+                    $scope.addressContact.MailingStreet = $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_1__c'] + ', ' + $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_2__c'] + ', ' + $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_3__c'];
+                    var copiedAdd = angular.copy($scope.addressContact);
+                    $scope.loading("show")
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.ItineraryBuilderController.saveContactAddress}',JSON.stringify(filterJSON(copiedAdd)),
+                        function(result, event){
+                            if (event.status) {
+                                $('.contactAddress').toggle('hide'); 
+                                angular.forEach($scope.opp[$scope.nameSpacePrefix+'Group_Members__r'].records, function(gm, key) {
+                                    if(gm[$scope.nameSpacePrefix+'GM_Contact__c'] == result.Id && result.Birthdate !== undefined){
+                                        gm[$scope.nameSpacePrefix+'GM_Contact__r'][$scope.nameSpacePrefix+'Occupancy_Type__c'] = result[$scope.nameSpacePrefix+'Occupancy_Type__c'];
+                                        gm[$scope.nameSpacePrefix+'GM_Contact__r'].Birthdate = result.Birthdate;
+                                    }
+                                    else if(gm[$scope.nameSpacePrefix+'GM_Contact__c'] == result.Id){
+                                        gm[$scope.nameSpacePrefix+'GM_Contact__r'][$scope.nameSpacePrefix+'Occupancy_Type__c'] = result[$scope.nameSpacePrefix+'Occupancy_Type__c'];
+                                        gm[$scope.nameSpacePrefix+'GM_Contact__r'].Birthdate = '';    
+                                    }    
+                                });
+                                $scope.$apply(); 
+                                $scope.loading("hide")  
+                            }else if (event.type === 'exception'){ 
+                                alert(event.message,'error');
+                                $scope.loading("hide")
+                            }
+                        }, 
+                        {escape: false}
+                    ); 
+                }
+                else{
+                    alert($scope.ErrorMessages['HE_Fill_Required_Details'],'error');
+                    $scope.loading("hide");    
+                }
+            });
+        }
+        
+        //Update contact address and close the popup
+        $scope.updateContactAddress = function(){
+            $timeout(function(){
+                //validateForm($scope.frmContactAdd);
+                if($scope.frmContactAdd.$valid){
+                    $('.contactAddress').toggle('hide'); 
+                }    
+                else{
+                    alert($scope.ErrorMessages['HE_Fill_Required_Details'],'error');
+                    $scope.loading("hide");    
+                }
+            });
+        }
+        
+        //Change Date
+        $scope.formatJSONData = function(record){
+            angular.forEach(record, function(value, key) {
+                var regexPatt = /((?=\d{4})\d{4}|(?=[a-zA-Z]{3})[a-zA-Z]{3}|\d{2})((?=\/)\/|\-)((?=[0-9]{2})[0-9]{2}|(?=[0-9]{1,2})[0-9]{1,2}|[a-zA-Z]{3})((?=\/)\/|\-)((?=[0-9]{4})[0-9]{4}|(?=[0-9]{2})[0-9]{2}|[a-zA-Z]{3})/;
+                if(typeof value != "object" && regexPatt.test(value) && (key.indexOf('Date') != -1 || key.indexOf('date')) != -1 ){
+                    if(moment(value).format('DD/MM/YYYY') != 'Invalid date'){
+                        //console.log(value);
+                        record[key] = moment(value).format('DD/MM/YYYY');     
+                    }
+                }
+                else if(typeof value != "object" && key.indexOf('CP_Processed_On__c') != -1){
+                    if(moment(value).format('DD/MM/YYYY') != 'Invalid date')
+                    record[key] = moment(value).format('DD/MM/YYYY');    
+                }
+                else if (typeof value == "object") {
+                    $scope.formatJSONData(value);
+                }
+            });
+            return record;
+        }
+        
+        // Add Communication Pre.
+        $scope.addNewCommp = function(){
+             $scope.addressContact.MailingStreet = $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_1__c'] + ', ' + $scope.addressContact['C_Address_Line_2__c'] + ', ' + $scope.addressContact['C_Address_Line_3__c'];
+             var clonedCon = $scope.addressContact;
+             delete clonedCon[$scope.nameSpacePrefix+'Airline_memberships__r'];
+             delete clonedCon[$scope.nameSpacePrefix+'Communication_Preferences__r'];
+             $scope.loading("show")
+             Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.saveCommp}',JSON.stringify(filterJSON($scope.newCommp)),JSON.stringify(filterJSON(clonedCon)),
+                function(result, event){
+                    if (event.status) {
+                     alert($scope.ErrorMessages['IB_Commp_Save']);
+                     $('.communicationP').toggle('hide'); 
+                     $scope.newCommp = {};
+                     $scope.addressContact = $scope.formatJSONData(JSON.parse(result))[0];
+                     var splittedAdd = ['', '', ''];
+                     if($scope.addressContact.MailingStreet != null && $scope.addressContact.MailingStreet != undefined)
+                         splittedAdd = $scope.addressContact.MailingStreet.split(','); 
+                     if(splittedAdd.length > 0 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] === undefined) )
+                         $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] = splittedAdd[0];
+                     if(splittedAdd.length > 1 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] === undefined))
+                         $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_2__c'] = splittedAdd[1];
+                     if(splittedAdd.length > 2 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] === undefined) )
+                         $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_3__c'] = splittedAdd[2];
+                     $('.groupMembers').toggle('show');
+                     $('.contactAddress').toggle('show');
+                     $scope.loading("hide")
+                     console.log(result);
+                    //Result contains list of account names and account id
+                    }else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide")
+                    }
+                    $scope.$apply();
+                }, 
+                {escape: false}
+            );
+        }
+        $scope.updateCommpRecord = function(cp){
+            $scope.newCommp = cp;
+            $('.communicationP').toggle('show');     
+            $('.contactAddress').toggle('hide');
+        }
+        $scope.deleteCommpRecord = function(AMRecord){
+             $scope.loading("show")
+             Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.DeleteCommp}',AMRecord.Id, AMRecord[$scope.nameSpacePrefix+'CP_Contact__c'], 
+                function(result, event){
+                    if (event.status) {
+                     alert($scope.ErrorMessages['IB_Commp_Delete']);
+                     $scope.newAirlineMember = {};
+                     $scope.addressContact = $scope.formatJSONData(JSON.parse(result))[0];
+                     var splittedAdd = ['', '', ''];
+                    if($scope.addressContact[$scope.nameSpacePrefix+'C_Prefered_Name__c'] == null){
+                        $scope.addressContact[$scope.nameSpacePrefix+'C_Prefered_Name__c'] = $scope.addressContact.FirstName;
+                    }
+                    if($scope.addressContact.MailingStreet != null && $scope.addressContact.MailingStreet != undefined)
+                        splittedAdd = $scope.addressContact.MailingStreet.split(','); 
+                    if(splittedAdd.length > 0 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] === undefined) )
+                        $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] = splittedAdd[0];
+                    if(splittedAdd.length > 1 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] === undefined))
+                        $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_2__c'] = splittedAdd[1];
+                    if(splittedAdd.length > 2 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] === undefined) )
+                        $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_3__c'] = splittedAdd[2];
+                     $scope.$apply();
+                     $scope.loading("hide")
+                    //Result contains list of account names and account id
+                    }else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide")
+                    }
+                }, 
+                {escape: false}
+            );  
+        }
+        
+        //Actions for Airline Membership 
+        $scope.updateMembershipRecord = function(AMRecord){
+            $scope.newAirlineMember = {'airline':AMRecord[$scope.nameSpacePrefix+'AM_Airline__c'], 'membershipnumber':AMRecord.Name,'id':AMRecord.Id};
+            $('.airlineMemberShip').toggle('show');  
+            $('.groupMembers').toggle('hide');   
+            $('.contactAddress').toggle('hide');
+        }
+        
+        $scope.deleteMembershipRecord = function(AMRecord){
+             $scope.loading("show")
+             Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.DeleteAirlineMember}',AMRecord.Id, AMRecord[$scope.nameSpacePrefix+'AM_Contact__c'], 
+                function(result, event){
+                    if (event.status) {
+                     alert($scope.ErrorMessages['IB_AirlineMembership_Delete']);
+                     $scope.newAirlineMember = {};
+                     $scope.addressContact = $scope.formatJSONData(JSON.parse(result))[0];
+                     var splittedAdd = ['', '', ''];
+                     if($scope.addressContact.MailingStreet != null && $scope.addressContact.MailingStreet != undefined)
+                         splittedAdd = $scope.addressContact.MailingStreet.split(','); 
+                     if(splittedAdd.length > 0 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] === undefined) )
+                         $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] = splittedAdd[0];
+                     if(splittedAdd.length > 1 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] === undefined))
+                         $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_2__c'] = splittedAdd[1];
+                     if(splittedAdd.length > 2 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] === undefined) )
+                         $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_3__c'] = splittedAdd[2];
+                     $scope.$apply();
+                     $scope.loading("hide")
+                    //Result contains list of account names and account id
+                    }else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide")
+                    }
+                }, 
+                {escape: false}
+            );  
+        }
+         // Add Airline member
+        $scope.addNewAirlineMember = function(){
+             //$scope.newAirlineMember.con = $scope.addressContact;
+             $scope.addressContact.MailingStreet = $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_1__c'] + ', ' + $scope.addressContact['C_Address_Line_2__c'] + ', ' + $scope.addressContact['C_Address_Line_3__c'];
+             var clonedCon = $scope.addressContact;
+             delete clonedCon[$scope.nameSpacePrefix+'Airline_memberships__r'];
+             delete clonedCon[$scope.nameSpacePrefix+'Communication_Preferences__r'];
+             $scope.loading("show")
+             Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.ItineraryBuilderController.saveAirlineMember}',JSON.stringify(filterJSON($scope.newAirlineMember)),JSON.stringify(filterJSON(clonedCon)),
+                function(result, event){
+                    if (event.status) {
+                     alert($scope.ErrorMessages['IB_AirlineMembership_Save']);
+                     $('.airlineMemberShip').toggle('hide'); 
+                     //$('.contactAddress').toggle('show');  
+                     $scope.newAirlineMember = {};
+                     $scope.addressContact = $scope.formatJSONData(JSON.parse(result))[0];
+                     var splittedAdd = ['', '', ''];
+                     if($scope.addressContact.MailingStreet != null && $scope.addressContact.MailingStreet != undefined)
+                         splittedAdd = $scope.addressContact.MailingStreet.split(','); 
+                     if(splittedAdd.length > 0 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] === undefined) )
+                         $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_1__c'] = splittedAdd[0];
+                     if(splittedAdd.length > 1 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_2__c'] === undefined))
+                         $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_2__c'] = splittedAdd[1];
+                     if(splittedAdd.length > 2 && ($scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] == '' || $scope.addressContact [$scope.nameSpacePrefix+'C_Address_Line_3__c'] === undefined) )
+                         $scope.addressContact[$scope.nameSpacePrefix+'C_Address_Line_3__c'] = splittedAdd[2];
+                     $('.groupMembers').toggle('show');
+                     $('.contactAddress').toggle('show') 
+                     $scope.loading("hide")
+                     console.log(result);
+                    //Result contains list of account names and account id
+                    }else if (event.type === 'exception'){
+                        alert(event.message,'error');
+                        $scope.loading("hide")
+                        }
+                    $scope.$apply();
+                }, 
+                {escape: false}
+            );
+        }
+        
+        $scope.createCommpRecord = function(){
+            $scope.newCommp = {};
+            $('.communicationP').toggle('show');     
+            $('.groupMembers').toggle('hide');
+            $('.contactAddress').toggle('hide');    
+        }
+        
+        $scope.createMembershipRecord = function(){
+            $scope.newAirlineMember = {};
+            $('.airlineMemberShip').toggle('show');     
+            $('.groupMembers').toggle('hide');
+            $('.contactAddress').toggle('hide');
+            
+        }
+        
+        $scope.removeSpace = function(val){
+            return val.replace(/ /g,'');
+        }
+        
+        $scope.holidayDuration = function(day, duration){
+            if(day == '' && duration == ''){
+                var a = moment($scope.opp['{!nameSpacePrefix}O_Departure_Date__c']);
+                var b = moment($scope.opp['{!nameSpacePrefix}O_Return_Date__c']);
+                var duration = b.diff(a, 'days')+1;
+                return duration;
+            }
+            else{
+                var a = moment($scope.opp['{!nameSpacePrefix}O_Departure_Date__c']);
+                var b = moment($scope.opp['{!nameSpacePrefix}O_Return_Date__c']);
+                var duration = b.diff(a, 'days')+1 - day;
+                return duration;    
+            }
+        }
+        
+        $scope.clientGroupName = function(index){
+            
+            var count = 0;
+            var kd;
+            angular.forEach($scope.flightMembers, function(value, key) {
+                if(index == count){
+                    kd = key.split('##')[1];
+                }
+                count++;    
+            });
+            return kd;
+        }
+        
+        //Validate Credit Memo
+        
+        $scope.validateCreditMemo = function(){
+            var totalCM = 0;
+            if($scope.currentRt == 'Credit Memo'){
+                angular.forEach($scope.supplierCosts, function(scb) {
+                    angular.forEach(scb.lstSupplierCost, function(sc) {
+                        if(sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] !== undefined && sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != '' && sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'] != 0){
+                            totalCM += sc['{!nameSpacePrefix}SC_Total_Client_Group_Cost__c'];
+                        }
+                    });
+                });
+            
+                return  $scope.opp.Account['{!nameSpacePrefix}A_Total_Compensation_Credit_Memo__c'] >= -($scope.totalCMemoAmount+totalCM);
+            }
+            else{
+                return true;
+            }
+        }
+        
+    });
+        
+        //CKEditor 
+    myApp.directive('ckEditor', [function () {
+        return {
+            require: '?ngModel',
+            link: function ($scope, elm, attr, ngModel) {
+                
+                var ck = CKEDITOR.inline(elm[0]);
+                
+                ck.on('pasteState', function () {
+                    $scope.$apply(function () {
+                        ngModel.$setViewValue(ck.getData());
+                    });
+                });
+                
+                ngModel.$render = function (value) {
+                    ck.setData(ngModel.$modelValue);
+                };
+            }
+        };
+        
+    }])
+    
+    
+        myApp.directive('jqdatepicker', function () {
+            return {
+                restrict: 'A',
+                require: 'ngModel',
+                 link: function (scope, element, attrs, ngModelCtrl) {
+                     $(element).datepicker({
+                        minDate: moment(scope.opp['{!nameSpacePrefix}O_Departure_Date__c']).format('DD/MM/YYYY'),
+                        maxDate: moment(scope.opp['{!nameSpacePrefix}O_Return_Date__c']).format('DD/MM/YYYY'),
+                        dateFormat: 'dd/mm/yy',
+                        onSelect: function (date) {
+                            ngModelCtrl.$setViewValue(date);
+                            ngModelCtrl.$render();
+                            scope.$apply();
+                        }
+                        
+                    });
+                    scope.$watch(attrs.ngModel, function(newValue) {
+                        if(newValue == ''){
+                            ngModelCtrl.$setViewValue(null);
+                        }
+                    });
+                }
+            };
+        });
+        myApp.directive('jqdatepickerpast', function () {
+            return {
+                restrict: 'A',
+                require: 'ngModel',
+                 link: function (scope, element, attrs, ngModelCtrl) {
+                    $(element).datepicker({
+                        dateFormat: 'dd/mm/yy',
+                        maxDate: 'today',
+                        changeMonth: true, 
+                        changeYear: true, 
+                        yearRange: "-100:+0",
+                        onSelect: function (date) {
+                            ngModelCtrl.$setViewValue(date);
+                            ngModelCtrl.$render();
+                            scope.$apply();
+                        }
+                    });
+                    scope.$watch(attrs.ngModel, function(newValue) {
+                        if(newValue == ''){
+                            ngModelCtrl.$setViewValue(null);
+                        }
+                    });
+                }
+            };
+        });
+        myApp.directive('jqdatepickerfuture', function () {
+            return {
+                restrict: 'A',
+                require: 'ngModel',
+                 link: function (scope, element, attrs, ngModelCtrl) {
+                    $(element).datepicker({
+                        dateFormat: 'dd/mm/yy',
+                        changeMonth: true, 
+                        changeYear: true, 
+                        minDate: 0, // 0 days offset = today
+                        onSelect: function (date) {
+                            ngModelCtrl.$setViewValue(date);
+                            ngModelCtrl.$render();
+                            scope.$apply();
+                        }
+                    });
+                    scope.$watch(attrs.ngModel, function(newValue) {
+                        if(newValue == ''){
+                            ngModelCtrl.$setViewValue(null);
+                        }
+                    });
+                }
+            };
+        });
+        myApp.directive('jqdatepicker1', function () {
+            return {
+                restrict: 'A',
+                require: 'ngModel',
+                 link: function (scope, element, attrs, ngModelCtrl) {
+                     $(element).datepicker({
+                        dateFormat: 'dd/mm/yy',
+                        onSelect: function (date) {
+                            ngModelCtrl.$setViewValue(date);
+                            ngModelCtrl.$render();
+                            scope.$apply();
+                        }
+                    });
+                    scope.$watch(ngModelCtrl.$viewValue, function() {
+                        console.log("Changed to " + ngModelCtrl.$viewValue);
+                    });
+                }
+            };
+        });
+        myApp.filter('range', function() {
+            return function(input, min, max) {
+                min = parseInt(min); //Make string input int
+                max = parseInt(max);
+                for (var i=min; i<max; i++)
+                  input.push(i);
+                return input;
+            };
+        });
+        
+        
+        
+        
+        
+        //Filter the SObject JSON
+        function removeHashKey(data) {
+            for (var key in data) {
+                var item = data[key]; 
+                if (typeof item != "object") {
+                    delete data['$$hashKey']; 
+                } else if (typeof item == "object") {
+                    delete data['$$hashKey'];
+                    removeHashKey(item);
+                }
+            } return data;   
+        }
+        function removeProperty(data, prop) {
+            for (var key in data) {
+                var item = data[key]; 
+                
+                if (typeof item != "object") {
+                    delete data[prop]; 
+                } else if (typeof item == "object") {
+                    delete data[prop]; 
+                    removeProperty(item,prop);
+                }
+            } return data;   
+        }
+        function changeDateInSalesforceDate(data){
+            for (var key in data) {
+                var item = data[key];
+                if (typeof item != "object" && key.indexOf('Date__c') != -1) {
+                    if(data[key] != ''){
+                        data[key] = moment(data[key],'DD/MM/YYYY').format('YYYY-MM-DD');
+                    }
+                    else{
+                        data[key] = null;
+                    }
+                } else if (typeof item == "object") {
+                    changeDateInSalesforceDate(item);
+                }
+            } 
+            return data;
+        }
+        
+        function diff(start, end) {
+            start = start.split(":");
+            end = end.split(":");
+            var startDate = new Date(0, 0, 0, start[0], start[1], 0);
+            var endDate = new Date(0, 0, 0, end[0], end[1], 0);
+            var diff = endDate.getTime() - startDate.getTime();
+            var hours = Math.floor(diff / 1000 / 60 / 60);
+            diff -= hours * 1000 * 60 * 60;
+            var minutes = Math.floor(diff / 1000 / 60);
+            
+            return (hours < 9 ? "0" : "") + hours + ":" + (minutes < 9 ? "0" : "") + minutes;
+        }
+    
+        
+        function stringStartsWith(string, prefix) {
+            return string.slice(0, prefix.length) == prefix;
+        }
+        
+        
+        //Filter the SObject JSON
+        function filterJSON(data) {
+            var ele = data;
+            for (key in ele) {
+               ele =  dateTimeReviver(ele,key);
+            }  
+            for (var i in ele) {
+                for (key in ele[i]) {
+                   ele[i] =  dateTimeReviver(ele[i],key);
+                }                 
+                var ele1 = ele[i];
+                if(ele[i] != null && ele[i].hasOwnProperty('$$hashKey')){
+                    delete ele[i]['$$hashKey']
+                }
+                for (var j in ele1) {
+                    for (key in ele1[j]) {
+                       ele1[j] =  dateTimeReviver(ele1[j],key);
+                    } 
+                    if(typeof(ele1[j]) == 'object'){
+                        if(ele[i][j] != null && ele[i][j].hasOwnProperty('$$hashKey')){
+                            delete ele[i][j]['$$hashKey']
+                        }
+                        for (var k in ele1[j]) {
+                            for (var l in ele1[j][k]) {
+                                if(ele[i][j][k][l] != null && ele[i][j][k][l].hasOwnProperty('$$hashKey')){
+                                    delete ele[i][j][k][l]['$$hashKey']
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(ele.length === undefined){
+                delete  ele['$$hashKey'];        
+            }
+            return ele;
+        }
+        
+        
+        dateTimeReviver = function (ele , key) {
+            var value = ele[key];
+            var a;
+            
+            if (typeof value === 'string' && key != 'followUpD') {
+                var datet = /^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/i;
+                if (datet.test(value)) {
+                    
+                    ele[key] = Date.parse(value.split("/").reverse().join("-"));
+                    return ele;
+                }
+            }
+            return ele;
+        }
+        
+        String.prototype.replaceAll = function(target, replacement) {
+          return this.split(target).join(replacement);
+        };
+    </script>
+</apex:component>

@@ -1,0 +1,377 @@
+<apex:page extensions="ATOLCertificate" standardController="Opportunity" showHeader="false" standardstylesheets="false"  cache="false">
+<!--
+<apex:stylesheet value="{!URLFOR($Resource.ATOL_Style)}"/>
+-->
+<head>
+<style type="text/css">
+
+body{
+    margin:0;
+    padding:0
+    width:21cm;
+    height:29.7cm;
+    background:#fffbdb;
+    line-height:13pt;
+    font-size:12pt;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+table{
+    width:100%;
+    border-spacing:0;
+    padding:0;
+}
+td{
+    padding:0;
+    text-align:left;
+    vertical-align: top;
+}
+table.border{
+    border:1px solid #000;
+}
+.wrap{
+    margin:0 auto;
+    width:21cm;
+    height:29.7cm;
+    
+    
+}
+.table-main{
+    margin:0 auto;
+    width:178mm;
+    border-spacing:0;
+}
+.hdr1{
+    height:6.5mm;
+    font-size:12pt;
+    line-height:14pt;
+    font-weight:bold;
+}
+.title{
+    padding-top:3mm;
+    font-size:52pt;
+    line-height:52pt;
+    font-weight:bold;
+    text-align:center;
+}
+.text1{
+    font-size:15pt;
+    line-height:16pt;
+    font-weight:bold;
+    text-align:center;
+}
+.text2{
+    padding:3mm 0;
+    font-size:14pt;
+    line-height:15pt;
+    text-align:center;
+}
+.alignright{
+    text-align:right;
+}
+.aligncenter{
+    text-align:center;
+}
+.valignmiddle{
+    vertical-align:middle;
+}
+.text_17{
+    line-height:17pt;
+    font-size:17pt;
+}
+.text_11{
+    line-height:11pt;
+    font-size:11pt;
+}
+.text_9{
+    line-height:10pt;
+    font-size:9pt;
+}
+.text_9_13{
+    line-height:13pt;
+    font-size:9pt;
+}
+.text_8{
+    line-height:9pt;
+    font-size:8pt;
+}
+.text_7_12{
+    line-height:12pt;
+    font-size:7pt;
+}
+.tbl1{
+    margin:1mm 0 3mm;
+}
+.border.style1{
+    border-top:0;
+}
+.border.style2{
+    border:0;
+    border-bottom:1px solid #000
+}
+.tbl1 td{
+    padding:1mm;
+}
+.tbl1 td.border{
+    border:1px solid #000;
+    border-right:0;
+    border-bottom:0;
+}
+.tbl1 td.border.first{
+    border-left:0;
+}
+</style>
+<title>ATOL Certificate for {!CurrentOpportunity.name}</title>
+</head>
+
+<body style="margin:0; padding:0 width:21cm; height:29.7cm; background:#fffbdb; line-height:13pt; font-size:12pt; font-family:Arial, Helvetica, sans-serif;">
+    
+  <!--
+  <div style="margin:0 auto;
+    width:21cm;
+    height:29.7cm;  
+    background:url(http://www.appssential.com/PB/images/ATOL-Cert-Artwork-rb.jpg) no-repeat right top;"> 
+    -->
+      <div style="margin:0 auto;
+    width:21cm;
+    height:29.7cm;  
+    background:url(http://www.powderbyrne.com/Images/salesforce/ATOL-Cert-Artwork-rb.jpg) no-repeat right top;"> 
+        <apex:outputPanel rendered="{!!CurrentOpportunity.O_ATOL__c}">
+            <table style="border:1px solid #000;" class="border">
+                <tr>
+                    <th style="height:6.5mm; font-size:12pt; line-height:14pt; font-weight:bold;" class="hdr1">ATOL certificate is not available for this booking.</th>
+                </tr>
+            </table>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!CurrentOpportunity.O_ATOL__c}">
+        <table class="table-main">
+            <tr>
+                <td style="height:15.7mm"></td>
+            </tr>
+            <tr>
+                <td align="center">
+                <table style="border:1px solid #000;" class="border">
+                    <tr>
+                        <th style="height:6.5mm; font-size:12pt; line-height:14pt; font-weight:bold;" class="hdr1">This is an important document. Make sure that you take it with you when you travel. </th>
+                    </tr>
+                </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-top:3mm; font-size:52pt; line-height:52pt; font-weight:bold; text-align:center;" class="title">ATOL Certificate</td>
+            </tr>
+            <tr>
+                <td style="font-size:15pt; line-height:16pt; font-weight:bold; text-align:center;" class="text1">
+                This confirms that your money is protected by the ATOL scheme and
+                that you can get home if your travel company collapses.</td>
+            </tr>
+            <tr>
+                <td style="padding:3mm 0; font-size:14pt; line-height:15pt; text-align:center;" class="text2">This certificate sets out how the ATOL scheme will protect the people
+                    named on it for the parts of their trip listed below.</td>
+            </tr>
+            <tr>
+                <td align="center">
+                   <table style="border:1px solid #000;" class="border">
+                    <tr >
+                        <td style="padding:3mm">
+                            <table width="100%" cellspacing="0" border="0">
+                            <tr>
+                                <td>
+                                <table border="0" width="100%" cellspacing="0"  >
+                                    <tr>
+                                        <td width="50%"><strong>Who is protected?</strong></td>
+                                        <td width="50%" class="alignright"><strong>Number of Passengers:</strong> {!NumberOfPessenger }</td>
+                                    </tr>
+                                </table>
+                                </td>
+                            </tr>
+                            
+                        
+                    
+                    
+                            
+                                   
+                     <table width="100%" style="border:0; border-bottom:1px solid #000; border-right:1px solid #000; line-height:10pt; font-size:9pt;" class="tbl1 style2 border text_9">  
+                                          
+                             
+                         
+                                            <apex:repeat value="{!listGM}" var="g">
+                                            <tr style="line-height:9pt; font-size:8pt;" class="text_8">
+                                                <td class="border">
+                                                <apex:outputField value="{!g.GM_Contact__r.C_Full_Name_on_Passport__c}" />
+                                                </td>
+                                                
+                                               
+                                            </tr>
+                                            </apex:repeat>
+                                        </table>
+                    
+                               
+                                    
+                            <tr>
+                                
+                                    <td style="padding-left:3mm; padding-right:3mm">
+                                    <strong>What is protected?</strong>
+                                    </td>
+                                    
+                            </tr>
+                            <tr>
+                                                <td  style="padding-left:3mm; padding-right:3mm; font-size:10pt;"><strong>HOLIDAY DETAILS</strong></td>
+                                            </tr>
+
+                            <tr >
+                               
+                                                <td width="50px" style="padding-left:3mm; padding-right:3mm;font-size:10pt;">
+                                                 Tailor-made Itinerary to &nbsp;
+                                                
+                                                                                                  
+                                                     <apex:variable var="count" value="{!listTC.size}"/>
+                                                   <apex:repeat value="{!listTC}" var="t">
+                                                     <apex:variable var="count" value="{!count-1}"/>  
+                                                   <apex:outputField value="{!t.TCountry.TC_Country__r.Name}" /> 
+                                                    <apex:outputText rendered="{!IF( count> 0, true, false)}">,&nbsp;</apex:outputText>    
+                                                    </apex:repeat>
+                                                                                             
+                                                 for &nbsp;
+                                                <apex:outputField value="{!CurrentOpportunity.O_No_of_Nights__c}" />&nbsp; nights
+                                                 </td>
+                                            </tr>
+                                      
+                            <tr>
+                                <td style="padding-left:3mm; padding-right:3mm;">
+                                    <apex:outputPanel rendered="{!IF(listFB.size > 0, true, false)}" >
+                                        <table style="border:0; border-bottom:1px solid #000; border-right:1px solid #000;" class="tbl1 border style2 text_9">
+                                            <tr style="line-height:9pt; font-size:8pt;" class="text_8">
+                                                
+                                                <td class="border">Flight No.</td>
+                                                <td class="border">Departure Airport</td>
+                                                <td class="border">Departure Date</td>
+                                               <td class="border">Departure Time</td>
+                                                
+                                                <td class="border">Arrival Airport</td>
+                                                <td class="border">Arrival Date</td>
+                                                <td class="border">Arrival Time</td>
+                                                <td class="border">Pax</td>
+                                                
+                                            </tr>
+
+                                            <apex:repeat value="{!listFB}" var="f">
+                                                <tr class="text_8" style="line-height:9pt; font-size:8pt; display:{!IF(f.FBooking.SB_Departure_Airport_l__c == null, 'none', '')}">
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_Flight_No__c}" /></td>
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_Departure_Airport_l__c}" /></td>
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_From_Date__c}" /></td>
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_From_Time__c}" /></td>
+                                                  
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_Arrival_Airport_l__c}" /></td>
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_To_Date__c}" /></td>
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_To_Time__c}" /></td>
+                                                    <td class="border"><apex:outputField value="{!f.FBooking.SB_Pax_for_Costing__c}" /></td>
+                                                </tr> 
+                                            </apex:repeat>
+                                        </table>
+                                        <br />
+                                    </apex:outputPanel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left:3mm; padding-right:3mm">You can find more detailed information on your booking, including price, on the confirmation
+                                        you will receive from River Of Footsteps</td>
+                            </tr>
+                            <tr>
+                                <td><BR /></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left:3mm; padding-right:3mm">
+                                <strong>Who is protecting your trip?</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left:3mm; padding-right:3mm">River Of Footsteps ATOL 5922 <br />
+                                Booking Reference:{!CurrentOpportunity.O_Reference_Number__c}</td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center; line-height:17pt; font-size:17pt; padding-left:3mm; padding-right:3mm" class="aligncenter text_17"><strong>Your protection</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left:3mm; padding-right:3mm font-size:9pt;">You are protected from when you were given this certificate to the end of your trip.
+                                        <br />
+                                        If <i>River Of Footsteps</i> stops trading, the passengers named above will either:
+                                        <br /><br />
+                                        1 complete their trip and return to the UK; or
+                                        <br />
+                                        2 receive a refund.
+                                        <br />
+                                        Your protection depends on the terms of the ATOL scheme (available at www.atol.org.uk).
+                                        <br />
+                                        <br />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left:3mm; padding-right:3mm font-size:9pt;">If <i>River Of Footsteps</i>
+                                        stops trading, you must follow the instructions at www.atol.org.uk (where there will be
+                                        details of arrangements to bring people back to the UK, and information on how people can
+                                        claim their money back) or you can call +44 (0)20 82481 3744.
+                                        <br />
+                                        <br />
+                                </td>
+                            </tr>
+                            
+                        </table>
+                        </td></tr>
+                    </table></td></tr>
+               
+                      <tr><td>&nbsp;</td></tr>
+            <tr>
+                <td>
+                 <table style="border:1px solid #000;  width:178mm; margin:0 auto;" class="border" >
+                    <tr>
+                        <td class="text_9_13" style="line-height:13pt; font-size:9pt; padding-left:3mm; padding-right:3mm">By issuing this ATOL Certificate, under Regulation 17 of the Civil Aviation 
+                            (Air Travel Organisers? Licensing) Regulations2011, <i>River Of Footsteps</i>
+                            confirms that the trip to which it applies is sold in line with the ATOL held by the organiser named above.
+                            The ATOL scheme is run by the Civil Aviation Authority and paid for by the Air Travel Trust. To see what that is and what
+                            you can expect, together with full information on its terms and conditions go to www.atol.org.uk.
+                            As well as the protection of the ATOL scheme, you have protection under the Package Travel Regulations. For more
+                            information see www.direct.gov.uk in the Travel and Transport section.</td>
+                    </tr>
+                </table></td>
+            </tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr>
+                <td>
+                <table style="width:178mm; margin:0 auto;  border-top:0; border:1px solid #000;" class="tbl1 style1 border">
+                    <tr style="line-height:11pt; font-size:11pt;" class="text_11">
+                        <td style="text-align:center; border-left:0; line-height:12pt;" class="border first aligncenter">Unique reference number:</td>
+                        <td style="text-align:center;" class="border aligncenter">Date of issue:</td>
+                        <td style="text-align:center;" class="border aligncenter">ATOL Certificate Issuer:</td>
+                        <td style="text-align:center;" class="border aligncenter">ATOL number:</td>
+                        <td style="text-align:center; vertical-align:middle; font-size:12pt;" class="border aligncenter valignmiddle" rowspan="2"><strong>Package<BR />
+                            sale</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:center; border-left:0; line-height:12pt; font-size:7pt; font-style:italic;" class="border aligncenter first text_7_12"><i>{!CurrentOpportunity.Name}</i></td>
+                        <td style="text-align:center; line-height:12pt; font-size:7pt; font-style:italic;" class="border aligncenter text_7_12"> 
+                        <apex:outputText escape="false" value="{0,date,dd'/'MM'/'yyyy}" >
+                        <apex:param value="{!CurrentOpportunity.O_Booking_Date__c}"/>  
+                        </apex:outputText> 
+                        </td>
+                        <td style="text-align:center; line-height:12pt; font-size:7pt; font-style:italic;" class="border aligncenter text_7_12">River Of Footsteps</td>
+                        <td style="text-align:center; line-height:12pt; font-size:7pt; font-style:italic;" class="border aligncenter text_7_12">5922</td>
+                    </tr>
+          </table>
+            <table style="width:178mm; margin:0 auto;  border-top:0; border:none" class="tbl1 style1 border">
+                
+        
+            <tr>
+                <td style="text-align:right; line-height:12pt; font-size:7pt;" class="alignright text_7_12">Copyright UK Civil Aviation Authority. The ATOL Logo is a registered trade mark.</td>
+            </tr>
+            </table>
+            </td>
+            </tr>
+
+        </table>
+        </apex:outputPanel>
+    </div>
+</body>
+</apex:page>

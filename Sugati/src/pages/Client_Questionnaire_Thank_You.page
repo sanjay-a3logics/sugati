@@ -1,0 +1,227 @@
+<apex:page sidebar="false" title="Vintage Travel | Client Questionnaire Thank You" action="{!updateBooking}" controller="ClientQuestionnaireThankYouController" 
+    showHeader="false" cache="false" standardStylesheets="false" >
+    <apex:form >
+        
+    <c:BasicResources ></c:BasicResources>
+    <c:QuestionnaireCSS />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/css/bootstrap.min.css')}"/>
+        
+        <style>
+        .ui-widget-header {
+            border: 1px solid #DDDDDD;
+            color: #333333;
+            font-weight: bold;
+        }
+        
+        .pb {
+            height: 0.90em;
+            border-bottom-right-radius: 64px;
+                border-bottom-left-radius: 64px;
+                border-top-left-radius: 64px;
+                border-top-right-radius: 64px;
+                width: 88%;
+                margin-right: 36px;
+                border: 2px solid #dddddd;
+                background: none;
+               
+        }
+        
+        #progressbar1{
+                border-bottom-right-radius: 64px;
+                border-bottom-left-radius: 64px;
+                border-top-left-radius: 64px;
+                border-top-right-radius: 64px;
+                width: 88%;
+                margin-right: 36px;
+                border: 2px solid #dddddd;
+                background: none;
+                height: 2.80em;
+         }
+        #progressbar1 .ui-progressbar .ui-progressbar-value{
+            margin:0px
+        }
+        #progressbar1 .ui-widget-content.ui-progressbar{
+            border:0px
+        }
+        #progressbar1 .ui-progressbar{
+              height: 68%;
+              max-width: 97%;
+              position: inherit;
+              border-bottom-right-radius: 17px;
+              border-bottom-left-radius: 17px;
+              border-top-left-radius: 17px;
+              border-top-right-radius: 17px;
+              margin-top: 6px;
+              margin-right: 6px;
+              margin-left: 9px;
+              
+        }
+        #progressbar1 .ui-progressbar-value{
+              height: 68%;
+              max-width: 97%;
+              position: inherit;
+              border-bottom-right-radius: 17px;
+              border-bottom-left-radius: 17px;
+              border-top-left-radius: 17px;
+              border-top-right-radius: 17px;
+              margin-top: 6px;
+              margin-right: 6px;
+              margin-left: 9px;
+              
+        }
+        .ui-progressbar{
+            border: 2px solid #dddddd !important;
+        }
+        .ui-widget-header{
+            background : White !important;
+            border: 1px solid #DDDDDD !important;
+            color: #333333 !important;
+            font-weight: bold !important;
+         }
+         
+         
+        .pb .ui-progressbar .ui-progressbar-value{
+            margin:0px !important;;
+         }
+        .pb .ui-widget-content.ui-progressbar{
+            border:0px !important;
+         }
+        .pb .ui-progressbar {
+                height: 59%;
+              max-width: 97%;
+              position: inherit;
+              border-bottom-right-radius: 107px;
+              border-bottom-left-radius: 107px;
+              border-top-left-radius: 107px;
+              border-top-right-radius: 107px;
+              margin-top: 2px;
+              margin-right: 2px;
+              margin-left: 2px;
+              
+        }
+        .pb .ui-progressbar-value{
+              height: 59%;
+              max-width: 97%;
+              position: inherit;
+              border-bottom-right-radius: 107px;
+              border-bottom-left-radius: 107px;
+              border-top-left-radius: 107px;
+              border-top-right-radius: 107px;
+              margin-top: 2px;
+              margin-right: 2px;
+              margin-left: 2px;
+        }
+        .pb .ui-progressbar{
+            border: 2px solid #dddddd !important;
+        }
+        .pb .ui-widget-header{
+            background : rgb(247,149,36) !important;;
+            border: 1px solid #DDDDDD !important;;
+            color: #333333 !important;;
+            font-weight: bold !important;;
+         }
+         
+         
+        </style>
+        <script>
+        $(document).ready(function() {
+            $("#progressbar1").progressbar({
+                value: 100
+            });
+        });
+        </script>
+        <script>
+        </script>
+
+        <body style="background-color: lightgray;">
+            <apex:pageMessages />
+            <!--<div style="color:red">{!errorMessage}</div>-->
+            <!-- <apex:actionFunction action="{!next}" name="next" /> -->
+            <!--
+            <div id="MainHeading" align="center" style="margin-top: 30px;">
+                <h1 style="font-size: 344%;color: purple;">Sugati</h1>
+            </div>
+            -->
+            <br/>
+            <br/>
+            <div id="MainQuestionnaireBox" align="center" style="width:64%;margin:0 auto">
+                <div id="ProcessBarSection" style="padding: 5%;background-color: rgb(247,149,36);">
+                    <div id="progressbar1" class="pb1"></div>
+                    <label style="color: white;float: right; margin-top: -39px; font-size: 24px;" id="progressBarVal">100%</label>
+                </div>
+                
+                <div id="MainContainerQues" style="background-color: white">
+                    <div>
+                        <br/>
+                        <br/>
+                        <div align="center" style="font-size: 24px;color: rgb(247,149,36);">
+                            <h1>THANK YOU!</h1></div>
+                        <br/>
+                        <div align="center" style="color: rgb(247,149,36);">
+                            <label>For completing our holiday questionnaire....</label>
+                        </div>
+                        <br/>
+                        <div align="center" style="font-size: 22px;color: rgb(247,149,36);">
+                            <label>Questionnaire Summary </label>
+                        </div>
+                        <br/>
+                        <apex:variable value="{!0}" var="c" />
+                        <div style="padding:0 15px">
+                            <div class="row">
+                                <div id="AnswersStatus1" class="col-xs-6">
+                                    <table width="100%" style="border-collapse: separate;border-spacing:5px">
+                                        <apex:repeat value="{!QuestionsCategories}" var="qc">
+                                            <tr>
+                                                <td>
+                                                    {!qc}
+                                                </td>
+                                                <td style="width: 50%;">
+                                                    <div id="progressbar-{!c}" class="pb"></div>
+                                                    <script>
+                                                    var p = 'progressbar-{!c}';
+                                                    $("#" + p).progressbar({
+                                                        value: {!CategoryAnswerPercent[qc]}
+                                                    });
+                                                    </script>
+                                                </td>
+                                            </tr>
+                                            <apex:variable value="{!c + 1}" var="c" />
+                                        </apex:repeat>
+                                    </table>
+                                </div>
+                                <div id="AnswersStatus2" class="col-xs-6">
+                                    <table width="100%" style="border-collapse: separate;border-spacing:5px">
+                                        <apex:repeat value="{!QuestionsCategories1}" var="qc">
+                                            <tr>
+                                                <td>
+                                                    {!qc}
+                                                </td>
+                                                <td style="width: 50%;">
+                                                    <div id="progressbar-{!c}" class="pb"></div>
+                                                    <script>
+                                                    var p = 'progressbar-{!c}';
+                                                    $("#" + p).progressbar({
+                                                        value: {!CategoryAnswerPercent[qc]}
+                                                    });
+                                                    </script>
+                                                </td>
+                                            </tr>
+                                            <apex:variable value="{!c + 1}" var="c" />
+                                        </apex:repeat>
+                                    </table>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                   <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+                                    <br/>
+                                    <br/>
+        </body>
+    </apex:form>
+</apex:page>

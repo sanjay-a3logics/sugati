@@ -1,0 +1,227 @@
+<apex:page standardController="Opportunity" extensions="FinalMessageController" sidebar="false" showHeader="false" title="Final Message">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+      
+         <head>
+             <c:BasicResources ></c:BasicResources>
+             <!-- Angular Controller -->
+             <script>
+               
+                var myApp = angular.module('MyApp', []);
+                
+                var contrl = myApp.controller('myController' ,function($scope){
+                    $scope.showTrial = true;
+                    $scope.showFlight = true;
+                    $scope.whatiscost = true;
+                    $scope.TravellingCountry = true;
+                });
+                
+                function selectCheckboxes(checkboxEle){
+                    var selectedVal = $(checkboxEle).prop('checked');   
+                    jQuery.each( $('.countryName'), function() {
+                        $(this).prop('checked', selectedVal);
+                    });
+                }
+                
+                 function navigateTo() {
+                alert('Records have been updated successfully');
+                //location.href = '/'+'{!oppId}'; 
+                //window.open('', '_self', '');
+                //window.close();
+                //location.href = '/'+'{!oppId}';
+            }
+            
+            function navigateCancel(){
+                window.open('', '_self', '');
+                window.close();
+                location.href = '/'+'{!oppId}';
+            
+            }
+          </script>   
+          <style>
+           .slds-page-header__detail-row {
+               margin: 24px 48px 24px 48px !important;
+            }
+          </style>
+         </head>    
+         <body >
+            <div ng-app="MyApp" >
+                 <div class="slds" id="mycontroller" ng-controller="myController" > 
+                     <br/>       
+                     <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                     <apex:form >
+                         <c:AlertBox />
+                          <!-- Tailored For You --->
+                                <div class="slds-card slds-page-header__detail-row">
+                                    <div class="slds-card__header slds-grid">
+                                        <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                            <div class="slds-media__figure">
+                                                <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                                    <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                                </svg>
+                                            </div>
+                                            <div class="slds-media__body">
+                                                <h2 class="slds-text-heading--small slds-truncate">Tailored For You</h2>
+                                            </div>
+                                        </div>
+                                        <div class="slds-no-flex">
+                                                <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                                <a class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-show="!showTrial" ng-click= "showTrial= !showTrial" >
+                                                    <svg aria-hidden="true" class="slds-button__icon" style="margin-top: 10px;">
+                                                        <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Show More</span>
+                                                </a>
+                                                
+                                                <a class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-show="showTrial"  ng-click= "showTrial = !showTrial" >
+                                                    <svg aria-hidden="true" class="slds-button__icon" style="margin-top: 10px;">
+                                                        <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#up')}"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Show More</span>
+                                                </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-card__body"  ng-show="showTrial">
+                                        <apex:repeat value="{!TailoredCategory}" var="tc">
+                                        
+                                            <div class="slds-modal__content slds-scrollable--x " style="margin-top:10px;" >
+                                                 <h3 class="slds-section-title--divider" style="margin-top:0px;">
+                                                    <span class=" slds-large-size--1-of-2"><span class="summary-field-title">Content Category &nbsp;</span> {!tc.SICC_Itinerary_Content_Category__r.Name} </span>
+                                                    <br/><span class=" slds-large-size--1-of-2"><span class="summary-field-title">Message &nbsp;</span><a class="btn-preview" href="#" data-editor="sicMsg1" >Preview</a></span>
+                                                    
+                                                 </h3>
+                                            
+                                            <apex:outputPanel id="op1">
+                                                <div style="width: 100%; height: 50%;">
+                                                    <!-- <apex:inputField value="{!tc.SICC_message__c}" id="sicMsg1"  />-->
+                                                    <apex:inputTextarea id="sicMsg1" style="font-size:9pt;width: 50%; height: 70px ;" styleClass="ckeditor 1" richText="false" value="{!tc.SICC_message__c}" />
+                                                </div>
+                                            </apex:outputPanel>
+                                           </div>  
+                                        </apex:repeat>
+                                
+                                    </div>
+                              </div>
+                              
+                              <!-- Flight --->
+                                <div class="slds-card slds-page-header__detail-row">
+                                    <div class="slds-card__header slds-grid">
+                                        <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                            <div class="slds-media__figure">
+                                                <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small"  >
+                                                    <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                                </svg>
+                                            </div>
+                                            <div class="slds-media__body">
+                                                <h2 class="slds-text-heading--small slds-truncate">Flight</h2>
+                                            </div>
+                                        </div>
+                                        <div class="slds-no-flex">
+                                                <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                                <a class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-show="!showFlight" ng-click= "showFlight= !showFlight" >
+                                                    <svg aria-hidden="true" class="slds-button__icon" style="margin-top: 10px;">
+                                                        <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Show More</span>
+                                                </a>
+                                                
+                                                <a class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-show="showFlight"  ng-click= "showFlight = !showFlight" >
+                                                    <svg aria-hidden="true" class="slds-button__icon" style="margin-top: 10px;">
+                                                        <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#up')}"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Show More</span>
+                                                </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-card__body"  ng-show="showFlight">
+                                        <apex:repeat value="{!TailoredCategory}" var="fs">
+                                        
+                                            <div class="slds-modal__content slds-scrollable--x " style="margin-top:10px;" >
+                                                 <h3 class="slds-section-title--divider" style="margin-top:0px;">
+                                                    <span class=" slds-large-size--1-of-2"><span class="summary-field-title">Content Category &nbsp;</span> {!fs.SICC_Itinerary_Content_Category__r.Name} </span>
+                                                    <br/><span class=" slds-large-size--1-of-2"><span class="summary-field-title">Message &nbsp;</span></span>
+                                                    
+                                                 </h3>
+                                            
+                                            <apex:outputPanel id="op1">
+                                                <div style="width: 100%; height: 50%;">
+                                                    <apex:inputTextarea id="sicMsg" style="font-size:9pt;width: 50%; height: 70px ;" styleClass="ckeditor 1" richText="false" value="{!fs.SICC_message1__c}" />
+                                                </div>
+                                            </apex:outputPanel>
+                                           </div>  
+                                        </apex:repeat>
+                                
+                                    </div>
+                                </div>
+                                
+                                 <!-- What It Costs--->
+                                <div class="slds-card slds-page-header__detail-row">
+                                    <div class="slds-card__header slds-grid">
+                                        <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                            <div class="slds-media__figure">
+                                                <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small" style="margin-top: 10px;">
+                                                    <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                                </svg>
+                                            </div>
+                                            <div class="slds-media__body">
+                                                <h2 class="slds-text-heading--small slds-truncate">What It Costs</h2>
+                                            </div>
+                                        </div>
+                                        <div class="slds-no-flex">
+                                                <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                                <a class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-show="!whatiscost" ng-click= "whatiscost= !whatiscost" >
+                                                    <svg aria-hidden="true" class="slds-button__icon" style="margin-top: 10px;">
+                                                        <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Show More</span>
+                                                </a>
+                                                
+                                                <a class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-show="whatiscost"  ng-click= "whatiscost= !whatiscost" >
+                                                    <svg aria-hidden="true" class="slds-button__icon" style="margin-top: 10px;">
+                                                        <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#up')}"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Show More</span>
+                                                </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-card__body slds-page-header__detail-row"  ng-show="whatiscost">
+                                        <apex:repeat value="{!WhatItCostsCategory}" var="fs">
+                                        
+                                            <div class="slds-modal__content slds-scrollable--x " style="margin-top:10px;" >
+                                                 <h3 class="slds-section-title--divider" style="margin-top:0px;">
+                                                    <span class=" slds-large-size--1-of-2"><span class="summary-field-title">Content Category &nbsp;</span> {!fs.SICC_Itinerary_Content_Category__r.Name} </span>
+                                                    <br/><span class=" slds-large-size--1-of-2"><span class="summary-field-title">Message &nbsp;</span></span>
+                                                    
+                                                 </h3>
+                                            
+                                            <apex:outputPanel id="op1">
+                                                <div style="width: 100%; height: 50%;">
+                                                    <apex:inputTextarea id="sicMsg2" style="font-size:9pt;width: 50%; height: 70px ;" styleClass="ckeditor 1" richText="false" value="{!fs.SICC_message__c}" />
+                                                </div>
+                                            </apex:outputPanel>
+                                           </div>  
+                                        </apex:repeat>
+                                
+                                    </div>
+                                </div>
+                                
+                                
+                                
+                                <div class="slds-modal__footer slds-modal__footer" style="position: fixed;bottom: 0px;width: 100%;">
+                                    <div class="slds-x-small-buttons--horizontal">
+                                         <apex:commandButton id="btnSave"  styleClass="slds-button  slds-button--brand"  value="Save" action="{!save}" reRender="msg"  oncomplete="navigateTo();"/>
+                           
+                                         <apex:commandButton id="btnExit"   styleClass="slds-button  slds-button--brand"  value="Exit" action="{!cancel}" oncomplete="navigateCancel();"/>
+                                    </div>
+                                </div>
+                    </apex:form>  
+                </div>
+             </div>    
+         </body>
+         
+     
+       
+    </html>
+</apex:page>

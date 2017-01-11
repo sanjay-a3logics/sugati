@@ -1,0 +1,118 @@
+<apex:page standardStylesheets="true" cache="false" sidebar="false" showHeader="false" standardController="Opportunity" extensions="BookingConfirmationController">
+<title>Booking Confirmation</title>
+    <apex:form id="frm">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+         <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/> 
+            <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+        
+        
+        <apex:stylesheet value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/css/booking.css"/>
+        <apex:includeScript value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/js/booking.js"/>    
+        
+    
+    
+    <head>
+        <meta charset="utf-8" />
+        <title>Introduction</title>
+        <style>    
+            body{
+                background: #f2f2ef;
+                font-family: Century Gothic,CenturyGothic,AppleGothic,museo_sans300,sans-serif;
+            }
+            .heading{
+                color: #457098;
+            }
+        </style>
+        <script>
+            jQuery(document).ready(function() {
+                $( ".date" ).datepicker({ 
+                    altFormat: "dd/mm/yy", 
+                    dateFormat: 'dd/mm/yy',
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "-100:+0"
+                });
+                $( ".date" ).datepicker( "option", "maxDate", new Date() );
+            });
+            jQuery(document).ready(function() {    
+                jQuery('.linkBank').on('click', function(event) {        
+                     jQuery('.bankDetails').toggle('show');
+                });
+                jQuery('.hideshowIn').on('click', function(event) {        
+                     $('.inContent').toggle('show');
+                });
+            });
+            function validate(){
+                if('{!isSiteUser}' == 'true'){
+                    if(!$('.tc').prop('checked')){
+                        alert('Please select Terms and Conditions checkbox');
+                        return false;
+                    }
+                    if(!$('.insurance').prop('checked')){
+                        alert('Please select Insurance checkbox');
+                        return false;
+                    }
+                }
+                else{
+                
+                }
+            }
+            
+        </script>
+    </head>
+
+
+    <div style="background-color: white;">
+       <!-- <apex:image URL="{!URLFOR($Resource.LFLogo)}" style="padding:20px;margin-left:13%;"/> -->
+    </div>
+    <div class="wrap" >
+        <c:headerComponent page="Booking Completed"/>
+        <div>
+            <script>    
+                
+            </script>       
+        </div>
+        <apex:pageMessages ></apex:pageMessages>
+        
+        <div class="row">
+          <div class="col-sm-8 col-sm-12 col-sm-4">
+              <div class="body">
+                  <div style="padding:10px;">
+                      <dt style="text-transform: uppercase;" class="heading">Thank You</dt>     
+                      
+                      <apex:outputPanel rendered="{!$CurrentPage.parameters.cp == 'cash' || $CurrentPage.parameters.cp == 'transfer'}">
+                          Thank you for completing your holiday booking with Sugati Travel. Your payment method has been submitted, and your Travel Designer will be in touch within one working day to confirm your payment. Please note although you have confirmed your booking we are unable to confirm with our suppliers until the next working day after payment has been received in our bank account.
+                      </apex:outputPanel>
+                      
+                      <apex:outputPanel rendered="{!$CurrentPage.parameters.cp == 'cheque'}">
+                          Thank you for completing your holiday booking with Sugati Travel. Your payment method has been submitted, and your Travel Designer will be in touch once the cheque is received and cleared by our bank. Please note that although you have confirmed your booking we are unable to confirm with our suppliers until the next working day; after payment has been received in our bank account.
+                      </apex:outputPanel>
+                      
+                      <apex:outputPanel rendered="{!$CurrentPage.parameters.cp == 'Amex'}">
+                          Thank you for completing your holiday booking with Sugati Travel. Your payment method has been submitted, and your Travel Designer will be in touch to collect your AMEX card details. Please note that although you have confirmed your booking we are unable to confirm with our suppliers until the next working day after payment has been taken on your AMEX.
+                      </apex:outputPanel>
+                      <apex:outputPanel rendered="{!$CurrentPage.parameters.cp == 'bypass'}">
+                          Thank you for completing your holiday booking with Sugati Travel.
+                      </apex:outputPanel>
+                      <apex:outputPanel rendered="{!$CurrentPage.parameters.cp != 'Amex' && $CurrentPage.parameters.cp != 'bypass' && $CurrentPage.parameters.cp != 'cheque' && $CurrentPage.parameters.cp != 'cash' && $CurrentPage.parameters.cp != 'transfer' && $CurrentPage.parameters.cp != 'card'}">
+                          Thank you for completing your holiday booking and making payment to Sugati Travel. Please note that although you have confirmed your booking we are unable to confirm with our suppliers until the next working day; after we have received your payment.
+                      </apex:outputPanel>
+                      
+                  </div>
+              </div>
+               
+          </div>
+        
+            <!-- <div class="col-sm-4">
+                  <div class="body">
+                     <c:BookingDetails page="thankyou" />
+                  </div>
+            </div>
+            -->
+         </div>  
+        
+    </div>
+</apex:form>
+</apex:page>

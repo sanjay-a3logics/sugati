@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>For None Guarantee Contracts ONLY and Automatically queuing the supplier payment</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>Percent_Value__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Is the amount percentage or value?</inlineHelpText>
+        <label>Percent / Value</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Percent</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Value</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Active__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Active</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Amount__c</fullName>
+        <externalId>false</externalId>
+        <label>Amount</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>SPR_Balance_Due_Date__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>If payment is due on a specific date, insert date here</inlineHelpText>
+        <label>Balance Due Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Balance_Due_Day__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>+/- number of days</inlineHelpText>
+        <label>Balance Due Day</label>
+        <precision>6</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>SPR_Balance_Due__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>When is the balance due?</inlineHelpText>
+        <label>Balance Due</label>
+        <picklist>
+            <picklistValues>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>true</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Confirmation_From_Date__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Booking Confirmation From Date</inlineHelpText>
+        <label>Confirmation From Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Confirmation_To_Date__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Booking Confirmation To Date (inclusive)</inlineHelpText>
+        <label>Confirmation To Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Deposit_Due_Date__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Need to pay at a specific date</inlineHelpText>
+        <label>Deposit Due Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Deposit_Due_Day__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>+/- Number of days</inlineHelpText>
+        <label>Deposit Due Day</label>
+        <precision>6</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>SPR_Deposit_Due__c</fullName>
+        <description>When should the payment be made?</description>
+        <externalId>false</externalId>
+        <inlineHelpText>When should the payment be made?</inlineHelpText>
+        <label>Deposit Due</label>
+        <picklist>
+            <picklistValues>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>End of Month of Confirmation</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Deposit_Required__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <inlineHelpText>Is Deposit required for this property for the specific date range?</inlineHelpText>
+        <label>Deposit Required?</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Notify__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Can we have a &apos;notify accounts&apos; flag (see above) in the payment record. If this is set to yes the system would add this payment to the Accounts Team &apos;tasks&apos; 4 days before the due date i.e. if due 7 days before the service date then it would notify accounts 11 days before.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>When ticked a task will be created for Account Team 4 days before the due date. (Only use if payment is due before the end of a month)</inlineHelpText>
+        <label>Notify for Deposit</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Notify_for_Balance__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <inlineHelpText>When ticked a task will be created for Account Team 4 days before the due date. (Only use if payment is not at the end of a month)</inlineHelpText>
+        <label>Notify for Balance</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Rule_Execution_Order__c</fullName>
+        <externalId>false</externalId>
+        <formula>CASE( RecordType.Name, 
+      &apos;Deposit&apos;, 1, 
+      &apos;Balance&apos;, 2, 
+      3
+)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Rule Execution Order</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>SPR_Service_From_Date__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Service Date Range Start Date</inlineHelpText>
+        <label>Service From Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Service_To_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Service To Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Supplier_Payment_Due_Type__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>When is the payment due?</inlineHelpText>
+        <label>Supplier Payment Due Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>SPR_Supplier__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <description>In the future this may be used for none property based rules such as Transfer and Taxi providers etc..</description>
+        <externalId>false</externalId>
+        <label>Supplier</label>
+        <referenceTo>Supplier__c</referenceTo>
+        <relationshipName>Supplier_Payment_Rules</relationshipName>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <label>Supplier Payment Rule</label>
+    <nameField>
+        <displayFormat>SPR-{0000000000}</displayFormat>
+        <label>Supplier Payment Rule No</label>
+        <trackHistory>false</trackHistory>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Supplier Payment Rules</pluralLabel>
+    <recordTypeTrackHistory>false</recordTypeTrackHistory>
+    <recordTypes>
+        <fullName>Balance</fullName>
+        <active>true</active>
+        <description>Balance</description>
+        <label>Balance</label>
+        <picklistValues>
+            <picklist>Percent_Value__c</picklist>
+            <values>
+                <fullName>Percent</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Value</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Balance_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>true</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Deposit_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month of Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Supplier_Payment_Due_Type__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Deposit</fullName>
+        <active>true</active>
+        <description>Deposit</description>
+        <label>Deposit</label>
+        <picklistValues>
+            <picklist>Percent_Value__c</picklist>
+            <values>
+                <fullName>Percent</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Value</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Balance_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>true</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Deposit_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month of Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Supplier_Payment_Due_Type__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Property_Payment_Rule</fullName>
+        <active>true</active>
+        <label>Property Payment Rule</label>
+        <picklistValues>
+            <picklist>Percent_Value__c</picklist>
+            <values>
+                <fullName>Percent</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Value</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Balance_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>true</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Deposit_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month of Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Supplier_Payment_Due_Type__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <recordTypes>
+        <fullName>Supplier_Payment</fullName>
+        <active>true</active>
+        <description>Payments for Supplier</description>
+        <label>Supplier Payment</label>
+        <picklistValues>
+            <picklist>Percent_Value__c</picklist>
+            <values>
+                <fullName>Percent</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Value</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Balance_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>true</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Deposit_Due__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month of Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+        <picklistValues>
+            <picklist>SPR_Supplier_Payment_Due_Type__c</picklist>
+            <values>
+                <fullName>At Confirmation</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>End of Month after Serv Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Service Date</fullName>
+                <default>false</default>
+            </values>
+            <values>
+                <fullName>Specific Date</fullName>
+                <default>false</default>
+            </values>
+        </picklistValues>
+    </recordTypes>
+    <searchLayouts>
+        <lookupDialogsAdditionalFields>SPR_Confirmation_From_Date__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>SPR_Confirmation_To_Date__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>SPR_Service_From_Date__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>SPR_Service_To_Date__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>SPR_Balance_Due__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>SPR_Deposit_Due__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>Percent_Value__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>SPR_Amount__c</lookupDialogsAdditionalFields>
+    </searchLayouts>
+    <sharingModel>ReadWrite</sharingModel>
+    <validationRules>
+        <fullName>Ensure_Supplier_Due_Date_Entered</fullName>
+        <active>true</active>
+        <errorConditionFormula>ISNULL(SPR_Deposit_Due_Date__c)
+&amp;&amp;
+ISPICKVAL( SPR_Deposit_Due__c ,&quot;Specific Date&quot;)</errorConditionFormula>
+        <errorDisplayField>SPR_Deposit_Due__c</errorDisplayField>
+        <errorMessage>When choosing the Deposit Due of Specific Date, please ensure you enter the date for Due Date</errorMessage>
+    </validationRules>
+</CustomObject>

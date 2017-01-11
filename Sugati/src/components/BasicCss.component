@@ -1,0 +1,38 @@
+<apex:component >
+    <c:CSSStyler page="{!$CurrentPage.Name}"/>
+    <style>
+        .slds-form-element__control, .slds-table, .slds-truncate, .select-search-list-item, .slds-radio, .slds-button, .slds-button--brand{
+            font-size: 12px;
+        }
+        li.select-search-list-item{
+            font-size: 12px;
+        }
+        label{
+            font-size: 13px;
+        }
+        
+        select{
+          //  -moz-appearance: none;
+            
+        }
+        
+        ::-webkit-input-placeholder {
+            font-size: 12px !important;
+        }
+        :-moz-placeholder {
+            font-size: 12px !important;
+        }
+        ::-moz-placeholder {
+            font-size: 12px !important;
+        }
+        :-ms-input-placeholder {
+            font-size: 12px !important;
+        }
+        
+        /* This is added only for the property of scrolling in diffrent pages as Supplier payment
+        .noSidebarCell{
+                max-width: 1000px;
+        }
+        
+    </style>
+</apex:component>

@@ -1,0 +1,403 @@
+<apex:page sidebar="false" title="Vintage Travel | Client Questionnaire" controller="ClientQuestionnaireController" 
+    showHeader="false" action="{!VerifyCompleteQuestionnarie}" cache="false"  standardStylesheets="false">    
+  <apex:form >
+  
+      <c:BasicResources ></c:BasicResources>
+      <c:QuestionnaireCSS />
+      <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/css/bootstrap.min.css')}"/>
+      <style>
+      .ui-widget-header{
+            
+            border: 1px solid #DDDDDD;
+            color: #333333;
+            font-weight: bold;
+       }
+       #progressbar-1{
+                border-bottom-right-radius: 64px;
+                border-bottom-left-radius: 64px;
+                border-top-left-radius: 64px;
+                border-top-right-radius: 64px;
+                width: 88%;
+                margin-right: 36px;
+                border: 2px solid #dddddd;
+                background: none;
+                height: 2.80em;
+          }
+          #contentLoading{
+            width: 100%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+            position: fixed;
+            display: block;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 99999;
+            text-align: center;
+        }
+        .ui-progressbar .ui-progressbar-value{
+              height: 68%;
+              max-width: 97%;
+              position: inherit;
+              border-bottom-right-radius: 17px;
+              border-bottom-left-radius: 17px;
+              border-top-left-radius: 17px;
+              border-top-right-radius: 17px;
+              margin-top: 6px;
+              margin-right: 6px;
+              margin-left: 9px;
+              
+        }
+        .ui-widget-header{
+            background : White;
+        }
+       
+        .ui-progressbar{
+            border: 2px solid #dddddd !important;
+        }
+        #contentLoading1{
+            position: absolute;
+            top:350px;
+            z-index: 99999;
+        }  
+        .AnswerOptions tbody tr td label{
+            margin-right : 0px !important;
+            padding-right: 10px;
+        }   
+        .AnswerOptions td{
+            width:auto;
+            padding:0px;
+        }
+
+        .AnswerOptions input{
+            margin-right:5px;
+            //padding-right: 5px;
+        }
+        .form-control{
+            width: 90%;
+        }
+        .highlight-question {
+            background: rgba(128, 0, 128, 0.22);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        .btn-primary {
+            color: #fff !important;
+            background-color: rgb(247,149,36) !important;
+            border-color: #670066 !important;
+        }
+        .btn {
+            display: inline-block !important;
+            margin-bottom: 0 !important;
+            font-weight: normal !important;
+            text-align: center !important;
+            vertical-align: middle !important;
+            -ms-touch-action: manipulation !important;
+            touch-action: manipulation !important;
+            cursor: pointer !important;
+            background-image: none !important;
+            border: 1px solid transparent !important;
+            white-space: nowrap !important;
+            padding: 6px 12px !important;
+            font-size: 14px !important;
+            line-height: 1.42857143 !important;
+            border-radius: 4px !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+        }
+        label{
+            font-weight : normal;
+        }
+        .btn:hover, .btn:focus, .btn.focus {
+            color: #333 !important;
+            text-decoration: none !important;
+        }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary.focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+            color: #fff !important;
+            background-color: rgb(237,119,6) !important;
+            border-color: #9888A1 !important;
+        }
+        tr{
+            
+        }
+      </style>
+      <script>
+          function loading(val){
+                if (val) {
+                    document.getElementById('contentLoading').style.display = 'inline-block';
+                    document.getElementById('contentLoaded').style.display = 'none';
+                }
+                else {
+                    document.getElementById('contentLoading').style.display = 'none';
+                    document.getElementById('contentLoaded').style.display = 'inline-block';
+                }
+            }    
+            
+            $(document).ready(function(){
+                 
+                calculateWidth();
+            })
+            
+            function calculateWidth(){
+                $(".AnswerOptions").each(function() {
+                    
+                    var count = 0;
+                    $(this).find('td').each(function() {
+                        count = count+1;   
+                    });
+                    
+                    var w = parseInt(count)*100;
+                     $(this).css('width',w);
+                 });
+            }
+            function toggleQuestion(id) {
+                console.log(id);
+                if($('#QuestionLink_'+id).text().trim() == 'Show Old Question'){
+                    $('#QuestionLink_'+id).text('Hide Old Question');
+                    $('#Question_'+id).show();
+                }else{
+                    $('#QuestionLink_'+id).text('Show Old Question');
+                    $('#Question_'+id).hide();    
+                }
+            }
+        </script>
+        <apex:outputPanel id="renderVariable">
+          <script>
+              var currentPageVal  = {!CurrentPageNo};
+              var totalVisited ={!TotalQuesVisited};
+              var totalNoOfQuestion = {!NoOfQuestions};
+              var percentval = {!percentIncrement};
+              var ErrorFlag = {!requiredFieldchecker};
+              $( "#progressbar-1" ).progressbar({
+                   value: percentval
+              });
+              $("#progressBarVal").text(parseInt(percentval)+'%');
+              var ele = $('#MainQuestionnaireBox');
+              if($( "#MainQuestionnaireBox" ).length)
+              $(window).scrollTop(ele.offset().top).scrollLeft(ele.offset().left);
+          </script>
+      
+     </apex:outputPanel>
+  
+     <script>
+     
+       $(document).ready(function(){
+            $( "#progressbar-1" ).progressbar({
+               value: percentval
+          });
+          $("#progressBarVal").text(parseInt(percentval)+'%');
+      });
+          
+      function VerifyErrors(){
+         
+          if(ErrorFlag == true){
+              alert('Please fill in all the mandatory questions.');
+          }
+      }
+      
+  </script>
+     <body style="background-color: lightgray;">
+        <apex:actionStatus id="loading" onstart="loading(true)" onstop="loading(false)" />
+        <div id="contentLoading" style="display:none; ">
+            <apex:image id="contentLoading1" url="{!$Resource.loading}" width="200" height="200" style="margin-top : 140px;" alt="Loading graphic"/>
+        </div> 
+        <div style="color:red">{!errorMessage}</div>
+     
+    <!-- <apex:actionFunction action="{!next}" name="next" /> -->
+     <!--
+     <div id="MainHeading" align="center" style="margin-top: 30px;">
+            <h1 style="font-size: 344%;color: purple;">Vintage Travel</h1>
+    </div>
+    -->
+        <br/><br/>
+        
+         <div id="MainQuestionnaireBox" style="width: 75%;margin:0 auto">
+             <div id="ProcessBarSection" style="padding: 5%;background-color:rgb(247,149,36);">
+                 
+                 <div id="progressbar-1"></div><label style="color: white;float: right;  margin-top: -39px; font-size: 24px;" id="progressBarVal"></label>
+             </div>
+            
+             <div id="QuestionsSection" style="background-color: white; padding: 0 30px;">
+             <apex:outputPanel layout="block" id="QuestionsSection">
+             
+                 <apex:variable value="{!1}" var="count"/>
+                 <apex:repeat value="{!lstSetController}" var="QuesRec">
+                     <div class="row">
+                         <div id="CatagoryName" class="col-xs-12" style="color:rgb(26,154,214);">
+                                 <h3>{!QuesRec.CategoryObj.Name}</h3>
+                         </div>
+                         
+                         <div id="CatagoryName" class="col-xs-12" style="color:rgb(26,154,214);margin-bottom: 25px;">
+                             <h4>{!QuesRec.CategoryObj.QQC_Introduction_Text__c}</h4>
+                         </div>
+                         
+                         <div style="float: left; width: 100%;">
+                             <span class="ques_{!count}" style="display:none;">{!QuesRec.QuestinnaireQues.size}</span>
+                             <apex:repeat value="{!QuesRec.QuestinnaireQues}" var="Questions">
+                                 <div class="QuestionContainer {!IF(Questions.isQuestionModified || Questions.isNewQuestion || Questions.isOldQuestion,'highlight-question','')}">
+                                     <apex:outputLabel rendered="{!Questions.isNewQuestion}">New Question:</apex:outputLabel>
+                                     <apex:outputLabel rendered="{!Questions.isQuestionModified}">Modified Question:</apex:outputLabel>
+                                     <apex:outputLabel rendered="{!Questions.isOldQuestion}">Old Question:</apex:outputLabel>
+                                     <div id="QuesMainContainer" class="">
+                                         
+                                         <div id="QuestionName" class="col-xs-4">
+                                             <apex:outputPanel id="QuestionPanel1" rendered="{!IF(Questions.verifyrequiredfield == false,true,false)}">
+                                                    {!Questions.QuestionObj.QQ_Question__c}
+                                            </apex:outputPanel>
+                                            <apex:outputPanel id="QuestionPanel2" rendered="{!Questions.verifyrequiredfield}">
+                                                    <label style="color:red;">{!Questions.QuestionObj.QQ_Question__c}</label>
+                                            </apex:outputPanel>
+                                         </div>
+                                         <div id="QuestionOptions" class="col-xs-8">
+                                         
+                                             <apex:outputPanel rendered="{!IF(Questions.QuestionObj.Q_Question_Type__c == 'Single-choice',true,false)}">
+                                                 <div style="width:540px;overflow-x:auto;position:relative;">
+                                                    <apex:selectRadio disabled="{!Questions.isOldQuestion}" style="color:rgb(26,154,214);width:200%;" styleClass="AnswerOptions"  value="{!Questions.selectedAnswer}">
+                                                        <apex:selectOptions value="{!Questions.optionsOfAnswer}"></apex:selectOptions>
+                                                     </apex:selectRadio>
+                                                 </div>
+                                                     
+                                             </apex:outputPanel>
+                                             <apex:outputPanel rendered="{!IF(Questions.QuestionObj.Q_Question_Type__c == 'Single choice with text Box',true,false)}">
+                                            
+                                                    <apex:selectRadio disabled="{!Questions.isOldQuestion}" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!Questions.selectedAnswer}">
+                                                        <apex:selectOptions value="{!Questions.optionsOfAnswer}"></apex:selectOptions>
+                                                     </apex:selectRadio>
+                                                     <apex:inputTextarea disabled="{!Questions.isOldQuestion}" html-placeholder="COMMENT" value="{!Questions.UserEnteredText}" styleClass="form-control input-sm" rows="3"/>
+                                                     
+                                             </apex:outputPanel>
+                                             <apex:outputPanel rendered="{!IF(Questions.QuestionObj.Q_Question_Type__c == 'Single choice with other text box',true,false)}">
+                                            
+                                                    <apex:selectRadio disabled="{!Questions.isOldQuestion}" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!Questions.selectedAnswer}">
+                                                        <apex:selectOptions value="{!Questions.optionsOfAnswer}"></apex:selectOptions>
+                                                     </apex:selectRadio>
+                                                     <apex:inputTextarea disabled="{!Questions.isOldQuestion}" html-placeholder="OTHERS" value="{!Questions.UserEnteredText}" styleClass="form-control input-sm" rows="3"/>
+                                                     
+                                             </apex:outputPanel>
+                                             
+                                              <apex:outputPanel rendered="{!IF(Questions.QuestionObj.Q_Question_Type__c == 'Multiple-choice',true,false)}" >
+                                            
+                                                     <apex:selectCheckboxes disabled="{!Questions.isOldQuestion}" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!Questions.MultipleSelectOptionsAnswer}">
+                                                        <apex:selectOptions value="{!Questions.optionsOfAnswer}"></apex:selectOptions>
+                                                     </apex:selectCheckboxes>
+                                                    
+                                                  
+                                                     
+                                             </apex:outputPanel>
+                                             
+                                              <apex:outputPanel rendered="{!IF(Questions.QuestionObj.Q_Question_Type__c == 'Multiple choice with other text box',true,false)}" >
+                                            
+                                                     <apex:selectCheckboxes disabled="{!Questions.isOldQuestion}" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!Questions.MultipleSelectOptionsAnswer}">
+                                                        <apex:selectOptions value="{!Questions.optionsOfAnswer}"></apex:selectOptions>
+                                                     </apex:selectCheckboxes>
+                                                     <apex:inputTextarea disabled="{!Questions.isOldQuestion}" html-placeholder="COMMENT" value="{!Questions.UserEnteredText}" styleClass="form-control input-sm" rows="3" />
+                                                  
+                                                     
+                                             </apex:outputPanel>
+                                             
+                                             <apex:outputPanel rendered="{!IF(Questions.QuestionObj.Q_Question_Type__c == 'Text',true,false)}" >
+                                             
+                                                     <apex:inputText disabled="{!Questions.isOldQuestion}" value="{!Questions.UserEnteredText}" styleClass="form-control input-sm"/>
+                                                     
+                                             </apex:outputPanel>
+                                         </div>
+                                     </div>
+                                     <apex:outputPanel layout="block" rendered="{!Questions.oldQuestoinId != ''}">
+                                         <a href="javascript:;" class="label label-primary" style="margin-left: 15px;" id="QuestionLink_{!Questions.QuestionObj.id}" onClick="toggleQuestion('{!Questions.QuestionObj.id}')"> Show Old Question </a>
+                                         <div id="Question_{!Questions.QuestionObj.id}" class="" style="display:none;">    
+                                             <div id="QuesMainContainer" class="highlight-question" style="margin-left: 15px;">
+                                                 <div id="QuestionName" class="col-xs-4">
+                                                     <apex:outputPanel id="QuestionPanelHide1" rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].verifyrequiredfield == false,true,false)}">
+                                                            {!newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.QQ_Question__c}
+                                                    </apex:outputPanel>
+                                                    <apex:outputPanel id="QuestionPanelHide2" rendered="{!newToOldQuestionMap[Questions.QuestionObj.id].verifyrequiredfield}">
+                                                            <label style="color:red;">{!newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.QQ_Question__c}</label>
+                                                    </apex:outputPanel>
+                                                 </div>
+                                                 <div id="QuestionOptions" class="col-xs-8">
+                                                 
+                                                     <apex:outputPanel rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.Q_Question_Type__c == 'Single-choice',true,false)}">
+                                                         <div style="width:540px;overflow-x:auto;position:relative;">
+                                                            <apex:selectRadio disabled="true" style="color:rgb(26,154,214);width:200%;" styleClass="AnswerOptions"  value="{!newToOldQuestionMap[Questions.QuestionObj.id].selectedAnswer}">
+                                                                <apex:selectOptions value="{!newToOldQuestionMap[Questions.QuestionObj.id].optionsOfAnswer}"></apex:selectOptions>
+                                                             </apex:selectRadio>
+                                                         </div>
+                                                             
+                                                     </apex:outputPanel>
+                                                     <apex:outputPanel rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.Q_Question_Type__c == 'Single choice with text Box',true,false)}">
+                                                    
+                                                            <apex:selectRadio disabled="true" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!newToOldQuestionMap[Questions.QuestionObj.id].selectedAnswer}">
+                                                                <apex:selectOptions value="{!newToOldQuestionMap[Questions.QuestionObj.id].optionsOfAnswer}"></apex:selectOptions>
+                                                             </apex:selectRadio>
+                                                             <apex:inputTextarea disabled="true" html-placeholder="COMMENT" value="{!newToOldQuestionMap[Questions.QuestionObj.id].UserEnteredText}" styleClass="form-control input-sm" rows="3"/>
+                                                             
+                                                     </apex:outputPanel>
+                                                     <apex:outputPanel rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.Q_Question_Type__c == 'Single choice with other text box',true,false)}">
+                                                    
+                                                            <apex:selectRadio disabled="true" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!newToOldQuestionMap[Questions.QuestionObj.id].selectedAnswer}">
+                                                                <apex:selectOptions value="{!newToOldQuestionMap[Questions.QuestionObj.id].optionsOfAnswer}"></apex:selectOptions>
+                                                             </apex:selectRadio>
+                                                             <apex:inputTextarea disabled="true" html-placeholder="OTHERS" value="{!newToOldQuestionMap[Questions.QuestionObj.id].UserEnteredText}" styleClass="form-control input-sm" rows="3"/>
+                                                             
+                                                     </apex:outputPanel>
+                                                     
+                                                      <apex:outputPanel rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.Q_Question_Type__c == 'Multiple-choice',true,false)}" >
+                                                    
+                                                             <apex:selectCheckboxes disabled="true" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!newToOldQuestionMap[Questions.QuestionObj.id].MultipleSelectOptionsAnswer}">
+                                                                <apex:selectOptions value="{!newToOldQuestionMap[Questions.QuestionObj.id].optionsOfAnswer}"></apex:selectOptions>
+                                                             </apex:selectCheckboxes>
+                                                            
+                                                          
+                                                             
+                                                     </apex:outputPanel>
+                                                     
+                                                      <apex:outputPanel rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.Q_Question_Type__c == 'Multiple choice with other text box',true,false)}" >
+                                                    
+                                                             <apex:selectCheckboxes disabled="true" style="color:rgb(26,154,214);" styleClass="AnswerOptions"  value="{!newToOldQuestionMap[Questions.QuestionObj.id].MultipleSelectOptionsAnswer}">
+                                                                <apex:selectOptions value="{!newToOldQuestionMap[Questions.QuestionObj.id].optionsOfAnswer}"></apex:selectOptions>
+                                                             </apex:selectCheckboxes>
+                                                             <apex:inputTextarea disabled="true" html-placeholder="COMMENT" value="{!newToOldQuestionMap[Questions.QuestionObj.id].UserEnteredText}" styleClass="form-control input-sm" rows="3" />
+                                                          
+                                                             
+                                                     </apex:outputPanel>
+                                                     
+                                                     <apex:outputPanel rendered="{!IF(newToOldQuestionMap[Questions.QuestionObj.id].QuestionObj.Q_Question_Type__c == 'Text',true,false)}" >
+                                                     
+                                                             <apex:inputText disabled="true" value="{!newToOldQuestionMap[Questions.QuestionObj.id].UserEnteredText}" styleClass="form-control input-sm"/>
+                                                             
+                                                     </apex:outputPanel>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </apex:outputPanel>
+                                     <br/>
+                                 </div>
+                             </apex:repeat>
+                             <apex:variable value="{!count + 1}" var="count"/>
+                         </div>
+                    </div>
+                 </apex:repeat>
+                 <br/>
+                 <apex:outputPanel layout="block" style="text-align:center" >
+                      <apex:commandButton value="Back" action="{!previous}" rendered="{!hasPrevious}" status="loading" reRender="QuestionsSection" styleClass="btn btn-default" oncomplete="calculateWidth();"/>&nbsp;&nbsp;&nbsp;
+                      <apex:outputPanel rendered="{!hasNext}">
+                       <apex:commandButton value="Save and Continue" action="{!next}" status="loading" reRender="QuestionsSection,renderVariable" oncomplete="VerifyErrors();calculateWidth(); return false;"  styleClass="btn btn-primary" />
+                       </apex:outputPanel>
+                       <apex:outputPanel rendered="{!NOT(hasNext)}">
+                       <apex:commandButton value="Save and Continue"  status="loading" action="{!RedirectThankYou}" styleClass="btn btn-primary" />
+                       </apex:outputPanel>
+                </apex:outputPanel> 
+                <br/><br/>
+             </apex:outputPanel>
+             </div>
+         </div>
+         <br/><br/><br/>
+         
+       </body>
+  </apex:form>
+
+</apex:page>

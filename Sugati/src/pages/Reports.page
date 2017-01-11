@@ -1,0 +1,36 @@
+<apex:page sidebar="false" controller="ReportsController" title="Reports">
+   <c:Loading ></c:Loading>
+   <apex:form id="frm">
+        <head>
+            
+            ]
+            <apex:stylesheet value="https://appssential-mobile.s3.amazonaws.com/vintagetravel/sf/style.css" />    
+            <style>
+                select {
+                    height: 35px !important;
+                }
+            </style>
+        </head>
+        <div class="container" style="margin: 0px;">
+            <apex:outputLabel style="margin-left:2px;margin-top:1%" value="Select Report"/>
+            <apex:selectList size="1" styleClass="form-control" value="{!selectedReport}" style="width: 30% !important;  display: inline;margin-left:2%;">
+                <apex:selectOption itemLabel="--Select--" itemValue=""></apex:selectOption>
+                <apex:selectOption itemLabel="Suggested Supplier Payments" itemValue="SuggestedSupplierPayments"></apex:selectOption>
+                <apex:selectOption itemLabel="Create Remittance Advice" itemValue="RemittanceAdvice"></apex:selectOption>
+                <apex:selectOption itemLabel="Print Remittance" itemValue="PrintRemittance"></apex:selectOption>
+                <apex:selectOption itemLabel="Allocate Cheque or Payment Ref" itemValue="AllocateChequeorPaymentRef"></apex:selectOption>
+                <apex:actionSupport event="onchange" status="loading" action="{!changeReports}" reRender="reports"/>
+            </apex:selectList>
+        </div>
+    </apex:form>
+    <apex:outputPanel id="reports">
+     <div style = "width:100%; margin-top:0px;">
+        <!--
+        <apex:include pageName="SuggestedSupplierPayments" rendered="{!IF(selectedReport = 'SuggestedSupplierPayments', true,false)}"/>
+        <apex:include pageName="RemittanceAdvice" rendered="{!IF(selectedReport = 'RemittanceAdvice', true,false)}"/>
+        <apex:include pageName="AllocateChequePaymentRef" rendered="{!IF(selectedReport = 'AllocateChequeorPaymentRef', true,false)}"/>
+        <apex:include pageName="PrintRemittance" rendered="{!IF(selectedReport = 'PrintRemittance', true,false)}"/>
+         -->
+     </div>
+    </apex:outputPanel>
+</apex:page>

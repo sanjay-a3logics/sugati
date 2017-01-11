@@ -1,0 +1,135 @@
+<apex:page standardController="Supplier__c" extensions="SupplierCostandPaymentReportController" sidebar="false" showHeader="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <head>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includeScript value="//code.jquery.com/ui/1.11.0/jquery-ui.js" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/>
+            <c:BasicResources ></c:BasicResources>
+            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+          
+        </head>
+       
+        <!--------- Style to control default behavior of Design System Components  ------->
+        <style>
+            
+            .slds .slds-section-title--divider{
+                margin-top : 10px !important;
+            }
+            @media (min-width: 48em)
+            .slds .slds-modal--large .slds-modal__container {
+                width: 70% !important;
+            }
+            
+            .slds-form-element {
+                padding: 2.5px !important;
+            }
+            .slds-large-size--1-of-3 {
+                padding-right: 5% !important;
+            }
+        </style>        
+       
+        <!-- Angular Controller -->
+        <script>
+            
+            var myApp = angular.module('MyApp', []);
+            
+            var contrl = myApp.controller('SupplierReportController' ,function($scope){
+                $scope.lstReocrds = {!SCPStr};  
+                $scope.showbookingoverview = true;  
+                $scope.years=[];
+                $scope.currency =[];
+                
+                angular.forEach(Object.keys($scope.lstReocrds), function(record,index) {
+                    $scope.years.push(record);
+                    angular.forEach(Object.keys($scope.lstReocrds[record]), function(recordCurrency,index) {
+                        if($scope.currency.indexOf(recordCurrency) == -1)
+                            $scope.currency.push(recordCurrency);
+                    });
+                });
+                $scope.years.sort(function(a, b){return b-a});
+                
+            });
+        </script>
+        <!------------ Page Body starts here   --------------->
+        <body>
+            <div ng-app="MyApp">
+                <div id="SupplierReportController" ng-controller="SupplierReportController" >
+                    <div class="slds">        
+                        
+                        <!-- Supplier Booking Table --->
+                        <div class="slds-card">
+                            <div class="slds-card__header slds-grid">
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                           <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                        </svg>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-text-heading--small slds-truncate">Supplier Cost &amp; Payment Report</h2>
+                                    </div>
+                                </div>
+                                <div class="slds-no-flex">
+                                    <div class="slds-button-group">
+                                        <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                        <button class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-click = "showbookingoverview = !showbookingoverview">
+                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Show More</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__body" ng-show="showbookingoverview">
+                                <div class="slds-scrollable--x">
+                                    <table ng-repeat="year in years" class="slds-table slds-table--bordered" style="font-size: 10px !important;">
+                                        <thead>
+                                            <tr> 
+                                                <th colspan="1" class="headerRow" style="width:200px;">[{{year}}]  Opportunity Name</th>
+                                                <!-- <th colspan="1" class="headerRow">Excahnge Rate</th> -->
+                                                <th colspan="1" class="headerRow" style="text-align: right;">Total Supplier Cost</th>
+                                                <th colspan="1" class="headerRow" style="text-align: right;">Total Payment</th>
+                                                <th colspan="1" class="headerRow" style="text-align: right;">Outstanding</th>
+                                            </tr>     
+                                        </thead>
+                                        <tbody ng-repeat="curr in currency">
+                                            <tr ng-show="lstReocrds[year][curr] !== undefined">
+                                                <td style="color:#A094ED;"><Strong>Currency - {{curr}}</Strong></td>
+                                            </tr>
+                                            
+                                            <tr ng-repeat="scp in lstReocrds[year][curr]">
+                                                <td ><a href="/{{scp.SCP_Opportunity__c}}" target="_blank">{{scp.SCP_Opportunity__r.Name}}</a></td>
+                                                <!--<td>{{scp.SCP_Exchange_Rate__r.ER_Exchange_Rate__c}}</td> -->
+                                                <td style="text-align: right;">{{scp.SCP_Total__c| number:2}}</td>
+                                                <td style="text-align: right;">{{scp.SCP_Total_Payment__c | number:2}}</td>
+                                                <td style="text-align: right;">{{scp.SCP_Outstanding_Amount__c | number:2}}</td>
+                                            </tr>
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="slds-card__footer" ng-show="showbookingoverview" >
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">                                              
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>  
+</apex:page>

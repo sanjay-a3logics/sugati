@@ -1,0 +1,214 @@
+<apex:component controller="JSRemotingFileUploadController" layout="inline">
+  <apex:attribute name="recordId" type="string" description="Record Id"/>
+  <apex:attribute name="pName" type="string" description="page Name"/>
+  <apex:attribute name="getDoc" type="string" description="Get uploaded doc"/>
+  <apex:attribute name="RecordName" type="string" description="Record Name"/>
+  <apex:attribute name="NameSpacePrefix" required="true" type="string" description="Namespace used for managed package"/>
+  <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+ 
+  <script>
+    var maxStringSize = 6000000;    //Maximum String size is 6,000,000 characters
+    var maxFileSize = 4350000;      //After Base64 Encoding, this is the max file size
+    var chunkSize = 950000;         //Maximum Javascript Remoting message size is 1,000,000 characters
+    var attachment;
+    var attachmentName;
+    var fileSize;
+    var positionIndex; 
+    var attachmentParentName;
+    var attachmentParentId;
+    var fieldError = {!HEPageErrorMessage};
+    
+    $(document).ready(function(){
+        $('.popupUpload .closeButtonUpload').on('click', function(){
+            $('.popupUpload').toggle('hide');    
+        });
+    });
+    
+    var contrl = myApp.controller('FileUpload' ,function($scope){
+        $scope.attachments = [];
+        $scope.selectedFile;
+        $scope.disableAdd = true;
+        $scope.folderId = '{!folderId}';
+        $scope.imageFor = '';
+        
+        $scope.uploadFile = function() {
+          if($scope.folderId != 'Error'){  
+              var file = document.getElementById('attachmentFile').files[0];
+              console.log(file);
+              if(file != undefined) {
+                loading(true);
+                if(file.size <= maxFileSize) {
+                  attachmentName = file.name;
+                  var fileReader = new FileReader();
+                  fileReader.onloadend = function(e) {
+                    attachment = window.btoa(this.result);  //Base 64 encode the file before sending it
+                    positionIndex=0;
+                    fileSize = attachment.length;
+                    console.log("Total Attachment Length: " + fileSize);
+                    doneUploading = false;
+                    if(fileSize < maxStringSize) {
+                      $scope.uploadAttachment(null);
+                    } else {
+                      loading(false);
+                      alert("Base 64 Encoded file is too large.  Maximum size is " + maxStringSize + " your file is " + fileSize + ".");
+                    }
+                     
+                  }
+                  fileReader.onerror = function(e) {
+                    loading(false);
+                    alert(fieldError['File_Read'],'Error');
+                  }
+                  fileReader.onabort = function(e) {
+                    loading(false);
+                    alert(fieldError['File_Read'],'Error');
+                  }
+                 
+                  fileReader.readAsBinaryString(file);  //Read the body of the file
+                 
+                } else {
+                  loading(false);
+                  alert(fieldError['File_Read'],'Error');
+                }
+              } 
+              else {
+                loading(false);
+                alert(fieldError['File_Select'],'Error');
+              }
+          }
+          else {
+            loading(false);
+            alert(fieldError['File_Site_Folder'],'Error');
+          }
+        }
+         
+        //Method to send a file to be attached to the record bound to the page by the remoteActions
+        //Sends parameters: Account Id, Attachment (body), Attachment Name, and the Id of the Attachment if it exists to the controller   
+        $scope.uploadAttachment = function(fileId) {
+          var attachmentBody = "";
+          if(fileSize <= positionIndex + chunkSize) {
+            attachmentBody = attachment.substring(positionIndex);
+            doneUploading = true;
+          } else {
+            attachmentBody = attachment.substring(positionIndex, positionIndex + chunkSize);
+          }
+          console.log("Uploading " + attachmentBody.length + " chars of " + fileSize);
+          console.log(attachmentParentId);
+          Visualforce.remoting.Manager.invokeAction(
+          '{!$RemoteAction.JSRemotingFileUploadController.doUploadDocument}',
+           '{!folderId }', attachmentBody, '{!pName} '+$scope.imageFor+'-'+attachmentName, fileId, 
+            function(result, event) {
+              console.log(result);
+              if(event.type === 'exception') {
+                loading(false);
+                console.log("exception");
+                console.log(event);
+              } else if(event.status) {
+                if(result.substring(0,3) == '015') {
+                  if(doneUploading == true) {
+                    //window.open("/{!recordId}", "_blank");
+                    //window.location.reload();
+                    loading(false);
+                    angular.element(document.getElementById('cssCtrl')).scope().getAttchments();
+                    var newAtt = {};
+                    newAtt.Id = result.substring(0, result.indexOf(':::'));
+                    newAtt.Name = result.substring(result.indexOf(':::')+3)
+                    newAtt.isSelected = true;
+                    $scope.attachments.unshift(newAtt);
+                    $scope.$apply();
+                  } else {
+                    positionIndex += chunkSize;
+                    $scope.uploadAttachment(result.substring(0, result.indexOf(':::')));
+                  }
+                }
+              } else {
+                console.log(event.message);
+              }
+            },
+            {buffer: true, timeout: 120000}
+          );
+        }
+        
+        $scope.addToEmail = function(){
+            var counterFile = 1;
+            $('#attachedFiles').empty();
+            console.log($('#attachedFiles'));
+            angular.forEach($scope.attachments, function(file){
+                if(file.isSelected){
+                    console.log('Selected  '+ file.Id);
+                    var elementNew = $('<br/><label id="'+ file.Id +'">' + counterFile + '.  ' + file.Name + '</label>');
+                    elementNew.appendTo('#attachedFiles');
+                    counterFile++;
+                }
+            });
+            $('.popupUpload').toggle('hide');
+        }
+        
+        //Watch on Attachment list to track the change and enable/disable add button
+        $scope.$watch('attachments', function(newVal,oldVal){
+            $scope.disableAdd = true; 
+            angular.forEach(newVal, function(item){
+                if(item.isSelected !== undefined && item.isSelected){
+                    $scope.disableAdd = false; 
+                }
+                
+            });
+            
+        }, true);
+        
+        
+        $scope.getAttchments = function(){
+            Visualforce.remoting.Manager.invokeAction(
+               '{!$RemoteAction.JSRemotingFileUploadController.getDocument}', '{!getDoc}',
+                function(result, event){
+                    if (event.status) {
+                    //Result contains list of account names and account id
+                        console.log(result);
+                        $scope.attachments = result;  
+                        angular.forEach($scope.attachments, function(att){
+                            att.isSelected = false;
+                        });
+                    }else if (event.type === 'exception') 
+                        alert(event.message,'error');
+                    loading(false);
+                    $scope.$apply();
+                }, 
+                {escape: false}
+            );
+        }
+        
+        //add file to email as attachment
+        //$scope.getAttchments();
+    });
+    
+    //Directive for onchange on file
+    myApp.directive('customOnChange', function() {
+      return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+          var onChangeHandler = scope.$eval(attrs.customOnChange);
+          element.bind('change', onChangeHandler);
+        }
+      };
+    });
+    
+  </script>
+  
+  <div ng-controller="FileUpload" id="FileUpload" class="slds popupUpload" >
+    <div class="slds">
+        Upload Image For <select id="fontstyle" class="slds-select" ng-model="imageFor" style="width:120px;">
+                             <option label="--Select--" value=""/>   
+                             <option label="Header" value="Header"/>
+                             <option label="Footer" value="Footer"/>      
+                        </select>
+        <button class="slds-button slds-button--brand" title="Click here to upload attachment" onclick="$('#attachmentFile').trigger('click');">
+            <span style="padding-left:25px; padding-right:25px;"> 
+                <i class=" fa fa-2x fa-upload"></i> 
+            </span>
+        </button>
+        <div class="slds-form--horizontal" style="width: 100%; display:none;">
+            <input type="file" custom-on-change="uploadFile" ng-model="selectedFile" class="slds-input"  id="attachmentFile"/> <br />
+        </div>  
+    </div>
+</div>
+
+</apex:component>

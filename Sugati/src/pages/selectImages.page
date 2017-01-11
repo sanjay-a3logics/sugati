@@ -1,0 +1,170 @@
+<apex:page id="pg" title="Change Itinerary Images" controller="SupplierBookingSwapImagesController" sidebar="false" showHeader="true">
+    <apex:form id="frm" >
+        
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+        <c:BasicResources ></c:BasicResources>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-route.js"></script>
+        <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.4.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <apex:stylesheet value="{!URLFOR($Resource.Framework,'AutoSuggest/autoSuggest.css')}"/>  
+        <apex:includeScript value="{!URLFOR($Resource.Framework,'AutoSuggest/jquery.autoSuggest.js')}"/>  
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/> 
+        <script>
+             
+            $(function() {
+                $( "#tabs" ).tabs();
+            });
+                         
+            function ShowMsg(){                         
+                return false ;          
+            }  
+        
+        </script>
+        <style type="text/css">
+            .btnSave, .btnCancel{   
+                color: #fff !important;
+                padding: 0 10px !important;
+                height: 40px !important;
+                border: 0 !important;
+                font-size: 16px !important;
+                text-transform: uppercase !important;
+                font-weight: bold !important;
+            } 
+            input[type = checkbox]{
+                display: inline-block;
+                width: 25px;
+                height: 25px;
+                background-position: 0 0;
+                background-repeat: no-repeat;
+                line-height: 32px;
+                cursor: pointer;
+            } 
+            .opportunity-table .btnBottm{font-size: 12.2px !important;}
+            .opportunity-table .btn{font-size: 12.2px !important;}  
+        
+        </style>        
+        
+        <div class="slds">    
+            <apex:actionFunction name="contextSearch" status="loading" action="{!doSearch}"  reRender="data,data1,msg,dataHotel" >
+                <apex:param assignTo="{!selectedRecordIds}" name="srID" value=""/>
+            </apex:actionFunction>
+            <apex:actionFunction name="deletedRecords" status="loading" action="{!doSearch}" reRender="data,data1,msg,dataHotel" >
+                <apex:param assignTo="{!deletedRecordIds}" name="srID1" value=""/>
+            </apex:actionFunction>
+            <apex:pageMessages id="pageMsgsId"></apex:pageMessages> 
+            
+            <div class="section-top">
+                <apex:inputText html-placeholder="Search" id="searchBox"  styleClass="slds-input" value="{!searchText}" 
+                 style="width:90%;float:right;" />
+            </div>
+            
+            <apex:outputLabel value="{!displayMessage}" style="color:red;"/>
+            <div class="slds-card" ng-form="IBForm">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--small slds-truncate">Searched Images</h2>
+                            &nbsp;
+                            
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="max-height:370px;overflow-x:scroll;"> 
+                    <apex:outputPanel id="data">                                
+                        <apex:repeat value="{!lstWheretogoWrapper}" var="item" id="rep1">
+                            <apex:outputPanel layout="block">   
+                                <div class="media">
+                                    <div class="ImageContainer">
+                                        <div class="imageField" style="float:left;">
+                                             <apex:image url="/servlet/servlet.FileDownload?file={!item.attachmentId}" alt="No Image Available"  width="240" height="155" />
+                                        </div>
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-8">
+                                                <div class="slds-form--horizontal">
+                                                    <div class="slds-form-element" style="margin-top: 2%;    padding: 5px;">
+                                                        <apex:outputText value="{!item.ImageName}"></apex:outputText>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-12">
+                                                <div class="slds-form--horizontal">
+                                                    <div class="slds-form-element">
+                                                        <apex:outputPanel rendered="{!IsSb}"  styleclass="order">
+                                                            <apex:selectList size="1" value="{!item.order}" styleClass="slds-input" style="width:242px;">
+                                                                <apex:selectOption itemLabel="--Select--" itemValue=""></apex:selectOption>
+                                                                <apex:selectOption itemLabel="Top Image" itemValue="1"></apex:selectOption>
+                                                                <apex:selectOption itemLabel="Bottom Image" itemValue="2"></apex:selectOption>
+                                                            </apex:selectList>
+                                                        </apex:outputPanel>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                                <div class="slds-form--horizontal">
+                                                    <div class="slds-form-element">
+                                                        <apex:inputCheckbox style="float: left;    margin: 6px;" value="{!item.isselected}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                    </div>
+                                    
+                                    
+                                </div>
+                            </apex:outputPanel>
+                        </apex:repeat> 
+                    </apex:outputPanel>
+                </div>
+                <div class="slds-card__footer">
+                    <div class="slds-x-small-buttons--horizontal" >
+                        <span class="input-group-addon" style="text-align: right;">
+                            <apex:commandButton styleClass="slds-button slds-button--brand" value="Save" action="{!save}"/>
+                            <apex:commandButton styleClass="slds-button slds-button--brand" value="Cancel" action="{!navigateTo}"/>
+                        </span>
+                    </div>
+                </div> 
+            </div>     
+        </div>   
+        <script>    
+            var element = document.getElementById('pg:frm:searchBox');       
+            $(element).autoSuggest('/apex/ContextSearch', {selectedItemProp: "name", searchObjProps: "name,Country",formatList: function(data,elem){ return elem.html(data.name +"&nbsp;" +"&nbsp;"+ data.Country + "&nbsp;" + data.type);  }});
+        
+            var v = '';
+            var remove = '';
+            function loadValues(sr){
+                var idVal = $('.as-values').val();            
+                $("#pg\\:frm\\:searchBox_id").val(idVal);
+                //pgBlock\\:
+                v += ','+sr; 
+                console.log('Added'+v);
+                contextSearch(sr);                      
+             }
+             function removeValues(sr)   {
+                 remove  += ','+sr; 
+                console.log('Removed'+remove );
+                deletedRecords(sr);    
+             }
+        </script> 
+    </apex:form>  
+</apex:page>

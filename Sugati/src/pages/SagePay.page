@@ -1,0 +1,127 @@
+<apex:page controller="SagePayController">
+  <apex:form >
+    <div class="wrap">
+    <apex:outputLabel value="{!displayMsg}" escape="false"></apex:outputLabel>
+        <apex:actionFunction name="nextPage" action="{!nextPage}" />
+        
+        <div class="body">
+            
+            <div class="page-hdr section top-line">
+                <h2>Payment</h2>
+            </div>
+            <div class="section top-line">
+                <apex:pageBlock id="pb1">
+                    <apex:outputPanel style="color:red !important;">
+                        <apex:pageMessages id="msg"></apex:pageMessages>
+                    </apex:outputPanel>
+                    <div class="form">
+                        <div class="box-body">
+                            <apex:pageblockSection id="pbs" columns="2">
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Card Holder Name"></apex:outputLabel>
+                                    <apex:inputtext value="{!creditCardNumber}" styleClass="ccn form-control col1"/>
+                                </apex:pageBlockSectionItem>
+                                
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Credit Card Number"></apex:outputLabel>
+                                    <apex:inputtext value="{!creditCardNumber}" styleClass="ccn form-control col1"/>
+                                </apex:pageBlockSectionItem>
+                                
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Card Type"></apex:outputLabel>
+                                    <apex:selectList id="componentId" value="{!selectedCardType}" size="1" styleClass="ct form-control col1">
+                                        <apex:selectOptions value="{!cardTypes}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </apex:pageBlockSectionItem>
+                                
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="CVV Number"></apex:outputLabel>
+                                    <apex:inputtext value="{!cvvNumber}" styleClass="cvvn form-control col1"/>
+                                </apex:pageBlockSectionItem>
+                                
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Expiry Date"></apex:outputLabel>
+                                    <apex:inputText value="{!expiryDate}" styleClass="ed form-control col1"/>
+                                </apex:pageBlockSectionItem>
+                                
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Amount"></apex:outputLabel>
+                                    <apex:inputText value="{!amount}" styleClass="amount form-control col1"/>
+                                </apex:pageBlockSectionItem>
+                            </apex:pageblockSection>
+                        </div>
+                    </div>
+                </apex:pageBlock>
+            </div>
+            <div class="section top-line gray">
+                <div class="actions-footer">
+                    <div class="left">
+                        <apex:commandbutton action="{!backPage}" value="◀ Back" styleClass="btn btn-default" />
+                        <apex:commandbutton onclick="" value="Save & come back later" styleClass="btn btn-gray" />
+                    </div>
+                    <div class="right">
+                        <script>
+                            function validate(){
+                                var errorMsg = '';
+                                if($('.amount').val() == ''){
+                                    $('.amount').css('borderColor','red');
+                                    errorMsg  = 'Please fill the required fields.';
+                                }
+                                else{
+                                    $('.amount').css('borderColor','#959595');
+                                }
+                                if($('.ed').val() == ''){
+                                    $('.ed').css('borderColor','red');
+                                    errorMsg  = 'Please fill the required fields.';
+                                }
+                                else{
+                                    $('.ed').css('borderColor','#959595');
+                                }
+                                if($('.cvvn').val() == ''){
+                                    $('.cvvn').css('borderColor','red');
+                                    errorMsg  = 'Please fill the required fields.';
+                                }
+                                else{
+                                    $('.cvvn').css('borderColor','#959595');
+                                }
+                                if($('.ct option:Selected').val() == 'none'){
+                                    $('.ct').css('borderColor','red');
+                                    errorMsg  = 'Please fill the required fields.';
+                                }
+                                else{
+                                    $('.ct').css('borderColor','#959595');
+                                }
+                                if($('.ccn').val() == ''){
+                                    $('.ccn').css('borderColor','red');
+                                    errorMsg  = 'Please fill the required fields.';
+                                }
+                                else{
+                                    $('.ccn').css('borderColor','#959595');
+                                }
+                                
+                                if(errorMsg == ''){
+                                    validatedPayment();
+                                }
+                                else{
+                                    alert(errorMsg);
+                                }
+                            }    
+                        </script>
+                        <apex:commandbutton onClick="validate();return false;" value="FINISH" styleClass="btn btn-primary" />
+                        <apex:actionFunction action="{!pay}" name="validatedPayment" reRender="second" oncomplete="document.myform.submit();"/>
+                    </div>
+                </div>
+            </div>
+       </div>
+       
+    </div>
+</apex:form>
+<apex:outputPanel id="second">
+    <form id="myform" name="myform" action="{!acsurl}" method="post">
+        <input type="hidden" name="PaReq" value="{!pareq}" />
+        <input type="hidden" name="TermUrl" value="https://c.cs18.visual.force.com/apex/thankyou" />
+        <input type="hidden" name="MD" value="{!md}" />
+        <input type="submit" value="Go" />
+    </form>
+</apex:outputPanel>  
+</apex:page>

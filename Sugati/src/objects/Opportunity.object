@@ -1,0 +1,4180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>AddInfluence</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <enableFeeds>true</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <fields>
+        <fullName>AccountId</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Add_administrative_flight_information__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Add administrative flight information (APIS, SSR) into Amadeus PNR</inlineHelpText>
+        <label>Add administrative flight information</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Add_birthdays_and_other__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Add birthdays and other significant information to CRM</inlineHelpText>
+        <label>Add birthdays and other</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Add_principal_dates_and_reservations__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Add principal dates and reservation numbers to client calendar</inlineHelpText>
+        <label>Add principal dates and reservations</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Adult_Old__c</fullName>
+        <description>Historical Data</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Historical Data</inlineHelpText>
+        <label>Adult Old</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Agent_Name__c</fullName>
+        <description>Agent name for OTUK</description>
+        <externalId>false</externalId>
+        <formula>O_Agent_SC__r.SC_First_Name__c &amp; &quot; &quot;&amp;  O_Agent_SC__r.SC_Last_Name__c</formula>
+        <label>Agent Name</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Amount</fullName>
+        <inlineHelpText>Total Holiday Price to Customer</inlineHelpText>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>Ask_for_insurance_from_client__c</fullName>
+        <externalId>false</externalId>
+        <label>Ask for insurance from client</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Ask_for_upgrades__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Ask for upgrades, special treatments, make aware of VIP to suppliers.</inlineHelpText>
+        <label>Ask for upgrades</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Balance_paid_reminder__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Set own reminder to check balance paid, if not, send balance reminder to clients.</inlineHelpText>
+        <label>Balance paid reminder</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Booking_Form_Received_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Booking Form Completed Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>Booking_Form_Sent_Date__c</fullName>
+        <description>Enter the date when a Booking Form was sent.</description>
+        <externalId>false</externalId>
+        <label>Booking Form Sent Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>Budget_Note__c</fullName>
+        <externalId>false</externalId>
+        <label>Budget Note</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CampaignId</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Check_ATOL_issued_correctly__c</fullName>
+        <externalId>false</externalId>
+        <label>Check ATOL issued correctly</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_booking_form__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Checking booking form against booking made - highlight discrepencies and ensure they have been death with.</inlineHelpText>
+        <label>Check booking form</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_completed_tasks__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Work against checklists for each booking to ensure all tasks completed.</inlineHelpText>
+        <label>Check completed tasks</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_emergency_phone_list__c</fullName>
+        <externalId>false</externalId>
+        <label>Check emergency phone list</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_flight_booking__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Check flight booking details in Amadeus/with supplier</inlineHelpText>
+        <label>Check flight booking</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_supplier_confirmation__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Check supplier confirmation against booking made.</inlineHelpText>
+        <label>Check supplier confirmation</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_supplier_payments__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Check payments made to suppliers</inlineHelpText>
+        <label>Check supplier payments</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Check_visa_and_inoculation_plann__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Check on Client visa an inoculation action plan</inlineHelpText>
+        <label>Check visa and innoculation plan</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>CloseDate</fullName>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>Commission_Paid__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Finance team can check if the commission has been paid to agency</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Check if the commission has been paid</inlineHelpText>
+        <label>Commission Paid?</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Concierge_phone_call__c</fullName>
+        <externalId>false</externalId>
+        <label>Concierge phone call</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Confirm_Supplier_arrangements__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Confirm arrangements with suppliers.</inlineHelpText>
+        <label>Confirm Supplier arrangements</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Confirmation_documents__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Create confirmation documents</inlineHelpText>
+        <label>Confirmation documents</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>ContractId</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Copy_of_Big_Short_Break_book__c</fullName>
+        <externalId>false</externalId>
+        <label>Copy of Big Short Break book</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Costing_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Costing Method</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Selling Price Adjustment</fullName>
+                <default>true</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Granular Mark Up</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>CurrencyIsoCode</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>CurrentGenerators__c</fullName>
+        <externalId>false</externalId>
+        <label>Current Generator(s)</label>
+        <length>100</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>DeliveryInstallationStatus__c</fullName>
+        <externalId>false</externalId>
+        <label>Delivery/Installation Status</label>
+        <picklist>
+            <picklistValues>
+                <fullName>In progress</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Yet to begin</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Completed</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>Description</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>Diarise_all_next_steps__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Diarise all next steps for client actions.</inlineHelpText>
+        <label>Diarise all next steps</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Exchange_check__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF (  O_Exchange_Rate__r.Name = null, False, True)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Exchange check</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>ExpectedRevenue</fullName>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>First_night_tax__c</fullName>
+        <externalId>false</externalId>
+        <label>First night tax</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>GBP_Margin_Value__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF ( Exchange_check__c = True, O_Margin__c  *  O_Exchange_Rate__r.ER_Exchange_Rate__c, O_Margin__c)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>GBP Margin Value</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>IsPrivate</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>LeadSource</fullName>
+        <picklist>
+            <picklistValues>
+                <fullName>Agent</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Brand Partner</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Brochure</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>E Newsletter</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Event</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Google</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Other</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Press - Ad and Editorial</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Referral</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Repeat</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Social Media</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Crew Clothing</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>DIVE 2014 Prize Draw</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Rebecca Recommends</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Website-brochure request</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Website-contact us form</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Website-enquiry form</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>MainCompetitors__c</fullName>
+        <externalId>false</externalId>
+        <label>Main Competitor(s)</label>
+        <length>100</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Margin_Flag__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(O_Suggested_Margin_Value__c &lt;  O_Margin_Value_With_Commission__c ,  IMAGE(&quot;https://c.eu5.content.force.com/servlet/servlet.FileDownload?file=01524000001UC4I&quot;, &quot;Margin Green&quot;, 20,140), 
+ IMAGE(&quot;https://c.eu5.content.force.com/servlet/servlet.FileDownload?file=01524000001UC51&quot;, &quot;Margin Red&quot;, 20,140))</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Margin Flag</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Name</fullName>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>NextStep</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>O_APC_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>APC Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_APC_or_FFP_Non_Licensable_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>APC or FFP Non Licensable Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_ATOL__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>ATOL</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Additional_Reps_Agents_Arrival_report__c</fullName>
+        <externalId>false</externalId>
+        <label>Additional Reps/ Agents Arrival report</label>
+        <length>32768</length>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Adult__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Total no of adults in a given family.</inlineHelpText>
+        <label>Adult</label>
+        <summaryFilterItems>
+            <field>Group_Member__c.GM_Occupancy_Type__c</field>
+            <operation>equals</operation>
+            <value>Adult</value>
+        </summaryFilterItems>
+        <summaryForeignKey>Group_Member__c.GM_Opportunity__c</summaryForeignKey>
+        <summaryOperation>count</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Agent_Commission_Amount__c</fullName>
+        <externalId>false</externalId>
+        <label>Agent Commission</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Agent_Commission_Due_Date__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(  ISBLANK(O_Agent_Commission__c), null , O_Return_Date__c + 10 )</formula>
+        <label>Agent Commission Due Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Agent_Commission_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Agent Commission Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Margin</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Revenue</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Agent_Commission__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF((!ISBLANK(O_Agent_Commission_Amount__c) &amp;&amp; ISBLANK(O_Agent_Commission_percent__c)), 
+	O_Agent_Commission_Amount__c, 
+
+	IF((!ISBLANK(O_Agent_Commission_percent__c) &amp;&amp; ISBLANK(O_Agent_Commission_Amount__c)),
+                 IF(ISPICKVAL(O_Agent_Commission_Type__c , &apos;Margin&apos;),((O_Agent_Commission_percent__c/100)* O_Margin__c ), ((O_Agent_Commission_percent__c/100)*Amount))
+,
+
+IF((ISBLANK(O_Agent_Commission_Amount__c) &amp;&amp; ISBLANK(O_Agent_Commission_percent__c)) ,if(!ISBLANK(O_Agent__r.S_Commission_Value__c),O_Agent__r.S_Commission_Value__c,if(!ISBLANK(O_Agent__r.S_Commission_Value__c),O_Agent__r.S_Commission_Value__c,IF(ISPICKVAL(O_Agent_Commission_Type__c , &apos;Margin&apos;),((O_Agent__r.S_Commission__c)* O_Margin__c ), ((O_Agent__r.S_Commission__c)*Amount)) 
+	)
+	),null) 
+
+ ))</formula>
+        <label>Agent Commission</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Agent_Commission_percent__c</fullName>
+        <externalId>false</externalId>
+        <label>Agent Commission %</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Agent_SC__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Agent</label>
+        <lookupFilter>
+            <active>true</active>
+            <filterItems>
+                <field>Supplier_Contact__c.SC_Supplier__c</field>
+                <operation>equals</operation>
+                <valueField>$Source.O_Agent__c</valueField>
+            </filterItems>
+            <isOptional>false</isOptional>
+        </lookupFilter>
+        <referenceTo>Supplier_Contact__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Agent__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <inlineHelpText>Choose an agent if this is an agent booking.</inlineHelpText>
+        <label>Agency</label>
+        <referenceTo>Supplier__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Ancillary_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>Ancillary Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Arrival_Presents__c</fullName>
+        <externalId>false</externalId>
+        <label>Arrival Presents</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Arrival_gift__c</fullName>
+        <externalId>false</externalId>
+        <label>Arrival gift</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Automated_survey_opt_out__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Andy has requested this on 20th</description>
+        <externalId>false</externalId>
+        <label>Automated survey opt-out</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Bond_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Bond Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Licenced</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Unlicenced</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Accommodation only</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Not protected</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Currency__c</fullName>
+        <externalId>false</externalId>
+        <label>Booking Currency</label>
+        <picklist>
+            <picklistValues>
+                <fullName>GBP</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>USD</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>EUR</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Booking Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Month__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(MONTH(O_Booking_Date__c) = 1, &quot;January&quot;, 
+IF(MONTH(O_Booking_Date__c) = 2, &quot;February&quot;, 
+IF(MONTH(O_Booking_Date__c) = 3, &quot;March&quot;, 
+IF(MONTH(O_Booking_Date__c) = 4, &quot;April&quot;, 
+IF(MONTH(O_Booking_Date__c) = 5, &quot;May&quot;, 
+IF(MONTH(O_Booking_Date__c) = 6, &quot;June&quot;, 
+IF(MONTH(O_Booking_Date__c) = 7, &quot;July&quot;, 
+IF(MONTH(O_Booking_Date__c) = 8, &quot;August&quot;, 
+IF(MONTH(O_Booking_Date__c) = 9, &quot;September&quot;, 
+IF(MONTH(O_Booking_Date__c) = 10, &quot;October&quot;, 
+IF(MONTH(O_Booking_Date__c) = 11, &quot;November&quot;, 
+IF(MONTH(O_Booking_Date__c) = 12, &quot;December&quot;, 
+&quot;&quot;))))))))))))</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Booking Month</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Note_Internal__c</fullName>
+        <externalId>false</externalId>
+        <label>Booking Note (Internal)</label>
+        <length>32768</length>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Number__c</fullName>
+        <description>This is the field from the old system.</description>
+        <externalId>true</externalId>
+        <inlineHelpText>This is the field from the old system.</inlineHelpText>
+        <label>Dhruv Booking No</label>
+        <length>10</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Stat_Code__c</fullName>
+        <externalId>false</externalId>
+        <label>Booking Stat Code</label>
+        <length>10</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Week_Actual__c</fullName>
+        <externalId>false</externalId>
+        <formula>CEILING(((O_Booking_Date__c - DATE(YEAR(O_Booking_Date__c ), 1, 1) + 1) +
+MOD(DATE(YEAR(O_Booking_Date__c ), 1, 1) - DATE(1900, 1, 7), 7)) / 7)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Booking Week Actual</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Week__c</fullName>
+        <externalId>false</externalId>
+        <label>Booking Week</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Booking_Year__c</fullName>
+        <externalId>false</externalId>
+        <formula>YEAR( O_Booking_Date__c )</formula>
+        <label>Booking Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Booking_to_Departure__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Departure_Date__c -  O_Booking_Date__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Booking to Departure</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Break_Through_No__c</fullName>
+        <externalId>false</externalId>
+        <label>Break Through No</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Budget_End_Range__c</fullName>
+        <externalId>false</externalId>
+        <label>Budget End Range</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Budget_Start_Range__c</fullName>
+        <externalId>false</externalId>
+        <label>Budget Range</label>
+        <picklist>
+            <picklistValues>
+                <fullName>0 - 1000</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>1000 - 3000</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>3000 - 5000</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>5000 - 10000</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>10000 - 20000</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>20000+</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Budget__c</fullName>
+        <externalId>false</externalId>
+        <label>Budget</label>
+        <length>18</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Budget_specify__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Budget specify</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Charity__c</fullName>
+        <externalId>false</externalId>
+        <label>Charity</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Charity_contribution__c</fullName>
+        <externalId>false</externalId>
+        <label>Charity contribution</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Child_Old__c</fullName>
+        <externalId>false</externalId>
+        <label>Child Old</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Children__c</fullName>
+        <externalId>false</externalId>
+        <label>Children</label>
+        <summaryFilterItems>
+            <field>Group_Member__c.GM_Occupancy_Type__c</field>
+            <operation>equals</operation>
+            <value>Child</value>
+        </summaryFilterItems>
+        <summaryForeignKey>Group_Member__c.GM_Opportunity__c</summaryForeignKey>
+        <summaryOperation>count</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Cleaned_Data__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Does this come from Nick&apos;s excel sheets?</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Does this come from Nick&apos;s excel sheets?</inlineHelpText>
+        <label>Cleaned Data?</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Company_Code__c</fullName>
+        <externalId>false</externalId>
+        <label>Company Code</label>
+        <picklist>
+            <picklistValues>
+                <fullName>OTDV</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>OTUK</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>OT</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>TBUK</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>STUK</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>OTGB</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Continent__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Region</label>
+        <referenceTo>Continent__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Converted_to_Booking__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Converted to Booking</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Converted_to_Quote__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Converted to Quote</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Country__c</fullName>
+        <externalId>false</externalId>
+        <label>Country</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Credit_Card_Charges_Amount__c</fullName>
+        <externalId>false</externalId>
+        <label>Credit Card Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Credit_Card_Charges_P__c</fullName>
+        <externalId>false</externalId>
+        <label>Credit Card Charges %</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>O_Credit_Card_Charges__c</fullName>
+        <externalId>false</externalId>
+        <formula>Amount* O_Credit_Card_Charges_P__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Credit Card Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Days_to_Departure__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(  AND(TEXT(StageName) &lt;&gt; &quot;Enquiry gone cold&quot;,O_Departure_Date__c &gt; DATEVALUE(Now())) , O_Departure_Date__c - DATEVALUE(Now()), 0)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <inlineHelpText>IF( TEXT(StageName) &lt;&gt; &quot;Enquiry gone cold&quot; , O_Departure_Date__c - DATEVALUE(Now()), 0)</inlineHelpText>
+        <label>Days to Departure</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Departure_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Departure Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Departure_Month__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(MONTH(O_Departure_Date__c) = 1, &quot;January&quot;, 
+IF(MONTH(O_Departure_Date__c) = 2, &quot;February&quot;, 
+IF(MONTH(O_Departure_Date__c) = 3, &quot;March&quot;, 
+IF(MONTH(O_Departure_Date__c) = 4, &quot;April&quot;, 
+IF(MONTH(O_Departure_Date__c) = 5, &quot;May&quot;, 
+IF(MONTH(O_Departure_Date__c) = 6, &quot;June&quot;, 
+IF(MONTH(O_Departure_Date__c) = 7, &quot;July&quot;, 
+IF(MONTH(O_Departure_Date__c) = 8, &quot;August&quot;, 
+IF(MONTH(O_Departure_Date__c) = 9, &quot;September&quot;, 
+IF(MONTH(O_Departure_Date__c) = 10, &quot;October&quot;, 
+IF(MONTH(O_Departure_Date__c) = 11, &quot;November&quot;, 
+&quot;December&quot;)))))))))))</formula>
+        <label>Departure Month</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Departure_Year__c</fullName>
+        <externalId>false</externalId>
+        <formula>YEAR(O_Departure_Date__c )</formula>
+        <label>Departure Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Deposit_Due_Date__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Departure_Date__c - 70</formula>
+        <label>Deposit Due Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Deposit_Required1__c</fullName>
+        <externalId>false</externalId>
+        <label>Deposit Required</label>
+        <summarizedField>Client_Group__c.CG_Deposit_Required_I__c</summarizedField>
+        <summaryForeignKey>Client_Group__c.CG_Opportunity__c</summaryForeignKey>
+        <summaryOperation>sum</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Destination_Map_Image_ID__c</fullName>
+        <externalId>false</externalId>
+        <label>Destination Map Image ID</label>
+        <length>18</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Destination__c</fullName>
+        <externalId>false</externalId>
+        <label>Destination</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Display_Due_Date__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>x number of days before Departure Date. To be used only to overwrite the standard 60 days before departure date.</inlineHelpText>
+        <label>Display Due Date</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Division__c</fullName>
+        <description>Group ownership</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Group ownership</inlineHelpText>
+        <label>Division</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Original Travel</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Original Diving</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Simoon</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>OT UK</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Combination of above</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <visibleLines>4</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Due_By_Date__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Due_Date__c - TODAY()</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Due By Date</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Due_Date__c</fullName>
+        <description>IF( O_Display_Due_Date__c&gt; 60 , O_Departure_Date__c - 90, O_Departure_Date__c - 60)</description>
+        <externalId>false</externalId>
+        <formula>IF(  ISNULL(O_Display_Due_Date__c) , O_Departure_Date__c - 60, O_Departure_Date__c - O_Display_Due_Date__c)</formula>
+        <label>Due Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Duration_End_Days__c</fullName>
+        <externalId>false</externalId>
+        <label>Duration End Days</label>
+        <precision>10</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Duration_Start_Days__c</fullName>
+        <externalId>false</externalId>
+        <label>Duration Start Days</label>
+        <precision>10</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_EU__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Is the holiday in EU country?</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Is the holiday in EU country?</inlineHelpText>
+        <label>EU</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Emergency_Contact_Number__c</fullName>
+        <externalId>false</externalId>
+        <label>Emergency Contact Number</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Phone</type>
+    </fields>
+    <fields>
+        <fullName>O_Enquiry_Month__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(MONTH(CloseDate) = 1, &quot;January&quot;, 
+IF(MONTH(CloseDate) = 2, &quot;February&quot;,
+IF(MONTH(CloseDate) = 3, &quot;March&quot;,
+IF(MONTH(CloseDate) = 4, &quot;April&quot;,
+IF(MONTH(CloseDate) = 5, &quot;May&quot;,
+IF(MONTH(CloseDate) = 6, &quot;June&quot;,
+IF(MONTH(CloseDate) = 7, &quot;July&quot;,
+IF(MONTH(CloseDate) = 8, &quot;August&quot;,
+IF(MONTH(CloseDate) = 9, &quot;September&quot;,
+IF(MONTH(CloseDate) = 10, &quot;October&quot;,
+IF(MONTH(CloseDate) = 11, &quot;November&quot;,
+&quot;December&quot;)))))))))))</formula>
+        <label>Enquiry Month</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Enquiry_Week_Actual__c</fullName>
+        <externalId>false</externalId>
+        <formula>CEILING(((CloseDate - DATE(YEAR(CloseDate), 1, 1) + 1) +
+MOD(DATE(YEAR(CloseDate), 1, 1) - DATE(1900, 1, 7), 7)) / 7)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Enquiry Week Actual</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Enquiry_Week__c</fullName>
+        <externalId>false</externalId>
+        <label>Enquiry Week</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Enquiry_Year__c</fullName>
+        <externalId>false</externalId>
+        <formula>YEAR(CloseDate)</formula>
+        <label>Enquiry Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Enquiry_to_Departure__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Departure_Date__c -  CloseDate</formula>
+        <label>Enquiry to Departure</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Enquiry_to_Quote__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Quote_Date__c -  CloseDate</formula>
+        <label>Enquiry to Quote</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Exchange_Rate__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Exchange Rate</label>
+        <referenceTo>Exchange_Rate__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_FFP_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>FFP Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_FX_Transaction_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>FX Transaction Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_FX_transfer_charges__c</fullName>
+        <externalId>false</externalId>
+        <label>FX transfer charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Finders_Commission__c</fullName>
+        <externalId>false</externalId>
+        <label>Finder&apos;s Commission</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Flexiable_Date__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Flexiable Date</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Flexibility_Details__c</fullName>
+        <externalId>false</externalId>
+        <label>Flexibility Details</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Follow_Up_Time__c</fullName>
+        <externalId>false</externalId>
+        <label>Follow Up Time</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>O_HE__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>HE</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_HolTypeCode__c</fullName>
+        <externalId>false</externalId>
+        <label>HolTypeCode</label>
+        <length>10</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Holiday_Enquiry_Recap_Description__c</fullName>
+        <externalId>false</externalId>
+        <label>Holiday Enquiry Recap Description</label>
+        <length>32768</length>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Html</type>
+        <visibleLines>25</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Holiday_Enquiry_Stage__c</fullName>
+        <externalId>false</externalId>
+        <label>Holiday Enquiry Stage</label>
+        <precision>2</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Holiday_Grouping__c</fullName>
+        <externalId>false</externalId>
+        <label>Holiday Type For Content Only</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Big Short Break</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Chalet</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>City break</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Diving</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>European Beach Escape</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Expert Led Journey</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Long haul</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Safari</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Skiing</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Villa</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <visibleLines>4</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Holiday_Reason__c</fullName>
+        <externalId>false</externalId>
+        <label>Holiday Reason</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Anniversary</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Babymoon</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Birthday</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Corporate</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Couple (not on honeymoon)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Family Holiday (incl children 18 and over)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Family Holiday (incl children 18 and under)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Group</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Honeymoon</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Sabbatical</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Solo traveller</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Stag/Hen</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Holiday_Type__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Holiday Type</label>
+        <referenceTo>Holiday_Type__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Include_Flight_Margin__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Include Flight Margin</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Infant_Old__c</fullName>
+        <externalId>false</externalId>
+        <label>Infant Old</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Infant__c</fullName>
+        <externalId>false</externalId>
+        <label>Infant</label>
+        <summaryFilterItems>
+            <field>Group_Member__c.GM_Occupancy_Type__c</field>
+            <operation>equals</operation>
+            <value>Infant</value>
+        </summaryFilterItems>
+        <summaryForeignKey>Group_Member__c.GM_Opportunity__c</summaryForeignKey>
+        <summaryOperation>count</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Insurance_Company__c</fullName>
+        <externalId>false</externalId>
+        <label>Insurance Company</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Insurance_Confirmation__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Insurance Confirmation</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Is_Group_Booking__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Is Group Booking?</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Itinerary_At_Glance_Rows__c</fullName>
+        <externalId>false</externalId>
+        <label>Itinerary At Glance Rows</label>
+        <length>50</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Itinerary_Cover_Name__c</fullName>
+        <externalId>false</externalId>
+        <label>Itinerary Cover Name</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Itinerary_Display_Price__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Use this if you want to hide the Holiday Final Cost.</inlineHelpText>
+        <label>Itinerary Display Price</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Last_Payment__c</fullName>
+        <externalId>false</externalId>
+        <label>Last Payment</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Lead_Email_Address__c</fullName>
+        <description>This is to be used with workflow only.</description>
+        <externalId>false</externalId>
+        <label>Lead Email Address</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Email</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Lead_In__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Departure_Date__c -  CloseDate</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Lead In</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Live_Margin__c</fullName>
+        <externalId>false</externalId>
+        <formula>if( O_Include_Flight_Margin__c ,(O_Margin_Value_With_Commission__c/ Amount),(O_Margin_Value_With_Commission__c/ (Amount- O_Total_Flight_Cost__c)))</formula>
+        <label>Booking Margin</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>O_Lock__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Lock</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Map_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Map Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Single</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Multiple</fullName>
+                <default>true</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Margin_Value_With_Commission__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Margin__c -(O_Agent_Commission__c+if(ISBLANK(TEXT(O_Sales_Commission_Type__c)),0,O_Finders_Commission__c))</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Margin Value With Commission</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Margin_Warning__c</fullName>
+        <externalId>false</externalId>
+        <formula>(O_Live_Margin__c*100) &lt; O_Suggested_Margin__r.M_Margin__c</formula>
+        <label>Margin Warning</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Margin__c</fullName>
+        <externalId>false</externalId>
+        <label>Margin Value</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Maximum_Occupancy__c</fullName>
+        <externalId>false</externalId>
+        <label>Maximum Occupancy</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Minimum_Occupancy__c</fullName>
+        <externalId>false</externalId>
+        <label>Minimum Occupancy</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_No_Notification__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>No Notification</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_No_of_Nights__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Return_Date__c -  O_Departure_Date__c</formula>
+        <label>No of Nights</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Old_Markup_Value__c</fullName>
+        <externalId>false</externalId>
+        <label>Old Markup Value</label>
+        <precision>12</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Original_COSTS__c</fullName>
+        <description>A combination of COSTS and Charges fields</description>
+        <externalId>false</externalId>
+        <inlineHelpText>A combination of COSTS and Charges fields</inlineHelpText>
+        <label>Original COSTS</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Original_Margin__c</fullName>
+        <externalId>false</externalId>
+        <formula>( O_Original_Sales_Price__c -  O_Original_COSTS__c ) / O_Original_Sales_Price__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Original Margin</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>O_Original_Sales_Price__c</fullName>
+        <externalId>false</externalId>
+        <label>Original Sales Price</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Other_Invoice_Comments__c</fullName>
+        <externalId>false</externalId>
+        <label>Other Invoice Comments</label>
+        <length>32768</length>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Outstanding__c</fullName>
+        <externalId>false</externalId>
+        <formula>Amount - O_Total_Payment_Without_CC__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Outstanding Balance</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Owner_Name__c</fullName>
+        <externalId>false</externalId>
+        <label>Owner_Name</label>
+        <length>100</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Parent_Source__c</fullName>
+        <externalId>false</externalId>
+        <formula>Campaign.Parent.Name</formula>
+        <label>Parent Source</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Pax__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(O_Is_Group_Booking__c,IF(Adult_Old__c &gt; 0, Adult_Old__c, O_Adult__c) + IF( O_Child_Old__c  &gt; 0, O_Child_Old__c, O_Children__c) + IF(  O_Infant_Old__c   &gt; 0, O_Infant_Old__c, O_Infant__c)-3,IF(Adult_Old__c &gt; 0, Adult_Old__c, O_Adult__c) + IF( O_Child_Old__c  &gt; 0, O_Child_Old__c, O_Children__c) + IF(  O_Infant_Old__c   &gt; 0, O_Infant_Old__c, O_Infant__c))</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Pax</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Payment_Rule__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Payment Rule</label>
+        <referenceTo>Rule__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Pipeline_Notes__c</fullName>
+        <externalId>false</externalId>
+        <label>Pipeline Notes</label>
+        <length>32768</length>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>25</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Policy_No__c</fullName>
+        <externalId>false</externalId>
+        <label>Policy No</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Pre_Booking__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF( YEAR(  O_Departure_Date__c  ) &gt; YEAR( O_Booking_Date__c ), &quot;YES&quot;, &quot;NO&quot;)</formula>
+        <label>Pre-Booking</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Pre_Quote__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF( YEAR( O_Departure_Date__c ) &gt; YEAR( O_Quote_Date__c ), &quot;YES&quot;, &quot;NO&quot;)</formula>
+        <label>Pre Quote</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Previous_Margin_Value__c</fullName>
+        <externalId>false</externalId>
+        <label>Previous Margin Value</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Previous_Total_Selling_Price__c</fullName>
+        <externalId>false</externalId>
+        <label>Previous Total Selling Price</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Questionnaire_Completed__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Questionnaire Completed</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Quotation_Default_Text__c</fullName>
+        <externalId>false</externalId>
+        <label>Quotation Default Text</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quotation_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Quotation Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Default</fullName>
+                <default>true</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Multiple Client Group</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Quote_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Quote Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Quote_Month__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(MONTH(O_Quote_Date__c) = 1, &quot;January&quot;, 
+IF(MONTH(O_Quote_Date__c) = 2, &quot;February&quot;, 
+IF(MONTH(O_Quote_Date__c) = 3, &quot;March&quot;, 
+IF(MONTH(O_Quote_Date__c) = 4, &quot;April&quot;, 
+IF(MONTH(O_Quote_Date__c) = 5, &quot;May&quot;, 
+IF(MONTH(O_Quote_Date__c) = 6, &quot;June&quot;, 
+IF(MONTH(O_Quote_Date__c) = 7, &quot;July&quot;, 
+IF(MONTH(O_Quote_Date__c) = 8, &quot;August&quot;, 
+IF(MONTH(O_Quote_Date__c) = 9, &quot;September&quot;, 
+IF(MONTH(O_Quote_Date__c) = 10, &quot;October&quot;, 
+IF(MONTH(O_Quote_Date__c) = 11, &quot;November&quot;,IF(MONTH(O_Quote_Date__c) = 12, 
+&quot;December&quot;,&quot;&quot;))))))))))))</formula>
+        <label>Quote Month</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quote_No__c</fullName>
+        <externalId>true</externalId>
+        <label>Dhruv Quote No</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quote_Week_Actual__c</fullName>
+        <externalId>false</externalId>
+        <formula>CEILING(((O_Quote_Date__c - DATE(YEAR(O_Quote_Date__c ), 1, 1) + 1) +
+MOD(DATE(YEAR(O_Quote_Date__c ), 1, 1) - DATE(1900, 1, 7), 7)) / 7)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Quote Week Actual</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quote_Week__c</fullName>
+        <externalId>false</externalId>
+        <label>Quote Week</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quote_Year__c</fullName>
+        <externalId>false</externalId>
+        <formula>YEAR( O_Quote_Date__c )</formula>
+        <label>Quote Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quote_to_Booking__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Booking_Date__c -  O_Quote_Date__c</formula>
+        <label>Quote to Booking</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Quote_to_Departure__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Departure_Date__c -  O_Quote_Date__c</formula>
+        <label>Quote to Departure</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Reason__c</fullName>
+        <description>Reason for not-booking where enquiry or quote has gone cold OR
+Reason for booking cancellation where relevant.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Reason for not-booking where enquiry or quote has gone cold OR
+Reason for booking cancellation where relevant.</inlineHelpText>
+        <label>Reason for Colding</label>
+        <picklist>
+            <controllingField>StageName</controllingField>
+            <picklistValues>
+                <fullName>No response from the client after initial contact</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>No response from the client after having been responsive initially</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client not travelling at all</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client not travelling as too expensive</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client booked direct</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client booked through a competitor based on price</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client booked through a competitor based on knowledge</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client booked through a competitor based on turnaround speed</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Client booked through a competitor based on product preference</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Enquiry politely declined by consultant due to unrealistic budget</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <controllingFieldValues>Booking cancelled</controllingFieldValues>
+                <controllingFieldValues>Enquiry gone cold</controllingFieldValues>
+                <controllingFieldValues>Quote gone cold</controllingFieldValues>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_RecordType__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Record Type</label>
+        <lookupFilter>
+            <active>true</active>
+            <filterItems>
+                <field>Record_Type__c.RT_SObject_Type__c</field>
+                <operation>equals</operation>
+                <value>Opportunity</value>
+            </filterItems>
+            <isOptional>false</isOptional>
+        </lookupFilter>
+        <referenceTo>Record_Type__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Reference_Number__c</fullName>
+        <externalId>false</externalId>
+        <label>Reference Number</label>
+        <length>30</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Reminder__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Payment Reminder Requested</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Requested_Amount__c</fullName>
+        <externalId>false</externalId>
+        <label>Requested Amount</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Return_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Return Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Return_Month__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(MONTH(O_Return_Date__c) = 1, &quot;January&quot;, 
+IF(MONTH(O_Return_Date__c) = 2, &quot;February&quot;, 
+IF(MONTH(O_Return_Date__c) = 3, &quot;March&quot;, 
+IF(MONTH(O_Return_Date__c) = 4, &quot;April&quot;, 
+IF(MONTH(O_Return_Date__c) = 5, &quot;May&quot;, 
+IF(MONTH(O_Return_Date__c) = 6, &quot;June&quot;, 
+IF(MONTH(O_Return_Date__c) = 7, &quot;July&quot;, 
+IF(MONTH(O_Return_Date__c) = 8, &quot;August&quot;, 
+IF(MONTH(O_Return_Date__c) = 9, &quot;September&quot;, 
+IF(MONTH(O_Return_Date__c) = 10, &quot;October&quot;, 
+IF(MONTH(O_Return_Date__c) = 11, &quot;November&quot;, 
+&quot;December&quot;)))))))))))</formula>
+        <label>Return Month</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Return_Year__c</fullName>
+        <externalId>false</externalId>
+        <formula>YEAR(O_Return_Date__c )</formula>
+        <label>Return Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Sales_CommissionP__c</fullName>
+        <externalId>false</externalId>
+        <label>Sales Commission %</label>
+        <precision>15</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>O_Sales_Commission_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Sales Commission Type</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Margin</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Revenue</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    
+    <fields>
+        <fullName>O_School_holidays__c</fullName>
+        <externalId>false</externalId>
+        <label>School holidays</label>
+        <picklist>
+            <picklistValues>
+                <fullName>School Easter holidays</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>School Summer holidays</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>School Christmas holidays</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Feb Half term</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>May Half term</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Oct Half term</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Seasons__c</fullName>
+        <externalId>false</externalId>
+        <label>Seasons</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Christmas/New Year</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Easter</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Winter (non Christmas/Easter)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Spring</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Summer</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Autumn</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Selling_Exchange_Rate__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(TEXT( O_Booking_Currency__c ) = &quot;GBP&quot;, 1, O_Exchange_Rate__r.ER_Exchange_Rate__c)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <inlineHelpText>Booking Currency to GBP Exchange Rate</inlineHelpText>
+        <label>Selling Exchange Rate</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>4</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Selling_Price_in_GBP__c</fullName>
+        <externalId>false</externalId>
+        <formula>IF(  TEXT(O_Booking_Currency__c)= &quot;GBP&quot; ,  Amount , Amount*O_Selling_Exchange_Rate__c )</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Selling Price in GBP</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Service_From_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Service From Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>O_Service_Team__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Service Team</label>
+        <referenceTo>User</referenceTo>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Show_Option_text_for_quotation__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Show Option text for quotation</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Steps_Completed__c</fullName>
+        <externalId>false</externalId>
+        <label>Steps Completed</label>
+        <picklist>
+            <picklistValues>
+                <fullName>1</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>2</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>3</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>4</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>5</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>6</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>7</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>8</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Suggested_Margin_Value__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Suggested_Margin__r.M_Margin__c/100</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Suggested Margin Value</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>O_Suggested_Margin__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Suggested Margin</label>
+        <referenceTo>Margin__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Supplier_Payments__c</fullName>
+        <externalId>false</externalId>
+        <formula>HYPERLINK(&quot;/apex/SupplierPayments?id=&quot;&amp;Id, &quot;Supplier Payments&quot;)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Supplier Payments</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_TOMS_Applicable_Margin__c</fullName>
+        <externalId>false</externalId>
+        <label>TOMS Applicable Margin</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_TOMS_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>TOMS Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_TOMS_Post_Margin__c</fullName>
+        <externalId>false</externalId>
+        <formula>Amount</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>TOMS Post Margin</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_TOTAL_COS_in_GBP__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Supplier Costs + Ancillary Charges (eg. - CC Fee, TOMS, APC etc...)</inlineHelpText>
+        <label>Total Hotel Cost in GBP</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Taken_by__c</fullName>
+        <description>Original field from OT previous database. Will be changed to Account Owner eventually.</description>
+        <externalId>false</externalId>
+        <label>Taken by</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Target_Mark_Up_Value__c</fullName>
+        <externalId>false</externalId>
+        <label>Target Mark Up Value</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Target_Mark_Up__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Target Mark-Up</label>
+        <referenceTo>Target_Mark_Up__c</referenceTo>
+        <relationshipLabel>Opportunities</relationshipLabel>
+        <relationshipName>Opportunities</relationshipName>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>O_Tasks_Management__c</fullName>
+        <externalId>false</externalId>
+        <label>Tasks Management</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Booking form completed by client</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Deposit received</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Payment outstanding</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Supplier reservations confirmed</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Flight tickets issued</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Final documents sent</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Final call to client made pre departure</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Welcome back call made</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Welcome back survey completed</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <visibleLines>10</visibleLines>
+    </fields>
+    <fields>
+        <fullName>O_Team__c</fullName>
+        <externalId>false</externalId>
+        <label>Team</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Africa</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Europe</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Original Diving</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Total_Credit_Card_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Credit Card Charges</label>
+        <summarizedField>Client_Payment__c.CP_Credit_Card_Charges_Amount__c</summarizedField>
+        <summaryForeignKey>Client_Payment__c.CP_Opportunity__c</summaryForeignKey>
+        <summaryOperation>sum</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Total_FFP_Charges__c</fullName>
+        <externalId>false</externalId>
+        <label>Total FFP Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Total_Flight_Cost__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Flight Cost</label>
+        <summarizedField>Client_Group__c.CG_Total_Flight_Cost__c</summarizedField>
+        <summaryForeignKey>Client_Group__c.CG_Opportunity__c</summaryForeignKey>
+        <summaryOperation>sum</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Total_Flight_Cost_in_GBP__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Flight Cost in GBP</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>O_Total_Other_Charges__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Charity__c +  O_Arrival_Presents__c +  O_FX_Transaction_Charges__c +  O_Total_FFP_Charges__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Total Other Charges</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Total_Payment1__c</fullName>
+        <externalId>false</externalId>
+        <formula>O_Total_Payment__c</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Total Payment with CC</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Total_Payment_Without_CC__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Payment Without CC</label>
+        <summarizedField>Client_Payment__c.CP_Receipt_AmountEx__c</summarizedField>
+        <summaryFilterItems>
+            <field>Client_Payment__c.CP_Processed_On__c</field>
+            <operation>notEqual</operation>
+            <value></value>
+        </summaryFilterItems>
+        <summaryForeignKey>Client_Payment__c.CP_Opportunity__c</summaryForeignKey>
+        <summaryOperation>sum</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Total_Payment__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Payment Received</label>
+        <summarizedField>Client_Payment__c.CP_Amount__c</summarizedField>
+        <summaryFilterItems>
+            <field>Client_Payment__c.CP_Processed_On__c</field>
+            <operation>notEqual</operation>
+            <value></value>
+        </summaryFilterItems>
+        <summaryForeignKey>Client_Payment__c.CP_Opportunity__c</summaryForeignKey>
+        <summaryOperation>sum</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Total_Recommended_Selling_Price__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Recommended Selling Price</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>O_Total_Regulatory_Cost__c</fullName>
+        <externalId>false</externalId>
+        <formula>BLANKVALUE(O_APC_Charges__c, O_FFP_Charges__c )</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Total Regulatory Cost</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <fields>
+        <fullName>O_Total_Selling_Price__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Selling Price</label>
+        <summarizedField>Supplier_Booking__c.SB_Selling_Price_Actual__c</summarizedField>
+        <summaryForeignKey>Supplier_Booking__c.SB_Opportunity__c</summaryForeignKey>
+        <summaryOperation>sum</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>O_Ts_Cs__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Terms &amp; Conditions</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Type_2__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Type 2 in old world</inlineHelpText>
+        <label>Holiday reason</label>
+        <picklist>
+            <picklistValues>
+                <fullName>Anniversary</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Babymoon</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Birthday</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Corporate</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Couple (not on honeymoon)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Family holiday (incl children 18 and over)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Family holiday (incl children 18 and under)</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Group</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Honeymoon</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Sabbatical</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Solo Traveller</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Stag/Hen</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>O_Update__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Update</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>O_Welcome__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Welcome</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Obtain_required_information__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Be responsible for obtaining all required information from clients.</inlineHelpText>
+        <label>Obtain required information</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>OrderNumber__c</fullName>
+        <externalId>false</externalId>
+        <label>Order Number</label>
+        <length>8</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>OwnerId</fullName>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>PartnerAccountId</fullName>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Payment_queuing__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Payment queuing to the financial team.</inlineHelpText>
+        <label>Payment queuing</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Pipeline__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>In Pipeline</label>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Pre_holiday_phone_call_to_clients__c</fullName>
+        <externalId>false</externalId>
+        <label>Pre-holiday phone call to clients</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Prepare_and_send_Sharky_and_George_packs__c</fullName>
+        <externalId>false</externalId>
+        <label>Prepare and send Sharky and George packs</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Prepare_and_send_final_documents__c</fullName>
+        <externalId>false</externalId>
+        <label>Prepare and send final documents</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Pricebook2Id</fullName>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Print_flight_documents__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Print flight document separate to final docs (including seats and any changes)</inlineHelpText>
+        <label>Print flight documents</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Probability</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>Reconfirm_hotel_transfer_booking__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Reconfirm hotel transfer bookings 2 weeks before departure</inlineHelpText>
+        <label>Reconfirm hotel/transfer booking</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Referral_hamper__c</fullName>
+        <externalId>false</externalId>
+        <label>Referral hamper</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Remind_consultants_of_pre_holiday_call__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Remind consultants of upcoming pre-holiday phone call</inlineHelpText>
+        <label>Remind consultants of pre-holiday call</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Request_invoice__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Request invoice from suppliers.</inlineHelpText>
+        <label>Request invoice</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Responsible_for_supplier_payments__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Responsible for supplier payments being requested on time.</inlineHelpText>
+        <label>Responsible for supplier payments</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Return_questionnaire__c</fullName>
+        <externalId>false</externalId>
+        <label>Return questionnaire</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Seat_check_and_online_check_in__c</fullName>
+        <externalId>false</externalId>
+        <label>Seat check and online check in</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Send_confirmation_documents__c</fullName>
+        <externalId>false</externalId>
+        <label>Send confirmation documents</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Send_goodbye_email__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Send goodbye email 24 hours before departure.</inlineHelpText>
+        <label>Send goodbye email</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Send_recommendations__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>White space - send email with recommendations, books, events, talks, clothes.</inlineHelpText>
+        <label>Send recommendations</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Something_not_available__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Tell client immediately if something is not available.</inlineHelpText>
+        <label>Something not available</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>StageName</fullName>
+        <picklist>
+            <picklistValues>
+                <fullName>Enquiry</fullName>
+                <default>false</default>
+                <closed>false</closed>
+                <forecastCategory>Pipeline</forecastCategory>
+                <probability>10</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Quote pending</fullName>
+                <default>false</default>
+                <closed>false</closed>
+                <forecastCategory>Pipeline</forecastCategory>
+                <probability>20</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Quoted to client</fullName>
+                <default>false</default>
+                <closed>false</closed>
+                <forecastCategory>Pipeline</forecastCategory>
+                <probability>20</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Quote gone cold</fullName>
+                <default>false</default>
+                <closed>false</closed>
+                <forecastCategory>Pipeline</forecastCategory>
+                <probability>5</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Booking Optional</fullName>
+                <default>false</default>
+                <closed>false</closed>
+                <forecastCategory>Pipeline</forecastCategory>
+                <probability>80</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Booked</fullName>
+                <default>false</default>
+                <closed>true</closed>
+                <forecastCategory>Closed</forecastCategory>
+                <probability>100</probability>
+                <won>true</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Booking cancelled</fullName>
+                <default>false</default>
+                <closed>true</closed>
+                <forecastCategory>Omitted</forecastCategory>
+                <probability>0</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Training enquiry</fullName>
+                <default>false</default>
+                <closed>false</closed>
+                <forecastCategory>Pipeline</forecastCategory>
+                <probability>0</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Redundant</fullName>
+                <default>false</default>
+                <description>This is when a new quote has taken the place of the old one</description>
+                <closed>true</closed>
+                <forecastCategory>Omitted</forecastCategory>
+                <probability>0</probability>
+                <won>false</won>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Enquiry gone cold</fullName>
+                <default>false</default>
+                <closed>true</closed>
+                <forecastCategory>Omitted</forecastCategory>
+                <probability>0</probability>
+                <won>false</won>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>  
+    <fields>
+        <fullName>Take_balance_payment_and_issue_receipt__c</fullName>
+        <externalId>false</externalId>
+        <label>Take balance payment and issue receipt</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Taking_deposit__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Taking deposit payment, issues receipt/ATOL receipt.</inlineHelpText>
+        <label>Taking deposit</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Thank_you_note__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Thank you for booking note and deposit paid.</inlineHelpText>
+        <label>Thank you note</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>TotalOpportunityQuantity</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+    </fields>
+    <fields>
+        <fullName>Total_Selling_Price__c</fullName>
+        <externalId>false</externalId>
+        <formula>Amount</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Total Selling Price</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>TrackingNumber__c</fullName>
+        <externalId>false</externalId>
+        <label>Tracking Number</label>
+        <length>12</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Type</fullName>
+        <picklist>
+            <picklistValues>
+                <fullName>Individual</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Agent</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Joint</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Press Trip</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Journalist</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Farm Trip</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>Update_departure_board__c</fullName>
+        <externalId>false</externalId>
+        <label>Update departure board</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Update_in_house_records__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Keep all in-house records up to date with all information - passports, FFNs, dietary requirements, etc.</inlineHelpText>
+        <label>Update in-house records</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Welcome_back_phonecall__c</fullName>
+        <externalId>false</externalId>
+        <label>Welcome back phone call</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Welcome_home_packs__c</fullName>
+        <externalId>false</externalId>
+        <label>Welcome home packs</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <listViews>
+        <fullName>AllOpportunities</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All Opportunities</label>
+    </listViews>
+    <listViews>
+        <fullName>ClosingNextMonth</fullName>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>OPPORTUNITY.CLOSED</field>
+            <operation>equals</operation>
+            <value>0</value>
+        </filters>
+        <filters>
+            <field>OPPORTUNITY.CLOSE_DATE</field>
+            <operation>equals</operation>
+            <value>NEXT_MONTH</value>
+        </filters>
+        <label>Closing Next Month</label>
+    </listViews>
+    <listViews>
+        <fullName>ClosingThisMonth</fullName>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>OPPORTUNITY.CLOSED</field>
+            <operation>equals</operation>
+            <value>0</value>
+        </filters>
+        <filters>
+            <field>OPPORTUNITY.CLOSE_DATE</field>
+            <operation>equals</operation>
+            <value>THIS_MONTH</value>
+        </filters>
+        <label>Closing This Month</label>
+    </listViews>
+    <listViews>
+        <fullName>Default_Opportunity_Pipeline</fullName>
+        <filterScope>Mine</filterScope>
+        <filters>
+            <field>OPPORTUNITY.CLOSE_DATE</field>
+            <operation>greaterOrEqual</operation>
+            <value>LAST_N_MONTHS:3</value>
+        </filters>
+        <label>Opportunity Pipeline</label>
+    </listViews>
+    <listViews>
+        <fullName>MyOpportunities</fullName>
+        <filterScope>Mine</filterScope>
+        <label>My Opportunities</label>
+    </listViews>
+    <listViews>
+        <fullName>NewLastWeek</fullName>
+        <columns>OPPORTUNITY.NAME</columns>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>OPPORTUNITY.CURRENCY_ISO_CODE</columns>
+        <columns>OPPORTUNITY.CLOSE_DATE</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>OPPORTUNITY.CREATED_DATE</field>
+            <operation>equals</operation>
+            <value>LAST_WEEK</value>
+        </filters>
+        <label>New Last Week</label>
+    </listViews>
+    <listViews>
+        <fullName>NewThisWeek</fullName>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>OPPORTUNITY.CREATED_DATE</field>
+            <operation>equals</operation>
+            <value>THIS_WEEK</value>
+        </filters>
+        <label>New This Week</label>
+    </listViews>
+    <listViews>
+        <fullName>Private</fullName>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>O_RecordType__c</field>
+            <operation>equals</operation>
+            <value>GBP</value>
+        </filters>
+        <label>Private</label>
+    </listViews>
+    <listViews>
+        <fullName>Won</fullName>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>OPPORTUNITY.CLOSED</field>
+            <operation>equals</operation>
+            <value>1</value>
+        </filters>
+        <filters>
+            <field>OPPORTUNITY.WON</field>
+            <operation>equals</operation>
+            <value>1</value>
+        </filters>
+        <label>Won</label>
+    </listViews>
+    <searchLayouts>
+        <customTabListAdditionalFields>OPPORTUNITY.NAME</customTabListAdditionalFields>
+        <customTabListAdditionalFields>ACCOUNT.NAME</customTabListAdditionalFields>
+        <customTabListAdditionalFields>OPPORTUNITY.CLOSE_DATE</customTabListAdditionalFields>
+        <lookupDialogsAdditionalFields>OPPORTUNITY.NAME</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>ACCOUNT.NAME</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>ACCOUNT.SITE</lookupDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>OPPORTUNITY.NAME</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>ACCOUNT.NAME</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>ACCOUNT.SITE</lookupPhoneDialogsAdditionalFields>       
+        <searchResultsAdditionalFields>OPPORTUNITY.NAME</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>ACCOUNT.NAME</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>ACCOUNT.SITE</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>OPPORTUNITY.STAGE_NAME</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>OPPORTUNITY.CLOSE_DATE</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>CORE.USERS.ALIAS</searchResultsAdditionalFields>
+    </searchLayouts>
+    <sharingModel>ReadWrite</sharingModel>
+    <validationRules>
+        <fullName>Opportunity_Selling_Price_Locked</fullName>
+        <active>true</active>
+        <errorConditionFormula>AND(OR(PRIORVALUE(Amount) != Amount,PRIORVALUE(O_Margin__c) != O_Margin__c), O_Lock__c)</errorConditionFormula>
+        <errorMessage>Selling price has been locked please contact to system admin</errorMessage>
+    </validationRules>
+    <webLinks>
+        <fullName>ATOL</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>ATOL</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.ATOL__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Acknowledge</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Acknowledgement Email</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Acknowledgement_Email__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Client_Payments</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Client Payments</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Client_Payments__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Clone</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <hasMenubar>false</hasMenubar>
+        <hasScrollbars>true</hasScrollbars>
+        <hasToolbar>false</hasToolbar>
+        <height>600</height>
+        <isResizable>true</isResizable>
+        <linkType>page</linkType>
+        <masterLabel>Clone</masterLabel>
+        <openType>newWindow</openType>
+        <page>CopyOpportunity</page>
+        <position>none</position>
+        <protected>false</protected>
+        <showsLocation>false</showsLocation>
+        <showsStatus>false</showsStatus>
+    </webLinks>
+    <webLinks>
+        <fullName>Cover_Image</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Cover Image</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Cover_Image__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>DeliveryStatus</fullName>
+        <availability>online</availability>
+        <displayType>link</displayType>
+        <encodingKey>UTF-8</encodingKey>
+        <hasMenubar>true</hasMenubar>
+        <hasScrollbars>true</hasScrollbars>
+        <hasToolbar>true</hasToolbar>
+        <height>600</height>
+        <isResizable>true</isResizable>
+        <linkType>url</linkType>
+        <masterLabel>Delivery Status</masterLabel>
+        <openType>newWindow</openType>
+        <position>none</position>
+        <protected>false</protected>
+        <showsLocation>true</showsLocation>
+        <showsStatus>true</showsStatus>
+        <url>http://www.fedex.com/cgi-bin/tracking?tracknumbers={!Opportunity_Tracking_Number}&amp;action=track&amp;language=english&amp;cntry_code=us</url>
+    </webLinks>
+    <webLinks>
+        <fullName>External_Booking_Form</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>External Booking Form</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;{!$Setup.Site__c.SiteURLAdmin__c}/{!$Setup.Custom_Button_URL__c.External_Booking_Form__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;)</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Final_Docs_Category</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Final Docs Category</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Final_Docs_Category__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Final_Docs_Setting</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Final Docs Setting</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Final_Docs_Setting__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Final_Message</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Final Message</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Final_Message__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Holiday_Enquiry</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Holiday Enquiry</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Holiday_Enquiry__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Holiday_Suggestion</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Holiday Suggestion</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&quot;{!IF($Setup.Pro_UE__c.Holiday_Suggestion__c , &apos;/apex/&apos;+$Setup.Custom_Button_URL__c.Holiday_Suggestion__c+&apos;?id=&apos;+Opportunity.Id,&apos;/apex/&apos;+$Setup.Site__c.Namespace__c+&apos;NeedUpgrade&apos;)}&quot;,&apos;_blank&apos;)</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Internal_Booking_Form</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Internal Booking Form</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&quot;{!IF( $Setup.Pro_UE__c.OBF__c , &apos;/apex/&apos;+  $Setup.Custom_Button_URL__c.Internal_Booking_Form__c+&apos;?id=&apos;+Opportunity.Id,&apos;/apex/&apos;+$Setup.Site__c.Namespace__c+&apos;NeedUpgrade&apos;)}&quot;,&apos;_blank&apos;)</url>
+    </webLinks>
+    <webLinks>
+        <fullName>ItineraryBuilder</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <height>600</height>
+        <linkType>page</linkType>
+        <masterLabel>Itinerary Builder</masterLabel>
+        <openType>sidebar</openType>
+        <page>ItineraryBuilder</page>
+        <protected>false</protected>
+    </webLinks>
+    <webLinks>
+        <fullName>Itinerary_Category</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Itinerary Category</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Itinerary_Category__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Itinerary_PDF</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Itinerary PDF</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Itinerary_Pdf__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Itinerary_Setting</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Itinerary Setting</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Itinerary_Settings__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Lock</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <height>600</height>
+        <linkType>page</linkType>
+        <masterLabel>Lock</masterLabel>
+        <openType>sidebar</openType>
+        <page>LockOpportunity</page>
+        <protected>false</protected>
+    </webLinks>
+    <webLinks>
+        <fullName>Manage_Tasks</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Manage Tasks</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Manage_Tasks__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Questionnaire</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Questionnaire</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&quot;{!IF( $Setup.Pro_UE__c.Questionnaire__c  , &apos;/apex/&apos;+ $Setup.Custom_Button_URL__c.Questionnaire__c+&apos;?id=&apos;+Opportunity.Id,&apos;/apex/&apos;+$Setup.Site__c.Namespace__c+&apos;NeedUpgrade&apos;)}&quot;,&apos;_blank&apos;)</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Refresh</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Refresh</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Site__c.Namespace__c}RefreshOpportunity?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Save_as_PDF</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Save as PDF</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Site__c.Namespace__c}SaveAsPDF?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Send_Email</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Send Email</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Send_Email__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Supplier_Payment</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Supplier Payment</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Supplier_Payments__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+    <webLinks>
+        <fullName>Unlock</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <height>600</height>
+        <linkType>page</linkType>
+        <masterLabel>Unlock</masterLabel>
+        <openType>sidebar</openType>
+        <page>UnlockOpportunity</page>
+        <protected>false</protected>
+    </webLinks>
+    <webLinks>
+        <fullName>Your_Itinerary</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>Itinerary Web</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>window.open(&apos;/apex/{!$Setup.Custom_Button_URL__c.Itinerary_Web__c}?id={!Opportunity.Id}&apos;,&apos;_blank&apos;);</url>
+    </webLinks>
+</CustomObject>

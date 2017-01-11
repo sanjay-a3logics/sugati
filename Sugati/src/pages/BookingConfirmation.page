@@ -1,0 +1,2194 @@
+<apex:page standardStylesheets="true" cache="false" sidebar="false" showHeader="false" standardController="Opportunity" extensions="BookingConfirmationController">
+<title>Booking Confirmation</title>
+    <apex:form id="frm">
+        <c:BasicResources ></c:BasicResources>
+        <apex:actionFunction status="loading" name="JsConfirm" action="{!Confirm}" reRender="msgs"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/> 
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <apex:stylesheet value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/css/booking.css"/>
+        <apex:includeScript value="https://appssential-mobile.s3.amazonaws.com/originaltravel/sf/js/booking.js"/> 
+        <c:Loading />
+    
+    <head>
+        <meta charset="utf-8" />
+       <title>Introduction</title>
+        <style>    
+            body{
+                background: #f2f2ef;
+                font-family: Century Gothic,CenturyGothic,AppleGothic,museo_sans300,sans-serif;
+            }
+            .heading{
+                color: #457098;
+            }
+            td{
+                font-family: Century Gothic,CenturyGothic,AppleGothic,museo_sans300,sans-serif;
+            }
+            .ui-button-icon-only .ui-icon {
+                left: 5%;
+                top: 1%;
+            }
+            .has-error .form-control {
+                border-color: #FF0500;
+            }
+            #contentLoading{
+                width: 100%;
+                height: 100%;
+                top: 0px;
+                left: 0px;
+                position: fixed;
+                display: block;
+                opacity: 0.7;
+                background-color: #fff;
+                z-index: 10001;
+                text-align: center;
+            }
+            .control-label {
+                font-weight:normal;
+            }
+            .has-error .control-label{
+                font-weight:bold; 
+                color : #FF0500;   
+            }
+            .linkCheque, .linkBank, .linkCash{
+                cursor: pointer;
+                text-decoration: none !important;
+            }
+            .required-field{
+                font-weight:bold; 
+                color : #FF0500;  
+            }
+            .actions-bottom {
+                position: fixed;
+                z-index: 99;
+                margin: 0;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: #f1f1f1;
+            }
+            .alert{
+                margin-bottom: 0px;
+            }
+        </style>
+        <script>
+            jQuery(document).ready(function() {
+                $( ".date" ).datepicker({ 
+                    altFormat: "dd/mm/yy", 
+                    dateFormat: 'dd/mm/yy',
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "-100:+0"
+                });
+                $( ".date" ).datepicker( "option", "maxDate", new Date() );
+            });
+            
+            function changeType(th){
+                var d = $(th);
+                 if(d.prop("checked") == true){
+                     $('.chk').each(function(){
+                         if($(th).attr('name') != $(this).attr('name')){
+                             $(this).prop("checked", false);
+                         }
+                     });
+                     bycard();
+                 }
+            }
+            function validate(){
+                if('{!isSiteUser}' == 'true'){
+                    if(!$('.tc').prop('checked')){
+                        $('<div></div>').appendTo('body')
+                        .html('Please select Terms and Conditions checkbox')
+                        .dialog({
+                            modal: true,
+                            title: 'Error',
+                            zIndex: 10000,
+                            autoOpen: true,
+                            width: '415px',
+                            resizable: false,
+                            buttons: {
+                                OK: function () {
+                                    $(this).dialog("close");
+                                }
+                            },
+                            close: function (event, ui) {
+                                $(this).remove();
+                            }
+                        });
+                        return false;
+                    }
+                    if(!$('.insurance').prop('checked')){
+                         $('<div></div>').appendTo('body')
+                        .html('Please select Insurance checkbox')
+                        .dialog({
+                            modal: true,
+                            title: 'Error',
+                            zIndex: 10000,
+                            autoOpen: true,
+                            width: '415px',
+                            resizable: false,
+                            buttons: {
+                                OK: function () {
+                                    $(this).dialog("close");
+                                }
+                            },
+                            close: function (event, ui) {
+                                $(this).remove();
+                            }
+                        });
+                        return false;
+                    }
+                }
+                else{
+                
+                }
+            }
+            
+            function ValidateConfirm(Oppid){
+                var count = 0;
+                console.log('Validate -- ');
+                $('.chk').each(function(){
+                    if($(this).attr('checked')) {
+                        count = 1;
+                    }
+                });
+                calculateTotal();
+                console.log('Validate -- '+count);
+                var isNameValid = true;
+                var isAmountValid = true;
+                var isCardNumberValid = true;
+                var isExpirayDateValid = true;
+                var isCVVValid = true;
+                var isCountrySelected = true;
+                $('.card-name, card-number, .card-amount, .card-expiry, .card-code, .card-country').removeClass('has-error');
+                   
+                if($('.card-details').length != 0){
+                    if($('.card-name-field').val() == ''){
+                        isNameValid = false;
+                        $('.card-name').addClass('has-error');
+                    }
+                    if($('.card-amount-field').val() <= 0){
+                        isAmountValid = false;
+                        $('.card-amount').addClass('has-error');
+                    }
+                    if($('.card-number-field').val().trim() == '' || $('.card-number-field').val().length<12){
+                        isCardNumberValid = false;
+                        $('.card-number').addClass('has-error');
+                    }
+                    if($('.card-expiry-field:first').val() == '' || $('.card-expiry-field:last').val() ==''){
+                        isExpirayDateValid = false;
+                        $('.card-expiry').addClass('has-error');
+                    }
+                    if($('.card-country-field').val() ==''){
+                        isCountrySelected = false;
+                        $('.card-country').addClass('has-error');
+                    } 
+                    if($('.card-code-field').val().trim() ==''){
+                        isCountrySelected = false;
+                        $('.card-code').addClass('has-error');
+                    }     
+                }
+                var value = parseFloat($('.card-amount-field').val());
+                if( value != 0 && value > 0 && count == 1 && isNameValid && isAmountValid && isCardNumberValid && isExpirayDateValid && isCVVValid && isCountrySelected){
+                    Confirm();
+                }
+                else if(!(value == 0 || value < 0)){
+                    if(!(isNameValid && isAmountValid && isCardNumberValid && isExpirayDateValid && isCVVValid && isCountrySelected)){
+                        alert('Please provide valid card detais');  
+                        var errorDiv = $('#errorMsg');
+                        var scrollPos = errorDiv.offset().top;
+                       // $(window).scrollTop(scrollPos);   
+                    }
+                    else{
+                        alert('Please select a payment option first.');   
+                    }
+                    
+                }
+                else if(value == 0 || value < 0){
+                    alert('please enter an amount greater than 0.');    
+                }
+            }
+            
+            function alert(value){
+                $('<div></div>').appendTo('body')
+                .html(value)
+                .dialog({
+                    modal: true,
+                    title: 'Error',
+                    zIndex: 10000,
+                    autoOpen: true,
+                    width: '415px',
+                    resizable: false,
+                    buttons: {
+                        OK: function () {
+                            $(this).dialog("close");
+                        }
+                    },
+                    close: function (event, ui) {
+                        $(this).remove();
+                    }
+                }); 
+            }
+            function loading(val){
+                if (val) {
+                    document.getElementById('contentLoading').style.display = 'inline-block';
+                    document.getElementById('contentLoaded').style.display = 'none';
+                }
+                else {
+                    document.getElementById('contentLoading').style.display = 'none';
+                    document.getElementById('contentLoaded').style.display = 'inline-block';
+                }
+            }
+            
+            function calculateTotal(type){
+                if(type){
+                    var amount = document.getElementById('j_id0:frm:dueAmount').value;
+                    var cc = document.getElementById('ccCharges').value;
+                    var bookingAmount = parseFloat(amount);
+                    var creditCardCharges = ((parseFloat(amount)*cc)/100);
+                    if(cc == 0){
+                        creditCardCharges = 0;
+                    }
+                    var amountToBePaid = (bookingAmount + creditCardCharges).toFixed(2);
+                    document.getElementById('totalPayment').value = amountToBePaid;
+                    document.querySelector('.totalPayment').value = amountToBePaid;
+                }
+            }
+            
+            
+        </script>
+        <apex:outputPanel id="exp">
+            <script>
+                jQuery(document).ready(function() {    
+                    jQuery('.linkBank').on('click', function(event) {        
+                         jQuery('.bankDetails').toggle('show');
+                    });
+                    jQuery('.hideshowIn').on('click', function(event) {        
+                         $('.inContent').toggle('show');
+                    });
+                    jQuery('.linkCheque').on('click', function(event) {        
+                         jQuery('.chequeDetails').toggle('show');
+                    });
+                    jQuery('.linkCash').on('click', function(event) {        
+                         jQuery('.cashDetails').toggle('show');
+                    });
+                    jQuery('.linkCard').on('click', function(event) {        
+                         jQuery('.cardDetails').toggle('show');
+                    });
+                    jQuery('.linkAmex').on('click', function(event) {        
+                         jQuery('.amexDetails').toggle('show');
+                    });
+                    
+                });
+            </script>
+        </apex:outputPanel>
+    </head>
+
+
+    <div style="background-color: white;">
+        <apex:image style="padding:20px;margin-left:13%;"/>
+    </div>
+    <div class="wrap" >
+        <c:headerComponent page="Booking Confirmation"/>
+        <div>
+            <script>    
+                
+            </script>       
+        </div>
+        <apex:pageMessages id="msg"></apex:pageMessages>
+        <apex:actionStatus id="loading"  onstart="loading(true)" onstop="loading(false)" />
+        <div id="contentLoading" style="display:none; ">
+            <apex:image id="contentLoading1" url="{!$Resource.loading}" width="100" height="100" style="margin-top : 100px;" alt="Loading graphic"/>
+        </div>
+        
+        <apex:actionfunction status="loading" name="bycard" action="{!changeType}" reRender="data,exp"/>
+        <apex:actionFunction status="loading" Name="Confirm"  action="{!Confirm}" reRender="frm,exp"/>
+        
+        <div class="row">
+          <div class="col-sm-8">
+              <apex:outputPanel id="data">
+                  <div class="body">
+                      <div style="padding:10px;">
+                          <dt style="text-transform: uppercase;" class="heading">Payment Options</dt> 
+                          <br/>    
+                          <strong>I wish to pay by bank transfer</strong>
+                          Please insert payment amount in the box. For more information on bank account details please click here <a href="" class="linkBank">(+)</a>
+                          <apex:inputCheckbox styleClass="chk" onclick="changeType(this)" value="{!byTransfer}" style="float:right;"/>
+                          <br/>
+                          <div class="bankDetails" style="display:none">
+                             <br/>
+                            <!---------------SGD-------------------->
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                SGD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+        
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 152-675823-001</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                
+                            </table>
+                        </apex:outputPanel>
+                        
+                    <!------------------->
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                USD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+    
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 260-713359-178</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>    
+                        
+                    <!-------------DXB------------------>
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                USD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th>Account Name</th>
+                                    <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank</th>
+                                    <td>: &nbsp; HSBC Middle East Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No</th>
+                                    <td>: &nbsp; 070-130026-100</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; P.O Box 66 , Dubai, UAE</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; BBMEAEAD</td>
+                                </tr>
+                                <tr>
+                                    <th>IBAN No</th>
+                                    <td>: &nbsp; AE 0602 0000 0070 130026 100</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>                
+                    <!---------------------------------->
+                    
+                    <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                SGD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+    
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 152-675823-001</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                        
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                USD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+    
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 260-713359-178</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="2">Intermediary Bank</th>
+                                </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>: &nbsp; HSBC Bank USA, New York</td>
+                                </tr> 
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; MRMDUS33</td>
+                                </tr> 
+                                 
+                            </table>
+                        </apex:outputPanel>
+                        
+              <!--------- If RecordType = SG and Currency = GBP ------------>
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                GBP Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+    
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 260-713359-179</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="2">Intermediary Bank</th>
+                                </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>: &nbsp; HSBC Bank Plc, London</td>
+                                </tr> 
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; MIDLGB22</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                        
+                <!--------- If RecordType = SG and Currency = EUR ------------>
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                EUR Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+    
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 260-713359-181</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                        
+                <!--------- If RecordType = SG and Currency = AUD ------------>
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                AUD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th width="85">Account Name </th>
+                                    <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                </tr>
+    
+                                <tr>
+                                    <th>Bank </th>
+                                    <td>: &nbsp; HSBC Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No </th>
+                                    <td>: &nbsp; 260-713359-180</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; 21 Collyer Quay</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 7232</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCSGSG</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                        
+                <!--------- If RecordType = DXB and Currency = AED ------------>
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                AED Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <th>Account Name</th>
+                                    <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank</th>
+                                    <td>: &nbsp; HSBC Middle East Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No</th>
+                                    <td>: &nbsp; 070-130026-001</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; P.O.Box 66 , Dubai, UAE</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; BBMEAEAD</td>
+                                </tr>
+                                <tr>
+                                    <th>IBAN No</th>
+                                    <td>: &nbsp; AE 6002 0000 0070 130026 001</td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                        
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                USD Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                
+                                <tr>
+                                    <th>Account Name</th>
+                                    <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank</th>
+                                    <td>: &nbsp; HSBC Middle East Ltd</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>Account No</th>
+                                    <td>: &nbsp; 070-130026-100</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <td>: &nbsp; P.O Box 66 , Dubai, UAE</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Branch Code</th>
+                                    <td>: &nbsp; 152</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; BBMEAEAD</td>
+                                </tr>
+                                <tr>
+                                    <th>IBAN No</th>
+                                    <td>: &nbsp; AE 0602 0000 0070 130026 100</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                               
+                            </table>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="false">
+                            <div style="text-transform: uppercase;" class="heading">
+                                HK Bank Transfer
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <th width="85px">Account Name</th>
+                                    <td>: &nbsp; Lightfoot Travel (HK) Ltd</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank</th>
+                                    <td>: &nbsp; HSBC Hong Kong</td>
+                                </tr>
+                                
+                                <tr>
+                                    <th>A/c No</th>
+                                    <td>: &nbsp; 400-824223-838</td>
+                                </tr>
+                                <tr>
+                                    <th width="65px">Branch Name<br/><br/></th>
+                                    <td>: &nbsp; Head Office, 1 Queens Road, Central, Hong Kong</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th>Bank Code</th>
+                                    <td>: &nbsp; 004</td>
+                                </tr>
+                                <tr>
+                                    <th>Swift Code</th>
+                                    <td>: &nbsp; HSBCHKHHHKH</td>
+                                </tr>
+                            </table>
+                        </apex:outputpanel><br/>
+                        
+                         Please ask your bank to reference your Lightfoot booking number and email a copy of the bank transaction confirmation to your travel designer.
+
+                          </div>
+                          
+                          <apex:outputPanel rendered="{!showCashCheque}">
+                              <br/>
+                              <strong>I wish to pay by cheque</strong>
+                              Please insert payment amount in the box, and for more information on cheque and postal details click here <a href="" class="linkCheque">(+)</a>
+                              <apex:inputCheckbox styleClass="chk" onclick="changeType(this)" value="{!byCheque}" style="float:right;"/>
+                              <br/>
+                          </apex:outputPanel>
+                          
+                          <div class="chequeDetails" style="display:none">
+                              <br/>
+                                       <!---------------SGD-------------------->
+                                    <apex:outputPanel rendered="false">
+                                        <div style="text-transform: uppercase;" class="heading">
+                                        SGD Bank FOR CHEQUE DEPOSIT<br/>
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 152-675823-001</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <!------------------->
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        USD Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 260-713359-178</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>    
+                            
+                                <!-------------DXB------------------>
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        USD Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank</th>
+                                            <td>: &nbsp; HSBC Middle East Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No</th>
+                                            <td>: &nbsp; 070-130026-100</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; P.O Box 66 , Dubai, UAE</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; BBMEAEAD</td>
+                                        </tr>
+                                        <tr>
+                                            <th>IBAN No</th>
+                                            <td>: &nbsp; AE 0602 0000 0070 130026 100</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>                
+                                <!---------------------------------->
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        SGD Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 152-675823-001</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        USD Bank  FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 260-713359-178</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2">Intermediary Bank</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <td>: &nbsp; HSBC Bank USA, New York</td>
+                                        </tr> 
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; MRMDUS33</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <!--------- If RecordType = SG and Currency = GBP ------------>
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        GBP Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 260-713359-179</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2">Intermediary Bank</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <td>: &nbsp; HSBC Bank Plc, London</td>
+                                        </tr> 
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; MIDLGB22</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <!--------- If RecordType = SG and Currency = EUR ------------>
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        EUR Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 260-713359-181</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <!--------- If RecordType = SG and Currency = AUD ------------>
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        AUD Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th width="85">Account Name </th>
+                                            <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                        </tr>
+                            
+                                        <tr>
+                                            <th>Bank </th>
+                                            <td>: &nbsp; HSBC Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No </th>
+                                            <td>: &nbsp; 260-713359-180</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; 21 Collyer Quay</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 7232</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCSGSG</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <!--------- If RecordType = DXB and Currency = AED ------------>
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        AED Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank</th>
+                                            <td>: &nbsp; HSBC Middle East Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No</th>
+                                            <td>: &nbsp; 070-130026-001</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; P.O.Box 66 , Dubai, UAE</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; BBMEAEAD</td>
+                                        </tr>
+                                        <tr>
+                                            <th>IBAN No</th>
+                                            <td>: &nbsp; AE 6002 0000 0070 130026 001</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        USD Bank FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank</th>
+                                            <td>: &nbsp; HSBC Middle East Ltd</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>Account No</th>
+                                            <td>: &nbsp; 070-130026-100</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <td>: &nbsp; P.O Box 66 , Dubai, UAE</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Branch Code</th>
+                                            <td>: &nbsp; 152</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; BBMEAEAD</td>
+                                        </tr>
+                                        <tr>
+                                            <th>IBAN No</th>
+                                            <td>: &nbsp; AE 0602 0000 0070 130026 100</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                       
+                                    </table>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                        HK Bank  FOR CHEQUE DEPOSIT
+                                    </div>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <th width="85px">Account Name</th>
+                                            <td>: &nbsp; Lightfoot Travel (HK) Ltd</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank</th>
+                                            <td>: &nbsp; HSBC Hong Kong</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th>A/c No</th>
+                                            <td>: &nbsp; 400-824223-838</td>
+                                        </tr>
+                                        <tr>
+                                            <th width="65px">Branch Name<br/><br/></th>
+                                            <td>: &nbsp; Head Office, 1 Queens Road, Central, Hong Kong</td>
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bank Code</th>
+                                            <td>: &nbsp; 004</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Swift Code</th>
+                                            <td>: &nbsp; HSBCHKHHHKH</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputpanel>
+                              
+                               <br/>
+                               <div class="heading">OFFICE ADDRESS FOR CHEQUE POSTAL</div>
+                               
+                                <apex:outputPanel rendered="false">
+                                    <table>
+                                        <tr>
+                                            <td colspan="2"><strong>Lightfoot Travel Pte Ltd</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:65px"><strong>Post to :</strong></td> 
+                                            <td>33 Pekin Street, <br/>#02-01A Far East Square, <br/>SINGAPORE, 048763</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="false">
+                                    <table>
+                                        <tr>
+                                            <td colspan="2"><strong>Lightfoot Travel (HK) Limited</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:65px"><strong>Post to :</strong></td> 
+                                            <td>5F Tin on Sing Commercial Building, <br/>No 41-43 Graham Street, <br/>Hong Kong</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="false">
+                                    <table>
+                                        <tr>
+                                            <td colspan="2"><strong>LIGHTFOOT TRAVEL FZ LLC</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:65px"><strong>Post to :</strong></td> 
+                                            <td>Level 14,<br/> Boulevard Plaza Tower 1,<br/> Sheikh Mohammed Bin Rashid Boulevard.<br/> Downtown Dubai,<br/> P O Box 334036 Dubai,<br/> United Arab Emirates Registration #: 4152/2013 FCZ</td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                                Please reference your booking number and name on the cheque.
+                          </div>
+                          
+                          <apex:outputPanel rendered="{!showCashCheque}">
+                              <br/>
+                              <strong>I wish to pay by cash</strong>
+                              Please insert payment amount in the box. For more information on bank account details please click here <a href="" class="linkCash">(+)</a>
+                              <apex:inputCheckbox styleClass="chk" onclick="changeType(this)" value="{!byCash}" style="float:right;"/>
+                              <br/>
+                          </apex:outputPanel>
+                          <div class="cashDetails" style="display:none">
+                              <br/>
+                                   <!---------------SGD-------------------->
+                                <apex:outputPanel rendered="false">
+                                    <div style="text-transform: uppercase;" class="heading">
+                                    SGD Bank TRANSFER<br/>
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 152-675823-001</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <!------------------->
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    USD Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 260-713359-178</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>    
+                        
+                            <!-------------DXB------------------>
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    USD Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th>Account Name</th>
+                                        <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank</th>
+                                        <td>: &nbsp; HSBC Middle East Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No</th>
+                                        <td>: &nbsp; 070-130026-100</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; P.O Box 66 , Dubai, UAE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; BBMEAEAD</td>
+                                    </tr>
+                                    <tr>
+                                        <th>IBAN No</th>
+                                        <td>: &nbsp; AE 0602 0000 0070 130026 100</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>                
+                            <!---------------------------------->
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    SGD Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 152-675823-001</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    USD Bank  TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 260-713359-178</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2">Intermediary Bank</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Name</th>
+                                        <td>: &nbsp; HSBC Bank USA, New York</td>
+                                    </tr> 
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; MRMDUS33</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <!--------- If RecordType = SG and Currency = GBP ------------>
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    GBP Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 260-713359-179</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2">Intermediary Bank</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Name</th>
+                                        <td>: &nbsp; HSBC Bank Plc, London</td>
+                                    </tr> 
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; MIDLGB22</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <!--------- If RecordType = SG and Currency = EUR ------------>
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    EUR Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 260-713359-181</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <!--------- If RecordType = SG and Currency = AUD ------------>
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    AUD Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th width="85">Account Name </th>
+                                        <td>: &nbsp; Lightfoot Travel Pte Ltd </td>
+                                    </tr>
+                        
+                                    <tr>
+                                        <th>Bank </th>
+                                        <td>: &nbsp; HSBC Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No </th>
+                                        <td>: &nbsp; 260-713359-180</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; 21 Collyer Quay</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 7232</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCSGSG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <!--------- If RecordType = DXB and Currency = AED ------------>
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    AED Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <th>Account Name</th>
+                                        <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank</th>
+                                        <td>: &nbsp; HSBC Middle East Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No</th>
+                                        <td>: &nbsp; 070-130026-001</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; P.O.Box 66 , Dubai, UAE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; BBMEAEAD</td>
+                                    </tr>
+                                    <tr>
+                                        <th>IBAN No</th>
+                                        <td>: &nbsp; AE 6002 0000 0070 130026 001</td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    USD Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    
+                                    <tr>
+                                        <th>Account Name</th>
+                                        <td>: &nbsp; LIGHTFOOT TRAVEL FZ LLC</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank</th>
+                                        <td>: &nbsp; HSBC Middle East Ltd</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Account No</th>
+                                        <td>: &nbsp; 070-130026-100</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Name</th>
+                                        <td>: &nbsp; P.O Box 66 , Dubai, UAE</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Branch Code</th>
+                                        <td>: &nbsp; 152</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; BBMEAEAD</td>
+                                    </tr>
+                                    <tr>
+                                        <th>IBAN No</th>
+                                        <td>: &nbsp; AE 0602 0000 0070 130026 100</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                   
+                                </table>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="false">
+                                <div style="text-transform: uppercase;" class="heading">
+                                    HK Bank TRANSFER
+                                </div>
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <th width="85px">Account Name</th>
+                                        <td>: &nbsp; Lightfoot Travel (HK) Ltd</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank</th>
+                                        <td>: &nbsp; HSBC Hong Kong</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>A/c No</th>
+                                        <td>: &nbsp; 400-824223-838</td>
+                                    </tr>
+                                    <tr>
+                                        <th width="65px">Branch Name<br/><br/></th>
+                                        <td>: &nbsp; Head Office, 1 Queens Road, Central, Hong Kong</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bank Code</th>
+                                        <td>: &nbsp; 004</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Swift Code</th>
+                                        <td>: &nbsp; HSBCHKHHHKH</td>
+                                    </tr>
+                                </table>
+                            </apex:outputpanel><br/>
+                          </div>
+                          <br/>
+                          <strong>I wish to pay by American Express credit card</strong>
+                          Please insert payment amount in the box. For more information please click here <a href="" class="linkAmex">(+)</a>
+                          <apex:inputCheckbox label="card" styleClass="chk" onclick="changeType(this)" value="{!byCardA}" style="float:right;"/>
+                          <br/>
+                          <div class="amexDetails" style="display:none;font-size:12px">
+                              <br/>
+                              Please note we do not accept AMEX through our online payment gateway. To pay for your booking with AMEX please tick the box and proceed to checkout. Your Travel Designer will be in touch to collect your AMEX details. As per our terms and conditions a service fee of 2% is chargeable for bookings and ticketing by Lightfoot staff when paying with AMEX.<b> All AMEX payments are taken in Singapore Dollars (SGD).</b>
+                          </div>    
+                          
+                          <div class="chequeDetails" style="display:none"><br/></div>
+                          <br/>
+                          <strong>I wish to pay by Visa and MasterCard</strong>
+                          Please insert payment amount in the box, and for more info Click here <a href="" class="linkCard">(+)</a>
+                          <apex:inputCheckbox label="card" styleClass="chk" onclick="changeType(this)" value="{!byCard}" style="float:right;"/>
+                          <br/>
+                          <div class="cardDetails" style="display:none;font-size:12px">
+                              <br/>
+                              Please note as per our terms and conditions a service fee of 3% is chargeable for bookings and ticketing by Lightfoot staff when paying with VISA or MasterCard. By proceeding with payment by VISA or MasterCard you agree to this service charge
+                          </div>    
+                          
+                          <br/>
+                          <br/>
+                          <apex:outputPanel rendered="{!opp.O_Outstanding__c > 0}">
+                              <table>
+                                  <tr>
+                                      <td class="payment-type"><label class="control-label">  Payment for:<span class="required-field">*</span></label></td>
+                                      <td class="payment-type">
+                                          <!--<apex:outputText value="{!selectedCurrency1}" styleClass="form-control input-md"></apex:outputText>-->
+                                          <apex:selectList value="{!selectedClientGroup}" styleClass="form-control input-md" size="1" disabled="{!IF($CurrentPage.parameters.cgid!=null,'true','false')}">
+                                              <apex:actionSupport status="loading" event="onchange" action="{!changeClientGroup}" reRender="PaymentField,msg"/>
+                                              <apex:selectOptions value="{!ClientGroupNames}"> </apex:selectOptions>
+                                          </apex:selectList>
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="card-currency" style="padding-top: 5px;"><label class="control-label">  Currency:<span class="required-field">*</span></label></td>
+                                      <td class="card-currency" style="padding-top: 5px;">
+                                          <!--<apex:outputText value="{!selectedCurrency1}" styleClass="form-control input-md"></apex:outputText>-->
+                                          <apex:selectList disabled="true" value="{!selectedCurrency1}" styleClass="form-control input-md" size="1">
+                                              <apex:actionSupport status="loading" event="onchange" action="{!CalculateDue}" reRender="PaymentField,msg"/>
+                                              <apex:selectOption itemLabel="{!selectedCurrency}" itemValue="{!selectedCurrency}"></apex:selectOption>
+                                              <apex:selectOption itemLabel="USD" itemValue="USD" rendered="{!selectedCurrency != 'USD'}"></apex:selectOption>
+                                              
+                                          </apex:selectList>
+                                      </td>
+                                      <td style="padding-top: 5px;">&nbsp;</td>
+                                      <td class="card-amount" style="padding-top: 5px;"><label class="control-label"> Payment Amount: <span class="required-field">*</span> </label></td>
+                                      <td class="card-amount" style="padding-top: 5px;">
+                                          <apex:outputPanel id="PaymentField">
+                                              <apex:inputText value="{!paymentDue}" id="dueAmount" onblur="calculateTotal({!byCard})" styleClass="form-control input-md card-amount-field"/>
+                                          </apex:outputPanel>
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td colspan="5">
+                                          <div style="margin-top: 10px; margin-bottom: 20px; color: #F00; font-weight: bold;" id="errorMsg"/>
+                                      </td>
+                                  </tr>
+                              </table>
+                              <script type="text/javascript">
+                                // Any js placed here will be fired when output panel is rerendered
+                                (function(){
+                                    console.log("{!displayMessage}" +"********"+  ("{!displayMessage}").trim().length>0);
+                                    if(("{!displayMessage}").trim().length>0 ){
+                                        $('#errorMsg').html("<div class='alert alert-danger' role='alert'> <strong> Errors!</strong>  <span style='font-weight:normal;'>{!displayMessage}</span></div>");    
+                                        var errorDiv = $('#errorMsg');
+                                        var scrollPos = errorDiv.offset().top;
+                                        $(window).scrollTop(scrollPos);
+                                    }
+                                })();
+                            </script>
+                          </apex:outputPanel>
+                          <apex:outputPanel rendered="{!opp.O_Outstanding__c <= 0}">
+                              <Strong>Booking has been paid completely</Strong>
+                          </apex:outputPanel>
+                      </div>
+                  </div>
+                 <apex:outputPanel layout="block" rendered="{!byCard}" id="cardDetailsPanel"  styleClass="card-details">
+                      <div class="body">
+                          <div style="padding:10px;">
+                              <dt style="text-transform: uppercase;" class="heading">Payment</dt>  <br/>   
+                              
+                              <font class="heading">CARD DETAILS</font><br/> 
+                              <table>
+                                  <tr>
+                                      <td class="card-name"><label class="control-label">Name on card:  <span class="required-field">*</span></label> </td>
+                                      <td class="card-name"><apex:inputText value="{!nameOncard}"  styleClass="form-control input-md card-name-field" /></td>
+                                      <td />
+                                      <td colspan="2">
+                                          <apex:image URL="{!URLFOR($Resource.Itinerary,'LF_Images/credit_cards.png')}" width="200" />    
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td/>  
+                                      <td style="float:right;"><label class="control-label"> Same as lead guest?&nbsp;&nbsp; </label>
+                                          <apex:inputCheckbox value="{!sameAsLead}">
+                                              <apex:actionSupport status="loading" event="onchange" action="{!changeAddress}" reRender="cardDetailsPanel, sameAsLeadScript "/>
+                                          </apex:inputCheckbox>
+                                      </td>
+                                      <td colspan="2"></td>
+                                  </tr>
+                                  <tr>
+                                      <td>
+                                          <label class="control-label"> Credit card charges(%): </label>    
+                                      </td>
+                                      <td>
+                                          <input type="text" value="{!creditCardCharges}" id="ccCharges" disabled="disabled" Class="form-control input-md card-name-field" /> 
+                                      </td>
+                                      <td>&nbsp;</td>
+                                      <td>
+                                          <label class="control-label"> Total Payment: </label>        
+                                      </td>
+                                      <td>
+                                          <input type="text" value="{!totalPayment}" id="totalPayment" disabled="disabled" Class="form-control input-md card-name-field" />     
+                                          <apex:inputText value="{!totalPayment}" styleClass="totalPayment" style="display:none;"/>
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="card-type"><label class="control-label"> Card Type: </label></td>
+                                      <td class="card-type">
+                                          <apex:selectList rendered="{!byCard}" size="1" value="{!cardType}" styleClass="form-control input-md card-type-field" >
+                                              <apex:selectOption itemLabel="--Select--" itemValue=""></apex:selectOption>
+                                              <apex:selectOption itemValue="MC" itemLabel="Master Credit"></apex:selectOption>
+                                              <apex:selectOption itemValue="MCDEBIT" itemLabel="Master Debit"></apex:selectOption>
+                                              <apex:selectOption itemValue="VISA" itemLabel="Visa Credit"></apex:selectOption>
+                                              <apex:selectOption itemValue="DELTA" itemLabel="Visa Debit"></apex:selectOption>
+                                         </apex:selectList>
+                                         <apex:outputLabel rendered="{!byCardA}">Amex</apex:outputLabel>
+                                      </td>
+                                      <td>&nbsp;</td>
+                                      <td class="card-number"><label class="control-label"> Card Number: <span class="required-field">*</span></label> </td>
+                                      <td class="card-number">
+                                          <apex:inputText value="{!cardNumber}" styleClass="form-control input-md card-number-field" /> 
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="card-expiry"><label class="control-label"> Expiry Date: <span class="required-field">*</span></label></td>
+                                      <td class="card-expiry">
+                                          <apex:selectList size="1" value="{!expiryMonth}" style="float:left;width:85px;" styleClass="form-control input-md card-expiry-field" >
+                                              <apex:selectOption itemLabel="mm" itemValue=""></apex:selectOption>
+                                              <apex:selectOption itemLabel="Jan" itemValue="1"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Feb" itemValue="2"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Mar" itemValue="3"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Apr" itemValue="4"></apex:selectOption>
+                                              <apex:selectOption itemLabel="May" itemValue="5"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Jun" itemValue="6"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Jul" itemValue="7"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Aug" itemValue="8"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Sep" itemValue="9"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Oct" itemValue="10"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Nov" itemValue="11"></apex:selectOption>
+                                              <apex:selectOption itemLabel="Dec" itemValue="12"></apex:selectOption>
+                                          </apex:selectList> 
+                                          <apex:selectList size="1" value="{!expiryYear}" style="float:right;width:80px;" styleClass="form-control input-md card-expiry-field" >
+                                              <apex:selectOption itemLabel="yyyy" itemValue=""></apex:selectOption>
+                                              <apex:selectOptions value="{!expiryYearOptions}"></apex:selectOptions>
+                                          </apex:selectList>
+                                      </td>
+                                      <td>&nbsp;</td>
+                                      <td class="card-code"><label class="control-label"> Security Code: <span class="required-field">*</span></label></td>
+                                      <td class="card-code">
+                                          <apex:inputText value="{!securityCode}" styleClass="form-control input-md card-code-field" />
+                                      </td>
+                                  </tr>
+                              </table>
+                              <hr/>
+                              <Font class="heading">BILLING INFORMATION</font><br/><br/>  
+                              <table>
+                                  <tr>
+                                      <td><label class="control-label">Address Line1: </label></td>
+                                      <td><apex:inputText value="{!addressLine1}" styleClass="form-control input-md" /></td>
+                                      <td>&nbsp;</td>
+                                      <td><label class="control-label"> Address Line2: </label></td>
+                                      <td><apex:inputText value="{!addressLine2}" styleClass="form-control input-md" /></td>
+                                  </tr>
+                                  <tr>
+                                      <td><label class="control-label"> Address Line3: </label></td>
+                                      <td><apex:inputText value="{!addressLine3}" styleClass="form-control input-md" /></td>
+                                      <td>&nbsp;</td>
+                                      <td><label class="control-label">Town/City: </label></td>
+                                      <td><apex:inputText value="{!town}"  styleClass="form-control input-md" /> </td>
+                                  </tr>
+                                  <tr>
+                                      <td><label class="control-label">Zip Code: </label></td>
+                                      <td><apex:inputText value="{!zipCode}" styleClass="form-control input-md" /></td>
+                                      <td>&nbsp;</td>
+                                      <td class="card-country"><label class="control-label"> Country: <span class="required-field">*</span></label></td>
+                                      <td class="card-country"  style="width:190px;"><apex:selectList size="1" value="{!country}" styleClass="form-control input-md card-country-field" >
+                                              <apex:selectOptions value="{!countryOptions}"></apex:selectOptions>
+                                          </apex:selectList>
+                                      </td>
+                                  </tr>
+                              </table>
+                          </div>
+                         
+                    </div>  
+                </apex:outputPanel> 
+              </apex:outputPanel>   
+              <div class="actions-bottom">
+                  <apex:commandButton style="margin-left: 37%;background: #457098;color: #fff !important;padding: 10px 16px;" styleClass="btn btnBottm saveOpp" value="BACK" action="{!back}"/> 
+                  <apex:commandButton style="margin-left: 12%;background: #457098;color: #fff !important;padding: 10px 16px;" styleClass="btn btnBottm saveOpp"  value="CONFIRM" onclick="ValidateConfirm('{!OppId}');return false;"/> 
+              </div>
+          </div>
+            
+            <div class="col-sm-4">
+                  <div class="body">
+                     <c:BookingDetails page="Confirmation" />
+                  </div>
+            </div>
+          
+           
+              
+        </div>
+        <br/>  
+        <br/><br/>
+        <!--
+        <div class="actions-bottom">
+            <apex:commandButton style="margin-left: 37%;background: #457098;color: #fff !important;padding: 10px 16px;" styleClass="btn btnBottm saveOpp" value="BACK" action="{!back}"/> 
+            <apex:commandButton style="margin-left: 12%;background: #457098;color: #fff !important;padding: 10px 16px;" styleClass="btn btnBottm saveOpp"  value="CONFIRM" onclick="ValidateConfirm('{!OppId}');return false;"/> 
+        </div>
+         -->
+        <div class="wrap">
+          
+        </div>
+    </div>
+    
+    <apex:outputText id="sameAsLeadScript">   
+        <script type="text/javascript">
+        console.log('Focus on card details');
+        (function() {            
+            var errorDiv = $('.card-details');
+            var scrollPos = errorDiv.offset().top;
+            $(window).scrollTop(scrollPos);
+        });
+        </script>
+    </apex:outputText>
+    
+</apex:form>
+
+</apex:page>

@@ -1,0 +1,4 @@
+<apex:page standardController="Opportunity" extensions="LockOpportunityController" action="{!lockOpportunity}">
+      <apex:pageMessages ></apex:pageMessages>
+      <a href="/{!OppIds}" Style="Margin-left:18px;Margin-left:15px;"> Back </a>
+</apex:page>

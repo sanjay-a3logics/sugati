@@ -1,0 +1,13 @@
+<apex:component controller="ChartController">
+    
+    <apex:chart height="200" width="400" data="{!data}">
+          <apex:axis type="Numeric" position="left" fields="data1" 
+            title="Cost" grid="true"/>
+          <apex:axis type="Category" position="bottom" fields="name" 
+            title="Options">
+        </apex:axis>
+        <apex:barSeries axis="left" xField="name" yField="data1"
+        orientation="vertical" />
+   </apex:chart>
+  
+</apex:component>

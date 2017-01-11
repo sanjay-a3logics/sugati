@@ -1,0 +1,371 @@
+<apex:component controller="SearchMulticomController">
+    
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS105, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <!--
+    <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/angular.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/ui-bootstrap-tpls-0.13.4.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/angular-animate.js')}" />
+    -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flexslider/2.6.3/jquery.flexslider.min.js" />
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-sanitize.js"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.1.3.js"></script> 
+    <script src="{!$Resource.angularjs_flaxslider}"/>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBEe79PX4uwBGAvxOFpVvhfscX_vt4-ms" />
+    <script src="{!$Resource.ng_google_map}"/>
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/flexslider/2.6.3/flexslider.min.css" />
+    <c:MulticomStyle />
+    
+    <script>
+    
+        var multiComAPP = angular.module('multiComAPP',['angular-flexslider', 'ngMap']);
+        multiComAPP.controller('multiComController', function($scope){
+            
+            $scope.showLoading = true;
+            $scope.modifySearchMode = false;
+            $scope.totalNoOfRooms = 1;
+            $scope.MCSearchDetails = JSON.parse('{!JSENCODE(MCAccSearchDetails)}');
+            $scope.requiredRooms = [{roomId : $scope.totalNoOfRooms + '', noOfAdults : 1, noOfChildren : 0}];
+            $scope.totalNoOfRooms = $scope.totalNoOfRooms + 1;
+            $scope.MCSearchDetails.resortName = 'London';
+            $scope.MCSearchDetails.noOfNights = '2';
+            $scope.MCSearchDetails.startDate = '20161124';
+            $scope.MCSearchDetails.endDate = '20161124';
+            $scope.currentView = 'list';
+            $scope.showMapViewFirstTime = false;
+            $scope.googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCBEe79PX4uwBGAvxOFpVvhfscX_vt4-ms"; 
+            
+            //List of searched accommodation 
+            $scope.lstMulticomAccommodation = [];
+            
+            $scope.searchMulticom = function(){
+                
+                $scope.updateSearchDetails();
+                
+                $scope.showLoading = true;
+                Visualforce.remoting.Manager.invokeAction(
+                   '{!$RemoteAction.SearchMulticomController.searchMulticom}',
+                    JSON.stringify($scope.MCSearchDetails),
+                    function(result, event){
+                        if (event.status) {
+                            //Result contains list of accommodation found in multicom
+                            $scope.lstMulticomAccommodation = getAccommodationList(result);
+                            console.log($scope.lstMulticomAccommodation);
+                            $scope.showLoading = false;
+                            $scope.modifySearchMode = false;
+                        }
+                        else if (event.type === 'exception'){
+                            alert(event.message,'error');
+                            $scope.showLoading = false;
+                        }
+                        $scope.$apply();
+                    }, 
+                    {escape: false}
+                );    
+            }
+            
+            $scope.addNewRoom = function(){
+                $scope.requiredRooms.push({roomId : $scope.totalNoOfRooms + '', noOfAdults : 1, noOfChildren : 0});
+                $scope.totalNoOfRooms = $scope.totalNoOfRooms + 1;
+            }
+            
+            
+            $scope.removeRoom = function(index){
+                $scope.requiredRooms.splice(index, 1);    
+            }
+            
+            
+            $scope.updateSearchDetails = function(){
+                $scope.MCSearchDetails.noOfRooms = $scope.requiredRooms.length;
+                var totalNoAdults = 0
+                var totalNoChildren = 0;
+                
+                angular.forEach($scope.requiredRooms, function(room){
+                    
+                    totalNoAdults += room.noOfAdults;
+                    totalNoChildren += room.noOfChildren;
+                            
+                });
+                
+                $scope.MCSearchDetails.noOfAdults = totalNoAdults;
+                $scope.MCSearchDetails.noOfChildren = totalNoChildren;
+            }
+            
+            
+            $scope.makeLowerCase = function(string){
+               return angular.lowercase(string);
+            };
+            
+            $scope.showLoading = false;
+        
+        }); 
+        
+        
+        function getAccommodationList(xml){
+            
+            var lstAccSegment = [];
+            
+            // Create x2js instance with default config
+            var x2js = new X2JS();
+            var jsonObj = x2js.xml_str2json( xml );
+            console.log(jsonObj);
+            
+            if(jsonObj != undefined && jsonObj != null){
+                
+                if( jsonObj.FAB_AccomAvailRS != undefined && jsonObj.FAB_AccomAvailRS.AccommodationSearchResponse != undefined && jsonObj.FAB_AccomAvailRS.AccommodationSearchResponse.Accommodations != undefined && jsonObj.FAB_AccomAvailRS.AccommodationSearchResponse.Accommodations.AccommodationSegment != undefined){
+                    
+                    for(var i=0; i < jsonObj.FAB_AccomAvailRS.AccommodationSearchResponse.Accommodations.AccommodationSegment.length; i++ ){
+                        
+                        var accSegment = jsonObj.FAB_AccomAvailRS.AccommodationSearchResponse.Accommodations.AccommodationSegment[i];
+                        lstAccSegment.push(accSegment);
+                    }
+                }
+            }
+            
+            return lstAccSegment;
+            
+        }
+        
+    </script>
+    
+    
+    <div class="slds multicomCmp" ng-app="multiComAPP" style="padding: 10px; background: #f6f6f6;">
+
+        <!---------- Multicomp search results ------------- -->
+        <div class="MulticomSearchResult" ng-controller="multiComController" style="display:block; min-height:400px;">
+            
+            <!-------- Loading Icon ---------------->
+            <div id="contentLoading" ng-show="showLoading">
+                <img id="contentLoading1" class="slds-spinner--medium" src="{!URLFOR($Resource.SLDS011, '/assets/images/spinners/slds_spinner_brand.gif')}" width="100" height="100" style="top: 50%; position: fixed;" alt="Loading graphic"/>
+            </div>
+            
+            <!------ Search Modify box ---------------------- -->
+            <div class="modify-search-wrapper">
+                <div class="slds-grid slds-wrap modify-search-box">
+                    <!-------  Search filters which used while fetching data from the MultiCOM   ----------- -->
+                    <div class="slds-col--padded slds-size--1-of-1" id="searchFilterBox" style="{{modifySearchMode ? 'border-radius: 3px 3px 0px 0px;' : 'border-radius: 3px;'}}">
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-size--1-of-1 slds-medium-size--3-of-12 slds-large-size--3-of-12 has_right_border" style="opacity: 1;">
+                                <span class="city_name"> London </span> 
+                            </div>
+                            <div class="slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12 box-has-padding">
+                                <p class="modify_captions">Check-In</p>
+                                <p class="check-dates">
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                    <span class="hide-in-small-screen">Thu,&nbsp;</span>
+                                    <span class="date">08 </span>
+                                    <span class="month_day">Sep&#39;16</span>
+                                    <span class="arrow_greater"><i class="fa fa-angle-right" aria-hidden="true"></i></span>
+                                </p>
+                            </div>
+                            <div class="slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12 has_right_border box-has-padding" style="opacity: 1;">
+                                <p class="modify_captions">Check-Out</p>
+                                <p class="check-dates">
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                    <span class="hide-in-small-screen">Sat,&nbsp;</span>
+                                    <span class="date">10 </span>
+                                    <span class="month_day">Sep&#39;16</span>
+                                </p>
+                            </div>
+                            <div class="slds-size--1-of-3 slds-medium-size--1-of-12 slds-large-size--1-of-12 text-align-center box-has-padding" style="opacity: 1;">
+                                <p class="modify_captions">Nights</p>
+                                <p class="check-dates">
+                                <span class="date">{{MCSearchDetails.noOfNights}}</span></p>
+                            </div>
+                             <div class="slds-size--1-of-3 slds-medium-size--1-of-12 slds-large-size--1-of-12 text-align-center box-has-padding" style="opacity: 1;">
+                                <p class="modify_captions">Rooms</p>
+                                <p class="check-dates">
+                                <span class="date">{{MCSearchDetails.noOfRooms}}</span></p>
+                            </div>
+                             <div class="slds-size--1-of-3 slds-medium-size--1-of-12 slds-large-size--1-of-12 text-align-center" style="opacity: 1;">
+                                <p class="modify_captions">People</p>
+                                <p class="check-dates">
+                                <span class="date">{{parseInt(MCSearchDetails.noOfAdult) + parseInt(MCSearchDetails.noOfKids) + parseInt(MCSearchDetails.noOfInfants)}}</span></p>
+                            </div>
+                            <div class="slds-size--1-of-1 slds-medium-size--2-of-12 slds-large-size--2-of-12 text-align-center" style="opacity: 1;">
+                                <a class="slds-float--right modify_search_toggle" ng-click="modifySearchMode = !modifySearchMode" href="#"><i class="fa {{modifySearchMode ? 'fa-minus' : 'fa-plus'}}" aria-hidden="true"></i> &nbsp; Modify <span class="hidden-stb hidden-sm">Search</span> &nbsp;<i class="fa fa-pencil" aria-hidden="true"></i></a>            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="search-wrapper-form" class="slds-grid slds-wrap animate-show" ng-show="modifySearchMode">
+                    
+                    <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                        <div class="slds-grid slds-wrap room_row" ng-repeat="room in requiredRooms">
+                            <div class="slds-col--padded slds-size--1-of-12 slds-medium-size--1-of-12 slds-large-size--1-of-12" style="margin: auto;">
+                                <button ng-if="$index != 0" style="z-index: 10000; position: relative;" type="button" class="removeRoom close" ng-click="removeRoom($index)">×</button>
+                            </div>
+                            <div class="slds-col--padded slds-size--2-of-12 slds-medium-size--1-of-12 slds-large-size--1-of-12 room_headings" style="margin: auto;">
+                                <div class="row roomlabel">
+                                    ROOM <span>{{$index+1}}</span>
+                                </div>
+                            </div>
+                            <div class="slds-col--padded slds-size--4-of-12 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="row">
+                                    <p class="modify_captions">Adults </p>
+                                    <div class="segmented_controls make_field form-control">
+                                        <a class="decrement_adult" data-currentdom="1" href="javascript:void(0)" ng-click="room.noOfAdults = (room.noOfAdults > 1 ? room.noOfAdults - 1 : 0)">–</a>
+                                        <span class="form-control modify_adultCount">{{room.noOfAdults}}</span>
+                                        <a class="increment_adult" data-currentdom="1" href="javascript:void(0)" ng-click="room.noOfAdults = (room.noOfAdults < 10 ? room.noOfAdults + 1 : 10)">+</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col--padded slds-size--4-of-12 slds-medium-size--2-of-12 slds-large-size--2-of-12 last">
+                                <div class="row">
+                                    <p class="modify_captions">Children</p>
+                                    <div class="segmented_controls make_field form-control">
+                                        <a class="decrement_child" href="javascript:void(0)" ng-click="room.noOfChildren = (room.noOfChildren > 0 ? room.noOfChildren - 1 : 0)">–</a>
+                                        <span class="form-control modify_childCount">{{room.noOfChildren}}</span>
+                                        <a class="increment_child" href="javascript:void(0)" ng-click="room.noOfChildren = (room.noOfChildren < 10 ? room.noOfChildren + 1 : 10)">+</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="child_room_1" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 pull-right">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--3-of-12 slds-large-size--3-of-12 last">
+                                <div id="addRoomSection" class="segmented_controls add_room_buttonbar form-control">
+                                    <a class="form-control" href="javascript:void(0)" ng-click="addNewRoom();">Add Room</a>
+                                    <a href="javascript:void(0)" ng-click="addNewRoom();">+</a>
+                                </div>
+                            </div>
+                            <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--9-of-12 slds-large-size--6-of-12 last">
+                                <div class="slds-float--right slds-m-top--xx-small">
+                                    <button class="slds-button slds-button--neutral" ng-click="modifySearchMode = false;">Cancel</button>
+                                    <button class="slds-button slds-button--neutral slds-button--brand" ng-click="searchMulticom()">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <!------ Search Results including filter  ---------------------- -->
+            
+            <!-- <div id="mfs_bgcover" ng-show="modifySearchMode" style="width: 1349px; height: 8273px; z-index: 10; display: block;"></div> -->
+            <div class="slds-grid slds-wrap slds-grid--pull-padded" style="margin-top: 15px;">
+                <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--3-of-12 slds-large-size--3-of-12"> 
+                    <div id="filterBox">
+                        -- Filter --
+                    </div>
+                </div>
+                <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--3-of-12 slds-large-size--9-of-12">
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-col--padded slds-size--12-of-12" style="padding: 10px;">
+                            <span class="slds-float--left city_name" ng-show="lstMulticomAccommodation.length > 0">{{lstMulticomAccommodation.length}}&nbsp;Hotels Available in {{MCSearchDetails.resortName}}</span>
+                        </div>
+                        <div class="slds-col--padded slds-size--12-of-12" ng-show="lstMulticomAccommodation.length > 0" style="margin-bottom: 10px;"> 
+                            <div class="change-view-wrapper">
+                                <a href="javascript:void(0);" ng-click="showMapViewFirstTime = true; currentView = (currentView == 'map' ? 'list' : 'map')" style="color: #0070d2;"> 
+                                    <i class="fa {{currentView == 'map' ? 'fa-list' : 'fa-map-marker'}}" aria-hidden="true"></i>
+                                    Change View
+                                </a>
+                            </div>
+                        </div>
+                        <!------------ List view of search results --------------->
+                        <div id="res-list-view" class="slds-col--padded slds-size--12-of-12" ng-show="currentView == 'list'">
+                            <div ng-repeat="accSegment in lstMulticomAccommodation" class="result-box accommodation-segment-wrapper">
+                                <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                                    <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--10-of-12 slds-large-size--10-of-12">
+                                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                                            <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12"> 
+                                                <img src="{{accSegment.Image[0]._URL.replace('http://', 'https://')}}"/>
+                                            </div>
+                                            <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--8-of-12 slds-large-size--8-of-12 hotel_details"> 
+                                                <p class="hote_nameinfo hotel_name slds-text-align--left"> {{accSegment._AccommodationName}}  </p>
+                                                <p class="clearfix city_info">
+                                                    <span class="hotel_location slds-text-align--left"> {{accSegment._ResortName}}  </span>
+                                                </p>
+                                                <p> {{ accSegment.Description.substring(0, 200)}} ... »</p>   
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                        <div class="hotel-price price_box_bg_no_bottom" style="padding: 15px;">
+                                             <span>
+                                                 <div>    
+                                                    <p class="actual_price slds-text-align--right">
+                                                        <i class="fa fa-{{accSegment._Currency | lowercase}}" aria-hidden="true"></i> {{accSegment._BasicAdultCost}}
+                                                    </p>
+                                                </div>   
+                                            </span>
+                                            <p class="per_room  slds-text-align--right append_bottom30">per room for {{MCSearchDetails.noOfNights}} {{MCSearchDetails.noOfNights == '1' ? 'night' : 'nights'}}</p>
+                                            <div class="slds-text-align--right" style="padding-top: 60px;">
+                                                 <button class="slds-button slds-button--neutral slds-button--brand" >Select</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-col--padded slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12">
+                                        <div class="slds-tabs--default">
+                                            <ul class="slds-tabs--default__nav" role="tablist">
+                                                <li class="slds-tabs--default__item slds-text-heading--label" ng-class="{'slds-active' : accSegment.descriptionVisible}" title="Description" role="presentation">
+                                                    <a class="slds-tabs--default__link" href="javascript:void(0);" ng-click="accSegment.descriptionVisible = true; accSegment.picturesVisible = tfalseue; accSegment.mapsVisible = false;" role="tab" tabindex="0" aria-selected="{{accSegment.descriptionVisible}}" aria-controls="tab-default-{{accSegment._AccommodationId}}-desc" id="tab-default-{{accSegment._AccommodationId}}-desc__item">Description</a>
+                                                </li>
+                                                <li class="slds-tabs--default__item slds-text-heading--label" ng-class="{'slds-active' : accSegment.picturesVisible}" title="Picture" role="presentation">
+                                                    <a class="slds-tabs--default__link" href="javascript:void(0);" ng-click="accSegment.descriptionVisible = false; accSegment.picturesVisible = true; accSegment.mapsVisible = false; accSegment.picturesFirstTimeVisible=true;" role="tab" tabindex="-1" aria-selected="{{accSegment.picturesVisible}}" aria-controls="tab-default-{{accSegment._AccommodationId}}-pic" id="tab-default-{{accSegment._AccommodationId}}-pic__item">Pictures</a>
+                                                </li>
+                                                <li class="slds-tabs--default__item slds-text-heading--label" ng-class="{'slds-active' : accSegment.mapsVisible}" title="Maps" role="presentation">
+                                                    <a class="slds-tabs--default__link" href="javascript:void(0);" ng-click="accSegment.descriptionVisible = false; accSegment.picturesVisible = false; accSegment.mapsVisible = true; accSegment.mapsFirstTimeVisible = true;" role="tab" tabindex="-1" aria-selected="{{accSegment.mapsVisible}}" aria-controls="tab-default-{{accSegment._AccommodationId}}-desc__map" id="tab-default-{{accSegment._AccommodationId}}-map__item">Maps</a>
+                                                </li>
+                                            </ul>
+                                            
+                                            <div id="tab-default-{{accSegment._AccommodationId}}-desc" class="slds-tabs--default__content" ng-class="accSegment.descriptionVisible ? 'slds-show' : 'slds-hide'" role="tabpanel" aria-labelledby="tab-default-{{accSegment._AccommodationId}}-desc__item" style="padding: 16px;">
+                                                <p> {{ accSegment.Description}} </p> 
+                                            </div>
+                                            
+                                            <div id="tab-default-{{accSegment._AccommodationId}}-pic" class="slds-tabs--default__content" ng-class="accSegment.picturesVisible ? 'slds-show' : 'slds-hide'"  role="tabpanel" aria-labelledby="tab-default-{{accSegment._AccommodationId}}-pic__item" style="padding: 16px;">
+                                                <div ng-if="accSegment.picturesFirstTimeVisible" class="slide-image acc-image-{{accSegment._AccommodationId}}">
+                                                    
+                                                    <flex-slider slide="image in accSegment.Image track by $index" animation="slide" control-nav="thumbnails">
+                                                        <li data-thumb="{{image._URL}}">
+                                                            <img ng-src="{{image._URL}}"/>
+                                                        </li>
+                                                    </flex-slider>
+                                                    
+                                                </div>  
+                                            </div>
+                                            
+                                            <div id="tab-default-{{accSegment._AccommodationId}}-map" class="slds-tabs--default__content" ng-class="accSegment.mapsVisible ? 'slds-show' : 'slds-hide'"  role="tabpanel" aria-labelledby="tab-default-{{accSegment._AccommodationId}}-map__item" style="padding: 16px;">
+                                                <div ng-if="accSegment.mapsFirstTimeVisible" style="height:300px;">
+                                                    <ng-map id="map_{{accSegment._AccommodationId}}" center="{{accSegment.GeoPosition._Latitude}},{{accSegment.GeoPosition._Longitude}}" zoom="12">
+                                                        <marker position="{{accSegment.GeoPosition._Latitude}},{{accSegment.GeoPosition._Longitude}}" title="{{accSegment._AccommodationName}}"></marker>
+                                                    </ng-map>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div> 
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!------------ Map view of search results --------------->
+                        <div class="slds-col--padded slds-size--12-of-12" ng-if="showMapViewFirstTime">
+                            <div id="res-map-view" class="result-map-view-wrapper" ng-show="currentView == 'map'" style="height:700px; width:100%;">
+                                <ng-map id="searchResultOnMap" zoom="10" center="{{MCSearchDetails.resortName}}" style="height:100%; width:100%;">
+                                    <custom-marker id="marker_{{accSegment._AccommodationId}}" ng-repeat="accSegment in lstMulticomAccommodation" 
+                                        position="{{accSegment.GeoPosition._Latitude}},{{accSegment.GeoPosition._Longitude}}">
+                                        <i class="currency-sign fa" ng-class="'fa-' + makeLowerCase(accSegment._Currency)" aria-hidden="true"></i> {{accSegment._BasicAdultCost}}
+                                  </custom-marker>
+                                </ng-map>    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--------- Additional JS libraries ------------------------->
+    <apex:includescript value="{!$Resource.XML2JS}" />
+</apex:component>

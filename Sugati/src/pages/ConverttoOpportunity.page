@@ -1,0 +1,7 @@
+<apex:page title="Convert to Opportunity" standardController="Lead" extensions="ConvertLeadController" action="{!initConversion}">
+    <apex:pageMessages ></apex:pageMessages> 
+    <br/>
+    <div style="margin-left: 20px;">
+        <a href="/{!lead.Id}"> Back to Lead </a>
+    </div>
+</apex:page>

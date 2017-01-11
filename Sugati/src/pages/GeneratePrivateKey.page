@@ -1,0 +1,80 @@
+<apex:page controller="GeneratePrivateKeyController">
+<html>
+<script>
+        function oneCheck(a){
+            $('.isSelected').removeClass("isSelected");    
+                if($(a).is(":checked")){
+                    $(a).addClass("isSelected");
+                }
+            $(".CheckSelect").each(function() {
+                if($(this).hasClass('isSelected') == false){
+                    $(this).removeAttr("checked");
+                }else{
+                    $(this).attr("checked","checked");
+                }
+            });
+        }
+       
+       function checkError(){
+            
+              alert('Success');
+          
+       }    
+</script>
+<c:BasicResources ></c:BasicResources>
+ <body>
+ 
+   <apex:form >
+    <div class="slds">
+    <c:AlertBox ></c:AlertBox>
+   <div class="slds-card slds-card--narrow slds-m-top--xx-large slds-scrollable--y" style="margin: auto; margin-top:100px; margin-left: 40px; margin-right: 40px;">
+    <div class="slds-panel slds-grid slds-grid--vertical slds-nowrap" style="height:inherit">
+      <div class="slds-form--stacked slds-grow slds-scrollable--x">
+        <div >
+         <p class="slds-text-heading--label slds-m-top--x-large slds-m-horizontal--xx-large"> Select Any Edition</p>
+          
+              <div class="slds-form-element__control slds-m-top--medium slds-m-horizontal--xx-large">
+                 <label class="slds-radio slds-m-top--x-small ">
+                    <input type="radio" value="{!items[0].label}" onclick="oneCheck(this)" class="CheckSelect"/>
+                    <span class="slds-radio--faux"></span>
+                    <span class="slds-text-heading--label-normal">{!items[0].label}</span>
+                </label>
+                
+                <label class="slds-radio slds-m-top--x-small">
+                    <input type="radio" value="{!items[1].label}" onclick="oneCheck(this)" class="CheckSelect"/>
+                    <span class="slds-radio--faux"></span>
+                    <span class="slds-text-heading--label-normal">{!items[1].label}</span>
+                </label>
+              </div>
+           
+              <div class="slds-form-element__control slds-m-top--x-small font-size-large slds-m-top--medium slds-m-horizontal--xx-large">
+                  <label class="slds-text-heading--label" for="inputKeyText">Enter Passcode : </label>
+                      <div class="slds-form-element__control slds-m-top--x-small slds-size--7-of-12">
+                        <apex:inputText id="inputKeyText" styleclass="slds-input" value="{!passcode}" required="true"/>
+                      </div>
+              </div>
+              <div class="slds-button slds-m-top--small slds-m-around--large slds-m-horizontal--xx-large slds-m-left--x-large">
+                  <apex:commandButton value="Generate Key" action="{!generateKey}"  id="saveButton" styleclass="slds-button slds-button--brand" oncomplete="checkError()" rerender="keyPanel"/>
+              </div>
+              <apex:outputpanel id="keyPanel">
+           <apex:outputPanel rendered="{!enCryptedKey!= null}" ><br/>
+               
+                <div class="slds-form-element__control slds-m-top--x-small font-size-large slds-m-top--medium slds-m-horizontal--xx-large">
+                    <label class="slds-text-heading--label" for="privateKeyText">Private Key :</label>
+                    {!pKey}
+                </div>
+                <div class="slds-form-element slds-m-top--x-small font-size-large slds-m-top--medium slds-m-horizontal--xx-large slds-p-bottom--medium">
+                    <label class="slds-m-top--medium slds-text-heading--label" for="encryptedKeyText"> Encrypted Key :</label>
+                    {!enCryptedKey}                    
+                </div>
+            </apex:outputPanel>
+            </apex:outputPanel>
+      </div>
+    </div>
+   </div>
+  </div> 
+ </div> 
+ </apex:form>
+</body>  
+</html> 
+</apex:page>

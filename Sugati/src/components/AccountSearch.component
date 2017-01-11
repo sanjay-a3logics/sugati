@@ -1,0 +1,631 @@
+<apex:component layout="none">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        
+        <script>
+            // Filter to show lookup fields of fieldset labels 
+            // Setup the filter
+            myApp.filter('formatLabel', function() {
+                return function(label, fieldApiName) {
+                    if(fieldApiName.indexOf('Referrer__r.Name') != -1)
+                        return 'Referrer'
+                    else if(fieldApiName.indexOf('Account_Source__r.Name') != -1) 
+                        return 'Source';
+                    else if(fieldApiName.indexOf('Owner.Name') != -1) 
+                        return 'Owner'; 
+                    else if(fieldApiName.indexOf('BillingGeocodeAccuracy') != -1)
+                        return 'Billing Address';     
+                    else
+                        return label;  
+                }
+            });
+            
+            function changeVar(){
+                $('input[type=text]').keyup(function() {
+                    $('b').text($(this).val());
+                });
+            }
+              
+           </script>
+        <style>
+            input[type=text] {
+                text-transform: capitalize;
+            }
+        </style>
+        <div class="slds-modal__content" style="margin-bottom: 50px" ng-cloak="ng-cloak">
+            <h3 class="slds-section-title--divider">Client Information</h3>
+            <div class="slds-p-horizontal--medium">
+                <div class="form-wrap slds-grid slds-wrap" ng-form="frmAccountSearch">
+                
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="selectSample1">Salutation <span class="required-field">* </span>
+                            <apex:outputPanel layout="none" rendered="{!$ObjectType.Account.fields.A_Salutation__c.inlineHelpText != ''}">
+                                <i class="fa fa-question-circle fa-lg" ngtooltip="{!$ObjectType.Account.fields.A_Salutation__c.inlineHelpText}" tooltip-position="right"/>
+                            </apex:outputPanel>
+                        </label>
+                        <div class="slds-form-element__control">
+                            <select id="selectSample1" class="slds-select" ng-model="account[nameSpacePrefix+'A_Salutation__c']" 
+                                ng-options="record.value as record.label for record in pickList[nameSpacePrefix+'a_salutation__c']"
+                                ng-required="action=='save'">
+                                <option value="" label="--Select--"></option>
+                            </select>
+                        </div>
+                    </div>
+               
+                
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="inputNameSample1">First Name <span class="required-field">* </span>
+                            <apex:outputPanel layout="none" rendered="{!$ObjectType.Account.fields.A_First_Name__c.inlineHelpText != ''}">
+                                <i class="fa fa-question-circle fa-lg" ngtooltip="{!$ObjectType.Account.fields.A_First_Name__c.inlineHelpText}" tooltip-position="right"/>
+                            </apex:outputPanel>
+                        </label>
+                        <div class="slds-form-element__control">
+                            <input id="inputNameSample1" class="slds-input" type="text" ng-model="account[nameSpacePrefix+'A_First_Name__c']" ng-required="action=='save'" action="JavaScript:changeVar()"/>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="inputNameSample2">Last Name <span class="required-field">* </span>
+                            <apex:outputPanel layout="none" rendered="{!$ObjectType.Account.fields.A_Last_Name__c.inlineHelpText != ''}">
+                                <i class="fa fa-question-circle fa-lg" ngtooltip="{!$ObjectType.Account.fields.A_Last_Name__c.inlineHelpText}" tooltip-position="right"/>
+                            </apex:outputPanel>
+                        </label>
+                        <div class="slds-form-element__control">
+                            <input id="inputNameSample2" class="slds-input" type="text" ng-model="account[nameSpacePrefix+'A_Last_Name__c']" ng-required="(action=='search' && (account[nameSpacePrefix+'A_ABTA_Number__c'] == '' || account[nameSpacePrefix+'A_ABTA_Number__c'] === undefined)) || action=='save'" required-err-type="HE_LastnameRequired"  action="JavaScript:changeVar()" />
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5" ng-class="{'slds-has-error': frmAccountSearch.email.$error.email}">
+                        <label class="slds-form-element__label" for="inputNameSample3">Email <span class="required-field">* </span>
+                            <apex:outputPanel layout="none" rendered="{!$ObjectType.Account.fields.A_Email__c.inlineHelpText != ''}">
+                                <i class="fa fa-question-circle fa-lg" ngtooltip="{!$ObjectType.Account.fields.A_Email__c.inlineHelpText}" tooltip-position="right"/>
+                            </apex:outputPanel>
+                        </label>
+                        
+                        <div class="slds-form-element__control">
+                            <input id="inputNameSample3" class="slds-input" type="email" name="email" ng-model="account[nameSpacePrefix+'A_Email__c']" 
+                                email-err-type="HE_EmailInvalid" pattern-err-type="HE_EmailInvalid" ng-pattern="/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$/" ng-required="action=='save'"
+                            />
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="inputNameSample3">Phone No. <span class="required-field">* </span>
+                            <apex:outputPanel layout="none" rendered="{!$ObjectType.Account.fields.Phone.inlineHelpText != ''}">
+                                <i class="fa fa-question-circle fa-lg" ngtooltip="{!$ObjectType.Account.fields.Phone.inlineHelpText}" tooltip-position="right"/>
+                            </apex:outputPanel>
+                        </label>
+                        <div class="slds-form-element__control">
+                            <input id="inputNameSample3" class="slds-input" type="text"  ng-model="account.Phone" ng-required="action=='save'" pattern-err-type="HE_PhoneInvalid" ng-pattern="/^\+?(\d+$)$/"/>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="inputNameSample3">Referrer</label>
+                        <div class="slds-form-element__control">
+                            <input type="text" class="slds-input" typeahead-editable="false" ng-model="account[nameSpacePrefix+'A_Referrer__c']" typeahead-input-formatter="formatInput($model,'Referrer')" 
+                            typeahead="state.value as state.label for state in referrer  | filter:$viewValue | limitTo:20" 
+                            pattern-err-type="HE_ReferrerInvalid"/>
+                            <!--<typeahead ng-model="account[nameSpacePrefix+'A_Referrer__c']"
+                                       label="label" value="value"
+                                       modelret="account[nameSpacePrefix+'A_Referrer__c']" modeldisplay="account[nameSpacePrefix+'A_Referrer__c']"
+                                       /> -->
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="inputNameSample3">Postcode</label>
+                        <div class="slds-form-element__control">
+                            <input id="inputNameSample3" maxlength="10" class="slds-input" type="text" ng-model="account.BillingPostalCode" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5"/>
+                    <!--
+                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-5">
+                        <label class="slds-form-element__label" for="inputNameSample3">Agent</label>
+                        <div class="slds-form-element__control">
+                            <input id="inputNameSample3" class="slds-input" type="text" ng-model="account[nameSpacePrefix+'A_ABTA_Number__c']"  />
+                        </div>
+                    </div> -->
+                    <div class="slds-form-element slds-col slds-m-vertical--x-small slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-5" style="margin-top: 20px;text-align: right;">
+                        <div>
+                            <button onclick="return false;" ng-if="showSearchButton()" ng-disabled="(account[nameSpacePrefix+'A_ABTA_Number__c'] == '' || account[nameSpacePrefix+'A_ABTA_Number__c'] === undefined)  && (account[nameSpacePrefix+'A_Last_Name__c'] === undefined || account[nameSpacePrefix+'A_Last_Name__c'] == '') " class="slds-button slds-button--brand" 
+                                ng-click="searchAccount()">
+                                Search
+                            </button>  
+                            <button onclick="return false;" ng-disabled="(account[nameSpacePrefix+'A_Last_Name__c'] == undefined || account[nameSpacePrefix+'A_Last_Name__c'] == '' || account[nameSpacePrefix+'A_First_Name__c'] == undefined || account[nameSpacePrefix+'A_First_Name__c'] == '') && account.Id != 'undefined'" class="slds-button slds-button--brand" ng-click="showAddressModal(account)">
+                                Add Details
+                            </button>  
+                            <button ng-show="account.Id !== undefined" onclick="return false;" class="slds-button slds-button--brand" ng-click="clearSearch()" >
+                                Clear Search
+                            </button> 
+                            <button class="slds-button slds-button--brand"
+                                ng-click="saveBrochureRequest()" onclick="return false;" 
+                                ng-disabled="frmAccountSearch.$invalid" ng-show="account.Id !== undefined">
+                                Brochure Request
+                            </button>  
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h3 class="slds-section-title--divider" ng-if="account.Id != undefined">Additional Information</h3>
+            <div class="slds-grid slds-wrap slds-m-vertical--x-small" ng-if="account.Id != undefined">
+                
+                <div class="slds-form-element slds-col slds-col--padded-medium slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-6">
+                    <label class="slds-form-element__label" for="selectSample1">Total Enquiries</label>
+                    <div class="slds-form-element__control">
+                        {{account[nameSpacePrefix+'A_Total_Enquiries__c']}}    
+                    </div>
+                </div>
+                <div class="slds-form-element slds-col slds-col--padded-medium slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-6">
+                    <label class="slds-form-element__label" for="selectSample1">Total Quotes</label>
+                    <div class="slds-form-element__control">
+                        {{account[nameSpacePrefix+'A_Total_Quotes__c']}}    
+                    </div>
+                </div>
+                <div class="slds-form-element slds-col slds-col--padded-medium slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-6">
+                    <label class="slds-form-element__label" for="selectSample1">Total Bookings</label>
+                    <div class="slds-form-element__control">
+                        {{account[nameSpacePrefix+'A_Total_Bookings__c']}}    
+                    </div>
+                </div>
+                <div class="slds-form-element slds-col slds-col--padded-medium slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-6">
+                    <label class="slds-form-element__label" for="selectSample1">Total Revenue</label>
+                    <div class="slds-form-element__control">
+                        {{account[nameSpacePrefix+'Total_Revenue__c'] | number: 2}}    
+                    </div>
+                </div>
+                <div class="slds-form-element slds-col slds-col--padded-medium slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-6">
+                    <label class="slds-form-element__label" for="selectSample1">Total Credit Memo</label>
+                    <div class="slds-form-element__control">
+                        {{account[nameSpacePrefix+'Total_Credit_Memo__c'] | number: 2}}        
+                    </div>
+                </div>
+                <div class="slds-form-element slds-col slds-col--padded-medium slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-6">
+                    <label class="slds-form-element__label" for="selectSample1">Status</label>
+                    <div class="slds-form-element__control">
+                        {{account[nameSpacePrefix+'A_Status__c']}}            
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="slds-section-title--divider" ng-show="showAccTable">Searched Accounts</h3>
+            <div class="slds-table-wrap">
+                <div class="slds-scrollable--x" ng-show="showAccTable">
+                    <table class="itinerary slds-table slds-table--bordered">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th scope="col" ng-class="{'slds-is-sortable' :col.label=='Account Name'}" ng-repeat="col in accountSearchCols">
+                                    <span class="slds-truncate">{{col.label | formatLabel : col.fieldPath}}</span> 
+                                    <button ng-if="col.label=='Account Name'" class="slds-button slds-button--icon-bare">
+                                        <svg aria-hidden="true" class="slds-button__icon slds-button__icon--small">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/standard-sprite/svg/symbols.svg#arrowdown')}"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Sort</span>
+                                    </button>       
+                                </th>
+                                
+                                <th scope="col">
+                                    <span class="slds-truncate">Action</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="slds-hint-parent" ng-repeat="acc in searchedAccount" ng-class="{'selectedAcc': account.Id == acc.Id}">
+                                <td data-label="{{field.label}}" ng-repeat="field in accountSearchCols">
+                                    <span ng-if="field.fieldPath.indexOf('BillingGeocodeAccuracy') == -1">
+                                        <span ng-if="field.fieldPath.indexOf(replation) ==-1 && field.typeApex != 'DATETIME' && field.typeApex != 'DATE'">
+                                            <a ng-show="field.fieldPath.indexOf('Name') !=-1 && field.fieldPath.length == 4"  ng-click="searchOpportunity(acc);" href="#">{{acc[field.fieldPath]}}</a>
+                                            <span ng-show="field.fieldPath.indexOf('Name') ==-1 && field.fieldPath.indexOf('Epic') == -1">
+                                                {{acc[field.fieldPath]}}
+                                            </span>
+                                        </span>
+                                        <span ng-if="field.fieldPath.indexOf(replation) ==-1 && (field.typeApex == 'DATETIME'  || field.typeApex == 'DATE')">
+                                            <p ng-bind="acc[field.fieldPath]| date:'dd/MM/yyyy'"></p> 
+                                        </span>
+                                        <span ng-if="field.fieldPath.indexOf(replation) != -1">
+                                            <a href="/{{acc[splitUp(field.fieldPath)[0]].Id}}">{{acc[splitUp(field.fieldPath)[0]][splitUp(field.fieldPath)[1]]}}</a>
+                                        </span> 
+                                    </span>
+                                    <span title="{{createAddress(acc)}}" class="slds-truncate" ng-if="field.fieldPath.indexOf('BillingGeocodeAccuracy') != -1">
+                                        {{createAddress(acc)}}        
+                                    </span>
+                                    
+                                </td>
+                                
+                                <td data-label="More">
+                                    <span class="slds-truncate"><a href="" ng-click="showAddressModal(acc)">More</a></span>    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> 
+            </div>
+            <!-- Searched Oppotunities -->
+            
+            <h3 class="slds-section-title--divider" ng-if="showLeadTable && account.Id === undefined">Searched Leads</h3>
+            <div class="slds-table-wrap">
+                <div class="slds-scrollable--x" ng-if="showLeadTable && account.Id === undefined">
+                    <table class="itinerary slds-table slds-table--bordered">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th scope="col" ng-class="{'slds-is-sortable' :col.label=='Name'}" ng-repeat="col in leadSearchCols">
+                                    <span class="slds-truncate">{{col.label | formatLabel : col.fieldPath}}</span> 
+                                    <button ng-if="col.label=='Account Name'" class="slds-button slds-button--icon-bare">
+                                        <svg aria-hidden="true" class="slds-button__icon slds-button__icon--small">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/standard-sprite/svg/symbols.svg#arrowdown')}"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Sort</span>
+                                    </button>       
+                                </th>
+                                
+                                <th scope="col">
+                                    <span class="slds-truncate">Action</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="slds-hint-parent" ng-repeat="acc in searchedLead">
+                                <td data-label="{{field.label}}" ng-repeat="field in leadSearchCols">
+                                    <span ng-if="field.fieldPath.indexOf('BillingGeocodeAccuracy') == -1">
+                                        <span ng-if="field.fieldPath.indexOf(replation) ==-1 && field.typeApex != 'DATETIME' && field.typeApex != 'DATE'">
+                                            <a ng-show="field.fieldPath.indexOf('Name') !=-1 && field.fieldPath.length == 4"  href="#">{{acc[field.fieldPath]}}</a>
+                                            <span ng-show="field.fieldPath.indexOf('Name') ==-1 && field.fieldPath.indexOf('Epic') == -1">
+                                                {{acc[field.fieldPath]}}
+                                            </span>
+                                        </span>
+                                        <span ng-if="field.fieldPath.indexOf(replation) ==-1 && (field.typeApex == 'DATETIME'  || field.typeApex == 'DATE')">
+                                            <p ng-bind="acc[field.fieldPath]| date:'dd/MM/yyyy'"></p> 
+                                        </span>
+                                        <span ng-if="field.fieldPath.indexOf(replation) != -1">
+                                            <a href="/{{acc[splitUp(field.fieldPath)[0]].Id}}">{{acc[splitUp(field.fieldPath)[0]][splitUp(field.fieldPath)[1]]}}</a>
+                                        </span> 
+                                    </span>
+                                    <span title="{{createAddress(acc)}}" class="slds-truncate" ng-if="field.fieldPath.indexOf('BillingGeocodeAccuracy') != -1">
+                                        {{createAddress(acc)}}        
+                                    </span>
+                                    
+                                </td>
+                                
+                                <td data-label="More">
+                                    <span class="slds-truncate"><a href="/apex/{{nameSpacePrefix}}ConverttoOpportunity?id={{acc.Id}}&ret=HE">Convert Lead</a></span>    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> 
+            </div>    
+            <br />
+            <h3 class="slds-section-title--divider" ng-if="account.Id != undefined">Searched Opportunites</h3>
+            <div class="slds-table-wrap">
+                <div class="slds-scrollable--x">
+                    <table class="itinerary slds-table slds-table--bordered" ng-if="account.Id != undefined && showOppTable">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th class="slds-is-sortable" scope="col">
+                                    <span class="slds-truncate">Opportunity Name</span>
+                                    <button class="slds-button slds-button--icon-bare">
+                                        <svg aria-hidden="true" class="slds-button__icon slds-button__icon--small">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/standard-sprite/svg/symbols.svg#arrowdown')}"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Sort</span>
+                                    </button>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Opportunity Owner</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Country</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Enquiry Date</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Departure Date</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Arrival Date</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Selling Price</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Stage</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="slds-hint-parent" ng-repeat="opp in searchOpportunities">
+                                <th data-label="Opportunity-name" role="row">
+                                    <a href="/{{opp.Id}}" target="_blank" class="slds-truncate">{{opp.Name}}</a>
+                                </th>
+                                
+                                <td data-label="Opp-owner">
+                                    <span class="slds-truncate">{{opp.Owner.Name}}</span>
+                                </td>
+                                <td data-label="Country"><a href="#" class="slds-truncate">{{opp[nameSpacePrefix+'O_Country__c']}}</a></td>
+                                
+                                <td data-label="Enquiry-date">
+                                    <span class="slds-truncate">{{opp.CloseDate| date:'dd/MM/yyyy'}}</span>
+                                </td>
+                                <td data-label="Departure-date">
+                                    <span class="slds-truncate">{{opp[nameSpacePrefix+'O_Departure_Date__c']| date:'dd/MM/yyyy'}}</span>
+                                </td>
+                                <td data-label="Return-date">
+                                    <span class="slds-truncate">{{opp[nameSpacePrefix+'O_Return_Date__c'] | date:'dd/MM/yyyy'}}</span>
+                                </td>
+                                <td data-label="Selling-price">
+                                    <span class="slds-truncate">{{opp.Amount | number:2}}</span>
+                                </td>
+                                <td data-label="Stage">
+                                    <span class="slds-truncate">{{opp.StageName}}</span>
+                                </td>
+                            </tr>
+                          
+                        </tbody>
+                    </table>
+                    <table class="slds-table slds-table--bordered" ng-if="account.Id != undefined && !showOppTable">
+                        <thead>
+                            <tr> 
+                                <th> No related opportunity for this record.</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div> 
+            </div>
+            <!-- searched Open Activities -->
+            <br />
+            <h3 class="slds-section-title--divider" ng-if="account.Id != undefined">Searched Open Activities</h3>
+            <div class="slds-table-wrap">
+                <div class="slds-scrollable--x">
+                    <table class="itinerary slds-table slds-table--bordered" ng-if="account.Id != undefined && showOpenActivitiesTable">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th class="slds-is-sortable" scope="col">
+                                    <span class="slds-truncate">subject</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Owner</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Related To</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Due Date</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Status</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Priority</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">To</span>
+                                </th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="slds-hint-parent" ng-repeat="activity in searchedOpenActivities">
+                                <th data-label="Name" role="row" style="width:100px;">
+                                    <a href=" /{{activity.Id}}" target="_blank"><span class="slds-truncate">{{activity.Subject}}</span></a>
+                                </th>
+                                
+                                <td data-label="Owner">
+                                    <span class="slds-truncate">{{activity.Owner.Name}}</span>
+                                </td>
+                                <td data-label="Related To"><span class="slds-truncate">{{activity.What.Name}}</span></td>
+                                
+                                <td data-label="Due Date">
+                                    <span class="slds-truncate">{{activity.ActivityDate  | date:'dd/MM/yyyy'}}</span>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="slds-truncate">{{activity.Status}}</span>
+                                </td>
+                                <td data-label="Priority">
+                                    <span class="slds-truncate">{{activity.Priority}}</span>
+                                </td>
+                                <td data-label="Selling-price">
+                                    <span class="slds-truncate">{{activity.Who.Name}}</span>
+                                </td>
+                                
+                            </tr>
+                          
+                        </tbody>
+                    </table>
+                    <table class="slds-table slds-table--bordered" ng-if="account.Id != undefined && !showOpenActivitiesTable">
+                        <thead>
+                            <tr> 
+                                <th> No open activity for this record.</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div> 
+            </div>
+            <!-- searched searchActivity History  -->
+            <br/>
+            <h3 class="slds-section-title--divider" ng-if="account.Id != undefined">searched Activity History</h3>
+            <div class="slds-table-wrap">
+                <div class="slds-scrollable--x">
+                    <table class="itinerary slds-table slds-table--bordered" ng-if="account.Id != undefined && showActivityHistoryTable">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th class="slds-is-sortable" scope="col">
+                                    <span class="slds-truncate">subject</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Owner</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Related To</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Due Date</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Status</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">Priority</span>
+                                </th>
+                                <th scope="col">
+                                    <span class="slds-truncate">To</span>
+                                </th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="slds-hint-parent" ng-repeat="history in searchActivityHistory">
+                                <th data-label="Name" role="row">
+                                    <a href=" /{{history.Id}}" target="_blank"><span  href="#" class="slds-truncate">{{history.Subject}}</span></a>
+                                </th>
+                                
+                                <td data-label="Owner">
+                                    <span class="slds-truncate">{{history.Owner.Name}}</span>
+                                </td>
+                                <td data-label="Related To"><span  href="#" class="slds-truncate">{{history.What.Name}}</span></td>
+                                
+                                <td data-label="Due Date">
+                                    <span class="slds-truncate">{{history.ActivityDate  | date:'dd/MM/yyyy'}}</span>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="slds-truncate">{{history.Status}}</span>
+                                </td>
+                                <td data-label="Priority">
+                                    <span class="slds-truncate">{{history.Priority}}</span>
+                                </td>
+                                <td data-label="Selling-price">
+                                    <span class="slds-truncate">{{history.Who.Name}}</span>
+                                </td>
+                                
+                            </tr>
+                          
+                        </tbody>
+                    </table>
+                    <table class="slds-table slds-table--bordered" ng-if="account.Id != undefined && !showActivityHistoryTable">
+                        <thead>
+                            <tr> 
+                                <th> No activity history for this record.</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div> 
+            </div>
+            <!--- Account Address Popup -->
+            <div>
+                <div aria-hidden="false" role="dialog" style="display:none;" class="accountAddrees slds-modal slds-modal--large slds-fade-in-open" ng-form="frmAccDetails">
+                    <div class="slds-modal__container">
+                        <div class="slds-modal__header" style="padding: 10px 16px;">
+                            <h2 class="slds-text-heading--label">Client Address<strong ng-show="addressAccount.Name != undefined"> - {{addressAccount .Name}}</strong></h2>
+                            <button class="slds-button slds-button--icon-inverse slds-modal__close" onclick="$('.accountAddrees').toggle('hide');return false;">
+                                <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                    <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                </svg>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </div>
+                        <div class="slds-modal__content slds-scrollable--x" style="overflow-y : auto !important">
+                            <div class="slds-p-around--medium">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-3">
+                                        <div class="form-wrap slds-grid slds-wrap slds-m-right--x-small">
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                                <label class="slds-form-element__label" for="inputNameSample1">Billing Address Line 1</label>
+                                                  <span class="required-field">* </span> 
+                                                    <div class="slds-form-element__control">
+                                                    <input id="address1" class="slds-input" type="text" ng-required="action=='detailSave'" ng-model="addressAccount[nameSpacePrefix+'A_Address_Line_1__c']"  />
+                                                </div>
+                                            </div>
+                                        
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                              <label class="slds-form-element__label" for="inputNameSample1">Billing Address Line 2</label>
+                                                <div class="slds-form-element__control">
+                                                    <input id="address2" class="slds-input" type="text" ng-model="addressAccount[nameSpacePrefix+'A_Address_Line_2__c']"  />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                              <label class="slds-form-element__label" for="inputNameSample2">Billing Address Line 3</label>
+                                                <div class="slds-form-element__control">
+                                                    <input id="address3" class="slds-input" type="text"  ng-model="addressAccount[nameSpacePrefix+'A_Address_Line_3__c']"  />
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                                <label class="slds-form-element__label" for="inputNameSample3">Town/City</label>
+                                                <div class="slds-form-element__control">
+                                                    <input id="city" class="slds-input" type="text" ng-model="addressAccount.BillingCity" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                                <label class="slds-form-element__label" for="inputNameSample3">County</label>
+                                                <div class="slds-form-element__control">
+                                                    <input id="state" class="slds-input" type="text" ng-model="addressAccount.BillingState" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                                <label class="slds-form-element__label" for="inputNameSample3">Country</label>
+                                                <div class="slds-form-element__control">
+                                                    <select id="ACC_country"  class="slds-select" ng-model="addressAccount.BillingCountry"  ng-options="record.value as record.label for record in lstCountries">
+                                                        <option value="" label="-- Select --"></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                              <label class="slds-form-element__label" for="inputNameSample3">Postcode</label>
+                                               <span class="required-field">* </span>  
+                                                <div class="slds-form-element__control">
+                                                    <input id="postCode" class="slds-input" type="text" maxlength="10" ng-required="action=='detailSave'" ng-model="addressAccount.BillingPostalCode" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">
+                                                <label class="slds-form-element__label" for="inputNameSample3">Phone</label>
+                                                <span class="required-field">* </span>  
+                                                <div class="slds-form-element__control">
+                                                    <input id="phone" class="slds-input" ng-required="action=='detailSave'" type="text" pattern-err-type="HE_PhoneInvalid" ng-pattern="/^\+?(\d+$)$/" ng-model="addressAccount.Phone" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3" ng-class="{'slds-has-error': frmAccDetails.accEmail.$error.email}">
+                                                <label class="slds-form-element__label" for="inputNameSample3">Email</label>
+                                                <span class="required-field">* </span>  
+                                                <div class="slds-form-element__control">
+                                                    <input id="accountEmail" class="slds-input" type="email" 
+                                                    ng-model="addressAccount[nameSpacePrefix+'A_Email__c']" name="accEmail"  ng-required="action=='detailSave'" email-err-type="HE_EmailInvalid" pattern-err-type="HE_EmailInvalid" ng-pattern="/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$/" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-3">
+                                                <label class="slds-form-element__label" for="inputNameSample3">Description</label>
+                                                <div class="slds-form-element__control">
+                                                    <textArea id="accountDesc" class="slds-input" rows="3" ng-model="addressAccount.Description" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-3">
+                                        <div ng-if="addressAccount.BillingPostalCode != ''">
+                                             <map id="{{addressAccount.Id != undefined ? addressAccount.Id : 'newAccMap'}}" location="{{addressAccount.BillingPostalCode != undefined ? addressAccount.BillingPostalCode : 'SW13'}}" title="{{addressAccount.BillingCountry}}"/>
+                                       </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-modal__footer">
+                            <div class="slds-x-small-buttons">
+                                <button class="slds-button slds-button--brand" ng-show="addressAccount.Id !== undefined" ng-click="saveAddress('false');">Save &amp; Close</button>
+                                <button class="slds-button slds-button--brand" ng-show="addressAccount.Id !== undefined" ng-click="saveAddress('true');" >Brochure Request </button>
+                                <button class="slds-button slds-button--brand" ng-show="addressAccount.Id === undefined" ng-click="updateBillingAddress();">Save &amp; Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:none;" class="accountAddrees slds-backdrop slds-backdrop--open"></div>
+            </div>
+            <!--- Popup Closed -->
+            
+            <div class="fixed-footer slds-modal__footer">
+                <button class="slds-button slds-button--brand" 
+                    ng-click="saveAccount()" onclick="return false;">
+                    Save &amp; Next
+                </button>
+            </div>
+            
+        </div>
+    </html>
+</apex:component>

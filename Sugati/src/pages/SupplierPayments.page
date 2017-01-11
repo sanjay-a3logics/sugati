@@ -1,0 +1,863 @@
+<apex:page title="Supplier Payments" showHeader="true" standardController="Opportunity" extensions="SupplierPaymentController" sidebar="false" standardStylesheets="false" cache="false">
+    <!--
+    * Updated 24-02-2016
+    * Authore Veer Singh
+    *-->
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+             <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <c:BasicResources ></c:BasicResources>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+            <apex:stylesheet value="https://appssential-sf.s3.amazonaws.com/sugati/css/slds-appssential.css" />
+            <apex:includescript value="https://appssential-sf.s3.amazonaws.com/sugati/js/slds-appssential.js" />
+            <c:CSSStyler Page="SupplierPaymentsNew"></c:CSSStyler>
+        </head>
+       
+        <!--------- Style to control default behavior of Design System Components  ------->
+        <style>
+            
+            .slds .slds-section-title--divider{
+                margin-top : 10px !important;
+            }
+            @media (min-width: 48em)
+            .slds .slds-modal--large .slds-modal__container {
+                width: 70% !important;
+            }
+            
+            .slds-form-element {
+                padding: 2.5px !important;
+            }
+            .slds-large-size--1-of-3 {
+                padding-right: 5% !important;
+            }
+            select.ng-invalid{
+                border: 1px solid red !important;
+            }
+            input.ng-invalid{
+                border: 1px solid red !important;
+            }
+            .numberTD{
+                text-align: right !important;
+            }
+            .itinerary th, .itinerary td{
+                padding: 4px !important;
+            }
+            .noSidebarCell{
+                max-width: 1000px;
+            }
+        </style>        
+       
+        <!-- Angular Controller -->
+        <script>
+            
+            var myApp = angular.module('MyApp', ['ui.sortable','ui.bootstrap','oi.select','ngSanitize', 'ui.select','checklist-model']);
+            var lastSetBy = '';
+            var contrl = myApp.controller('SupplierPaymentsController' ,function($scope, $http, $timeout,oiSelect){
+                $scope.oppRecord = {!oppRecord};    
+                $scope.supplierPayments = [];
+                $scope.editSupplierPayment;
+                $scope.pickLists = {!pickLists};
+                $scope.lstSupplierBookings = {!lstSupplierBookings};
+                $scope.lstSuppliers = [];
+                $scope.selectedSupplier;
+                $scope.lstSupplierCostPayment = {!lstSupplierBookings};
+                $scope.editedSPDisabled = false;
+                $scope.preLoadAllSP = [];
+                $scope.backButton= ((typeof sforce != 'undefined') && (sforce != null));
+                $scope.loadSuppliers = function(){
+                    angular.forEach($scope.lstSupplierBookings, function(value){
+                        var labelStr = value['{!namespacePrefix}SCP_Supplier__r'].Name+' '+': '+value['{!namespacePrefix}SCP_Supplier_Currency__c'];
+                        $scope.lstSuppliers.push({label : labelStr, value : value.Id});
+                    });        
+                }
+                
+                // FOR TOGGLE IB
+                    
+                $scope.toggleSP = true;
+                $scope.toggleSupplier = true;
+                $scope.toggleSupplierPayment = true;
+                
+                
+                $scope.collapse = function(type){
+                    if(type == 'SP'){
+                        if($scope.toggleSP)
+                            $scope.toggleSP=false;
+                        else
+                            $scope.toggleSP=true;
+                    }
+                    if(type == 'Supplier'){
+                        if($scope.toggleSupplier)
+                            $scope.toggleSupplier = false;
+                        else
+                            $scope.toggleSupplier = true;
+                    }
+                   }
+                //Function 
+                
+                $scope.loadSupplierPayments = function(){ 
+                    //Load old payments
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.SupplierPaymentController.getSupplierPayments}', 
+                        $scope.oppRecord.Id,
+                        function(result, event){
+                            if(event.status){
+                                $scope.supplierPayments = JSON.parse(result);
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message, 'error');
+                            }
+                            $scope.loading("hide");
+                            $scope.$apply();
+                        }, 
+                        {escape:false}
+                    );
+                }
+                
+                // loading 
+                $scope.loading = function(action){
+                    if(action == "show"){
+                        $('#contentLoading').css("display","block");
+                    }
+                    else{
+                        $('#contentLoading').css("display","none");
+                    }
+                }
+                
+                
+                //Add/Edit Supplier Payments
+                $scope.showRecieptDetails = function(payment){
+                    if(payment != ''){
+                        $scope.editSupplierPayment = $scope.updateDate(payment);
+                        if($scope.editSupplierPayment['{!namespacePrefix}SP_Payment_Date__c'] !== undefined && $scope.editSupplierPayment['{!namespacePrefix}SP_Payment_Date__c'] != ''){
+                            $scope.editedSPDisabled = true;
+                        }
+                        else{
+                            $scope.editedSPDisabled = false;
+                        }
+                    }
+                    else{
+                        $scope.editedSPDisabled = false;
+                        $scope.selectedSupplier;
+                        $scope.editSupplierPayment = {};
+                    }
+                }
+                
+                //Change Supplier
+                $scope.changeSupplier = function(oneByOne){
+                    $scope.preLoadAllSP = [];
+                    //Load old payments
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.SupplierPaymentController.getSupplierCostnPayment}', 
+                        $scope.oppRecord.Id,
+                        function(result, event){
+                            if(event.status){
+                                console.log(JSON.parse(result));
+                                $scope.lstSupplierCostPayment = JSON.parse(result);
+                                if(oneByOne != ''){
+                                    angular.forEach($scope.lstSupplierCostPayment, function(value){
+                                        if($scope.editSupplierPayment['{!namespacePrefix}SBP_Supplier_Cost_Currency_Value__c'] == value.Id){
+                                            $scope.editSupplierPayment['{!namespacePrefix}SP_Currency__c'] = value['{!namespacePrefix}SCP_Supplier_Currency__c'];
+                                            $scope.editSupplierPayment['{!namespacePrefix}P_Amount__c'] = value['{!namespacePrefix}SCP_Outstanding_Amount__c'];
+                                            if(value['{!namespacePrefix}SCP_Outstanding_Amount__c'] == 0){
+                                                alert('No outstanding payment to be made', 'error');    
+                                            }
+                                        }
+                                    });
+                                }
+                                else{
+                                    $scope.preLoadSPS;
+                                    angular.forEach($scope.lstSupplierCostPayment, function(value){
+                                        console.log(value['{!namespacePrefix}SCP_Outstanding_Amount__c']);
+                                        if(value['{!namespacePrefix}SCP_Outstanding_Amount__c'] != 0){
+                                            $scope.preLoadSPS = {};
+                                            $scope.preLoadSPS['{!namespacePrefix}SBP_Supplier_Cost_Currency_Value__c'] = value.Id;
+                                            $scope.preLoadSPS['{!namespacePrefix}SP_Currency__c'] = value['{!namespacePrefix}SCP_Supplier_Currency__c'];
+                                            $scope.preLoadSPS['{!namespacePrefix}P_Amount__c'] = value['{!namespacePrefix}SCP_Outstanding_Amount__c'];
+                                            $scope.preLoadAllSP.push($scope.preLoadSPS);
+                                        }
+                                    });
+                                    console.log($scope.preLoadAllSP);
+                                    if($scope.preLoadAllSP.length == 0){
+                                        alert('No outstanding payment to be made', 'error');
+                                    }
+                                }
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message, 'error');
+                            }
+                            $scope.loading("hide");
+                            $scope.$apply();
+                        }, 
+                        {escape:false}
+                    );    
+                }
+                
+                //Save supplier payments
+                $scope.SaveSupplierPayment = function(){
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.SupplierPaymentController.saveSupplierPayments}', 
+                        JSON.stringify(changeDateInSalesforceDate($scope.editSupplierPayment)),$scope.oppRecord.Id,
+                        function(result, event){
+                            if(event.status){
+                                $scope.loadSupplierPayments();
+                                $('.clientPayment').toggle('hide');
+                                jsrefreshComponent();
+                                alert('Supplier Payment Saved Successfully','Sucess');
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message, 'error');
+                            }
+                            $scope.loading("hide");
+                            $scope.$apply();
+                        }, 
+                        {escape:false}
+                    );        
+                }
+                
+                //save all supplier Payments
+                $scope.saveAllSP = function(){
+                        
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.SupplierPaymentController.saveAllSupplierPayments}', 
+                        JSON.stringify(changeDateInSalesforceDate($scope.preLoadAllSP)),$scope.oppRecord.Id,
+                        function(result, event){
+                            if(event.status){
+                                $scope.loadSupplierPayments();
+                                $scope.preLoadAllSP = [];
+                                jsrefreshComponent();
+                                alert('Supplier Payment Saved Successfully','Sucess');
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message, 'error');
+                            }
+                            $scope.loading("hide");
+                            $scope.$apply();
+                        }, 
+                        {escape:false}
+                    ); 
+                }
+                
+                
+                $scope.updateDate = function(supplierPaymentObj){
+                    //SP_Due_Date__c
+                    if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] !== undefined && typeof supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] === 'number')
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'].indexOf('-') != -1)
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] !== undefined )
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Due_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+                    
+                    // For SP_Payment_Date__c
+                    if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] !== undefined && typeof supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] === 'number')
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'].indexOf('-') != -1)
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] ).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] !== undefined )
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Payment_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+                    
+                    // For SP_Payment_Date__c  (SP_Inv_Date__c)   
+                    if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] !== undefined && typeof supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] === 'number')
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'].indexOf('-') != -1)
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] !== undefined )
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Inv_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+                    
+                    // For Transfer Date (SP_Transferred_To_Accts__c)
+                    if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] !== undefined && typeof supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] === 'number')
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'].indexOf('-') != -1)
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c']).format('DD/MM/YYYY');    
+                    else if(supplierPaymentObj !== undefined && supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] !== undefined )
+                        supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'] = moment(supplierPaymentObj['{!nameSpacePrefix}SP_Transferred_To_Accts__c'],'DD/MM/YYYY').format('DD/MM/YYYY');  
+                    return supplierPaymentObj;      
+                }
+                
+                $scope.deleteSP = function(index){
+                    $scope.preLoadAllSP.pop(index);    
+                }
+                
+                
+                $scope.loadSupplierPayments();
+                $scope.loadSuppliers();
+                
+                
+            });
+            
+            //DatePicker directive
+            myApp.directive('jqdatepicker', function () {
+                return {
+                    restrict: 'A',
+                    require: 'ngModel',
+                     link: function (scope, element, attrs, ngModelCtrl) {
+                        $(element).datepicker({
+                            dateFormat: 'dd/mm/yy',
+                            onSelect: function (date) {
+                                ngModelCtrl.$setViewValue(date);
+                                ngModelCtrl.$render();
+                                scope.$apply();
+                            }
+                        });
+                        scope.$watch(attrs.ngModel, function(newValue) {
+                            if(newValue == ''){
+                                ngModelCtrl.$setViewValue(null);
+                            }
+                        });
+                    }
+                };
+            });
+            
+            //CKEditor 
+            myApp.directive('ckEditor', [function () {
+                return {
+                    require: '?ngModel',
+                    link: function ($scope, elm, attr, ngModel) {
+            
+                        var ck = CKEDITOR.inline(elm[0]);
+                        ck.on('pasteState', function () {
+                            $scope.$apply(function () {
+                                ngModel.$setViewValue(ck.getData());
+                            });
+                        });
+            
+                        ngModel.$render = function (value) {
+                            ck.setData(ngModel.$modelValue);
+                        };
+                    }
+                };
+            }])
+        
+            // Change date format of queried data
+            function changeDateInSalesforceDate(data){
+                for (var key in data) {
+                    var item = data[key];
+                    if (typeof item != "object" && (key.indexOf('Date__c') != -1 || key.indexOf('Processed_On__c') != -1 ) || key.indexOf('SP_Transferred_To_Accts__c') != -1) {
+                         if(data[key] != ''){
+                             data[key] = moment(data[key],'DD/MM/YYYY').format('YYYY-MM-DD');
+                         }
+                         else{
+                             data[key] = null;
+                         }
+                    } else if (typeof item == "object") {
+                        changeDateInSalesforceDate(item);
+                    }
+                } 
+                return data;
+            }
+            
+            
+            //Filter the SObject JSON
+            function removeHashKey(data) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    if (typeof item != "object") {
+                        delete data['$$hashKey']; 
+                    } else if (typeof item == "object") {
+                        delete data['$$hashKey'];
+                        removeHashKey(item);
+                    }
+                } return data;   
+            }
+            function removeProperty(data, prop) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    
+                    if (typeof item != "object") {
+                        delete data[prop]; 
+                    } else if (typeof item == "object") {
+                        delete data[prop]; 
+                        removeProperty(item,prop);
+                    }
+                } return data;   
+            }
+            
+            
+            //jQuery code for event handling
+            $(document).ready(function(){
+                $('.clientPaymentcloseButton').on('click', function(){
+                    $('.clientPayment').toggle('hide');
+                });
+            });
+            function openEmail(){
+                $('.sendEmail').toggle('show');
+                angular.element(document.getElementById('SupplierPayments')).scope().selectTemplate();
+            }
+            function close_Win(){
+                close();
+            }
+            
+            
+            // Change date format of queried data
+            function changeDateInSalesforceDate(data){
+                for (var key in data) {
+                    var item = data[key];
+                    if (typeof item != "object" && (key.indexOf('Date__c') != -1 || key.indexOf('Processed_On__c') != -1 || key.indexOf('SP_Transferred_To_Accts__c') != -1) ) {
+                         if(data[key] != ''){
+                             data[key] = moment(data[key],'DD/MM/YYYY').format('YYYY-MM-DD');
+                         }
+                         else{
+                             data[key] = null;
+                         }
+                    } else if (typeof item == "object") {
+                        changeDateInSalesforceDate(item);
+                    }
+                } 
+                return data;
+            }
+            
+            //back button
+            
+            function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+            }
+            
+            
+            
+        
+            
+        </script>
+        <!------------ Page Body starts here   --------------->
+        <body>
+            <div class="slds">        
+                <c:Loading ></c:Loading>
+                <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                <c:AlertBox />
+            <div ng-app="MyApp" ng-cloak="ng-cloak">
+                <div id="SupplierPaymentsController" ng-controller="SupplierPaymentsController" >
+                        <!-- Opp Summary Section --->
+                        <br/>
+                        <!-- Supplier Booking Table --->
+                        <c:BySupplierComponent ></c:BySupplierComponent>
+                        
+                        <div   class="slds-card__footer" style="height: 45px;">
+                            <div style="float:right;">
+                                <button ng-click="changeSupplier('')" class="slds-button slds-button--brand">Pre-Load all supplier payments in full</button>
+                                <button ng-click="showRecieptDetails('')" onclick="$('.clientPayment').toggle('show');return false;" class="slds-button slds-button--brand">Add supplier payment one by one</button>
+                                <button onclick="openEmail();return false;" class="slds-button slds-button--brand">Send Email</button>
+                                <button onclick="close_Win();return false;" class="slds-button slds-button--brand">Close</button>
+                                <button  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" > Back</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Pre-load all supplier payments --->
+                        <div class="slds-card" ng-if="preLoadAllSP.length > 0" >
+                            <div class="slds-card__header slds-grid">
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                        </svg>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-text-heading--small slds-truncate">All supplier payments in full</h2>
+                                    </div>
+                                </div>
+                                <div class="slds-no-flex">
+                                    <div class="slds-button-group">
+                                        <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                        <button class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-click = "showpaymentreceived  = !showpaymentreceived " >
+                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Show More</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__body" ng-show="preLoadAllSP.length > 0"  >
+                                <div style="/*max-height: 50px; overflow:auto;*/">
+                                <div class="slds-scrollable--x" ng-form="allSupplier">
+                                    <table class="slds-table slds-table--bordered" >
+                                        <thead>
+                                            <tr> 
+                                                <th class="headerRow">Supplier Name</th>                         
+                                                <th class="headerRow" >Due Date</th>                         
+                                                <th class="headerRow">Payment Type</th>
+                                                <th class="headerRow">Currency</th>
+                                                <th class="headerRow" >Amount Paid</th>
+                                                <th class="headerRow" >Authorised By</th>
+                                                <th class="headerRow" >Payment RoE</th>
+                                                <th class="headerRow">Paid On</th>
+                                                <th class="headerRow">Paid By</th>
+                                                <th class="headerRow" >Method</th>
+                                                <th class="headerRow" >Transferred to Accts</th>
+                                                <th class="headerRow" >Bank Account</th>
+                                                <th class="headerRow">Note</th>
+                                                <th class="headerRow" >Action</th>
+                                            </tr>     
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="receipt in preLoadAllSP">
+                                                <td>
+                                                    <select style="width: 175px;" id="modal-suppleirName" class="slds-select" ng-change="changeSupplier('one')" ng-disabled="receipt['{!nameSpacePrefix}SBP_Supplier_Cost_Currency_Value__c'] !== undefined"  ng-model="receipt['{!nameSpacePrefix}SBP_Supplier_Cost_Currency_Value__c']" ng-options="record.value as record.label for record in lstSuppliers">
+                                                        <option value="" label="--Select--"></option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input jqdatepicker="jqdatepicker" ng-required="true" style="width:120px" ng-disabled="editedSPDisabled" class="slds-input" type="text" ng-model="receipt['{!nameSpacePrefix}SP_Due_Date__c']"/>
+                                                </td>
+                                                <td>
+                                                    <select id="modal-receiptMethod" class="slds-select"    ng-model="receipt['{!nameSpacePrefix}SB_Payment_Type__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sb_payment_type__c']">
+                                                        <option value="" label="--Select--"></option>
+                                                    </select>
+                                                </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Currency__c']}}</td>
+                                                <td>
+                                                    <input type="number"  style="padding-right: 0px;" id="modal-receiptAmtExcCC" ng-disabled="editedSPDisabled" ng-required="true" class="slds-input" ng-model="receipt['{!nameSpacePrefix}P_Amount__c']"/>
+                                                </td>
+                                                <td>
+                                                    <select id="modal-receiptMethod" class="slds-select"  ng-disabled="editedSPDisabled"  ng-model="receipt['{!nameSpacePrefix}SP_Authorised_by__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_authorised_by__c']">
+                                                        <option value="" label="--Select--"></option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number"  style="padding-right: 0px;" id="modal-receiptAmtExcCC" ng-disabled="editedSPDisabled"  class="slds-input" ng-model="receipt['{!nameSpacePrefix}SP_Payment_RoE__c']"/>
+                                                </td>
+                                                <td>
+                                                    <input jqdatepicker="jqdatepicker" style="width:120px" ng-disabled="editedSPDisabled" class="slds-input" type="text" ng-model="receipt['{!nameSpacePrefix}SP_Payment_Date__c']"/>
+                                                </td>
+                                                <td>
+                                                    <select id="modal-receiptMethod" style="width:120px" class="slds-select"  ng-disabled="editedSPDisabled"  ng-model="receipt['{!nameSpacePrefix}SP_Paid_By__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_paid_by__c']">
+                                                        <option value="" label="--Select--"></option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="modal-receiptMethod" style="width:120px" class="slds-select"  ng-disabled="editedSPDisabled"  ng-model="receipt['{!nameSpacePrefix}SP_Payment_Method__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_payment_method__c']">
+                                                        <option value="" label="--Select--"></option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input jqdatepicker="jqdatepicker" style="width:120px" ng-disabled="editedSPDisabled" class="slds-input" type="text" ng-model="receipt['{!nameSpacePrefix}SP_Transferred_To_Accts__c']"/>
+                                                </td>
+                                                <td>
+                                                    <select id="modal-receiptMethod" class="slds-select"  ng-disabled="editedSPDisabled"  ng-model="receipt['{!nameSpacePrefix}SP_Bank_Account__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_bank_account__c']">
+                                                        <option value="" label="--Select--"></option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <textArea style="padding-right: 0px;height: 35px;width:120px" id="modal-notes"  class="slds-input"  ng-model="receipt['{!nameSpacePrefix}SP_Note__c']"/>
+                                                </td>
+                                                <td>
+                                                    <span style="color:red;cursor:pointer;" ng-click="deleteSP($index);" title="Delete Supplier Payment" > X </span>
+                                                </td>
+                                             </tr>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__footer" style="height: 45px;">
+                                <span class="input-group-addon" style="float:right;">
+                                    <input type="button" id="btnSave" ng-disabled="allSupplier.$invalid"  ng-click="saveAllSP()" class="slds-button slds-button--brand"   value="Save All" />
+                                </span>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="slds-card">
+                            <div class="slds-card__header slds-grid">
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                        </svg>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-text-heading--small slds-truncate">Supplier Payment Status</h2>
+                                    </div>
+                                </div>
+                                <div class="slds-no-flex">
+                                    <div class="slds-button-group">
+                                        <img ng-show="toggleSP==false" ng-click="collapse('SP')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/down_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                                        <img ng-show="toggleSP==true" ng-click="collapse('SP')" src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/up_60.png')}" style="height: 20px;cursor: pointer;" ></img>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__body" ng-show="toggleSP">
+                                <div class="slds-scrollable--x">
+                                    <table class="slds-table slds-table--bordered" >
+                                        <thead>
+                                            <tr> 
+                                                <th class="headerRow" style="width: 113px;">Supplier Name</th>                         
+                                                <th class="headerRow" style="width: 113px;">Due Date</th>                         
+                                                <th class="headerRow" style="width: 113px;">Paid On</th>
+                                                <th class="headerRow" style="width: 113px;">Method</th>
+                                                <th class="headerRow">Currency</th>
+                                                <th class="headerRow numberTD" style="width: 160px;">Amount </th>
+                                                <th class="headerRow numberTD" style="width: 116.5px;">Payment RoE</th>
+                                                <th class="headerRow numberTD" style="width: 116.5px;">GBP equiv</th>
+                                                <th class="headerRow" style="width: 235px;">Bank Account</th>
+                                                <th class="headerRow">Note</th>
+                                                <th class="headerRow" style="width: 55px;">Is Agent</th>
+                                                <th class="headerRow" style="width: 55px;">Action</th>
+                                                <th class="headerRow" style="width: 55px;">Payment Type</th>
+                                            </tr>     
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="receipt in supplierPayments">
+                                                <td> {{receipt['{!nameSpacePrefix}SBP_Supplier_Cost_Currency_Value__r']['{!nameSpacePrefix}SCP_Supplier__r'].Name}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Due_Date__c'] | date: 'dd/MM/yyyy'}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Payment_Date__c'] | date: 'dd/MM/yyyy'}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Payment_Method__c']}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Currency__c']}}</td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}P_Amount__c'] | number:2}} </td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}SP_Payment_RoE__c'] | number:2}} </td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}SP_Payment_RoE__c']*receipt['{!nameSpacePrefix}P_Amount__c'] | number:2}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Bank_Account__c']}}</td>
+                                                <td> {{receipt['{!nameSpacePrefix}SP_Note__c']}}</td>
+                                                <td> {{receipt['{!nameSpacePrefix}SBP_Supplier_Cost_Currency_Value__r']['{!nameSpacePrefix}SCP_Is_Agent__c']}}</td>
+                                                <td>
+                                                    <a href="#" ng-click="showRecieptDetails(receipt);" onclick="$('.clientPayment').toggle('show');return false;"> View/Edit Detail </a>
+                                                </td>
+                                                <td> {{receipt['{!nameSpacePrefix}SB_Payment_Type__c']}}</td>
+                                             </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        
+                          <!---- Supplier Payment Pop-up ----->
+                        <div aria-hidden="false" role="dialog" style="display:none"  class="clientPayment slds-modal slds-modal--large slds-fade-in-open">
+                            <div class="slds-modal__container">
+                                <div class="slds-modal__header" style="padding: 10px 16px;">
+                                    <h2 class="slds-text-heading--medium" style="float:left;font-size:17px;">Add/View Supplier Payment</h2>
+                                    
+                                    <button class="clientPaymentcloseButton slds-button slds-button--icon-inverse slds-modal__close" onclick="return false;">
+                                        <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="slds-modal__content slds-scrollable--x" style="overflow-y : auto !important" ng-form="cpForm">
+                                    <div>
+                                        <h3 class="slds-section-title--divider">Payment Details</h3>
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptDate"> Supplier Name </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input type="text" id="modal-receiptDate" ng-if="editSupplierPayment.Id !== undefined" ng-disabled="true" class="slds-input"  ng-model="editSupplierPayment['{!nameSpacePrefix}SBP_Supplier_Cost_Currency_Value__r']['{!nameSpacePrefix}SCP_Supplier__r'].Name"/>
+                                                        <select id="modal-suppleirName" class="slds-select" ng-change="changeSupplier('one')" ng-if="editSupplierPayment.Id === undefined"  ng-model="editSupplierPayment['{!nameSpacePrefix}SBP_Supplier_Cost_Currency_Value__c']" ng-options="record.value as record.label for record in lstSuppliers">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptProcessedOn"> Due Date </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" ng-disabled="editedSPDisabled"  id="modal-receiptProcessedOn"   class="slds-input" type="text" ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Due_Date__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Payment Type </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select" ng-disabled="editedSPDisabled"  ng-model="editSupplierPayment['{!nameSpacePrefix}SB_Payment_Type__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sb_payment_type__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Currency </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select" ng-disabled="editedSPDisabled"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Currency__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_currency__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptAmtExcCC"> Amount </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input type="number"  style="padding-right: 0px;" id="modal-receiptAmtExcCC" ng-disabled="editedSPDisabled"  class="slds-input" ng-model="editSupplierPayment['{!nameSpacePrefix}P_Amount__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Authorised by</label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select" ng-disabled="editedSPDisabled"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Authorised_by__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_authorised_by__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptAmtExcCC"> Payment RoE   </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input type="number"  style="padding-right: 0px;" id="modal-receiptAmtExcCC" ng-disabled="editedSPDisabled"  class="slds-input" ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Payment_RoE__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptProcessedOn"> Paid On </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" ng-disabled="editedSPDisabled"     class="slds-input" type="text" ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Payment_Date__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Paid By </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select" ng-disabled="editedSPDisabled"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Paid_By__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_paid_by__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Method </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select"  ng-disabled="editedSPDisabled"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Payment_Method__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_payment_method__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptProcessedOn"> Transferred to Accts </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" ng-disabled="editedSPDisabled"  id="modal-receiptAccts"   class="slds-input" type="text" ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Transferred_To_Accts__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Bank Account </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select" ng-disabled="editedSPDisabled"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Bank_Account__c']" ng-options="record.value as record.label for record in pickLists['{!nameSpacePrefix}sp_bank_account__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-InvoiceDate"> Invoice Date   </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" style="padding-right: 0px;" id="modal-InvoiceDate"  class="slds-input"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Inv_Date__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptAmtExcCC"> Notes   </label>
+                                                    <div class="slds-form-element__control">
+                                                        <textArea style="padding-right: 0px;" id="modal-notes"  class="slds-input"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Note__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                             
+                                            
+                                             <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-RemComment"> Remmitance Comment  </label>
+                                                    <div class="slds-form-element__control">
+                                                        <textArea style="padding-right: 0px;" id="modal-RemComment"  class="slds-input"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Remittance_Comments__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                             <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-RemCommentOffice"> Remmitance Comment(Office)   </label>
+                                                    <div class="slds-form-element__control">
+                                                        <textArea style="padding-right: 0px;" id="modal-RemCommentOffice"  class="slds-input"  ng-model="editSupplierPayment['{!nameSpacePrefix}SP_Remittance_Comments_office_copy__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3"/>                                              
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3"/>                                              
+                                            
+                                        </div>
+                                    </div>
+                                    <div  ng-show="editSupplierPayment.Id !== undefined">
+                                        <h3 class="slds-section-title--divider">Attachment </h3>
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">                                              
+                                                 <input type="hidden" ng-model="editSupplierPayment.Id" ng-value="editSupplierPayment.Id" id="attparentID" />
+                                                 <c:DragDrop DragDropHeight="100px" />    
+                                            </div>    
+                                        </div> 
+                                        <h3 class="slds-section-title--divider">
+                                            Attached Files
+                                        </h3>
+                                       
+                                        <div class="slds-form-element">
+                                            <div id="attachedFiles" style="font-weight: bold; font-size: 12px; font-family: arial;">
+                                            
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-modal__footer slds-modal__footer">
+                                    <div class="slds-x-small-buttons--horizontal">
+                                        <button class="clientPaymentcloseButton closeButton slds-button slds-button--brand" onclick="return false;">Close</button>
+                                        <!-- <button class="slds-button slds-button--brand" ng-show="editSupplierPayment.Id !== undefined" ng-click="showFileUploader(editSupplierPayment.Id);" onclick="return false;">Attach Files</button> &nbsp; -->
+                                        <button type="submit"  class="slds-button slds-button--brand" ng-click="SaveSupplierPayment()" onclick="return false;">Save &amp; Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:none;" class="clientPayment slds-backdrop slds-backdrop--open"></div>
+                        
+                        <!-- Send Email  -->
+                        <div class="sendEmail" style="display:none;" >
+                            <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <div class="slds-modal__header" style="padding: 10px 16px;">
+                                        <h2 class="slds-text-heading--medium" style="float:left;font-size:17px;"><strong>Send Email</strong></h2>
+                                        <button class="sendEmailClose slds-button slds-button--icon-inverse slds-modal__close suggestionEmail_close" onclick="$('.sendEmail').hide();return false;">
+                                            <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                    </div>
+                                    <div class="slds-modal__content" style="overflow: auto !important;">
+                                        <c:MailService opportunityId="{!opp.Id}" templateName="SupplierPayments" id="suggestion"/>    
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            <div style="display:none;" id="sendEmail" class="sendEmail slds-backdrop slds-backdrop--open"></div>
+                        </div>
+                       
+                    
+                    </div>
+                   <!-- <c:FileUploader NameSpacePrefix="{!NameSpacePrefix}"/>  -->
+                </div>
+                
+            </div>
+            </div>
+        </body>
+    </html>
+</apex:page>

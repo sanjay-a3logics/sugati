@@ -1,0 +1,1463 @@
+<apex:component Controller="CSSController" allowDML="true"  layout="block" >
+   <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+       <div class="slds-form--inline">
+        <head>
+            <c:BasicResources ></c:BasicResources>
+            <c:Loading ></c:Loading>
+            
+            <script src="https://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/>
+              <script data-require="angular-resource@1.4.3" data-semver="1.4.3" src="https://code.angularjs.org/1.4.3/angular-resource.js"></script>
+           <apex:includeScript value="{!URLFOR($Resource.jscolor)}"/>
+            <script>
+                var myApp = angular.module('myApp', []);
+                myApp.controller('cssCtrl', function($scope){
+                    $scope.CSSData = {!CSSData};
+                    $scope.PageNames = {!PageNames};
+                    console.log($scope.CSSData);
+                    if($scope.CSSData.Name == null || $scope.CSSData.Name == '' || $scope.CSSData.Name == 'undefined')
+                        $scope.CSSData['Name'] = 'CSSPage';
+                    if($scope.CSSData.Font_Family__c == null || $scope.CSSData.Font_Family__c == '' || $scope.CSSData.Font_Family__c == 'undefined')
+                        $scope.CSSData.Font_Family__c = 'inherit';
+                    if($scope.CSSData.Font_Style__c == null || $scope.CSSData.Font_Style__c == '' || $scope.CSSData.Font_Style__c == 'undefined')
+                        $scope.CSSData.Font_Style__c = 'inherit';
+                    if($scope.CSSData.Header_Font_Style__c == null || $scope.CSSData.Header_Font_Style__c == '' || $scope.CSSData.Header_Font_Style__c == 'undefined')
+                        $scope.CSSData.Header_Font_Style__c = 'inherit';
+                    $scope.Button = {};
+                    if($scope.CSSData.CS_Button_JSON__c != '')
+                        $scope.Button = JSON.parse($scope.CSSData.CS_Button_JSON__c);
+                    
+                    //Save css data     
+                    $scope.saveCss = function(){
+                        $scope.loading("show");
+                        $scope.CSSData.CS_Button_JSON__c = JSON.stringify($scope.Button);
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.CSSController.SaveCssData}',JSON.stringify($scope.CSSData),
+                            function(result, event){
+                                if (event.status) {
+                                    $scope.CSSData = result;
+                                    alert('CSS succsssfully saved.','Success');
+                                    $scope.$apply();
+                                }else if (event.type === 'exception') 
+                                    alert(event.message);
+                                $scope.loading("hide");
+                            }, 
+                            {escape: false}
+                        ); 
+                    }
+                    
+                    $scope.loading = function(action){
+                        if(action == "show"){
+                            $('#contentLoading').css("display","block");
+                        }
+                        else{
+                            $('#contentLoading').css("display","none");
+                        }
+                    }
+                    
+                    $scope.changeFontSize = function(field,size){
+                        if(field == 'Email'){
+                            $scope.CSSData.Email_Font_Size__c = size;
+                        }
+                    }
+                    
+                    $scope.getAttchments = function(){
+                        Visualforce.remoting.Manager.invokeAction(
+                           '{!$RemoteAction.CSSController.getDocument}', 'Client Invoice',
+                            function(result, event){
+                                if (event.status) {
+                                //Result contains list of account names and account id
+                                    console.log(result);
+                                    $scope.attachments = result;  
+                                    angular.forEach($scope.attachments, function(att){
+                                        att.isSelected = false;
+                                    });
+                                }else if (event.type === 'exception') 
+                                    alert(event.message,'error');
+                                loading(false);
+                                $scope.$apply();
+                            }, 
+                            {escape: false}
+                        );
+                    }
+                    $scope.getAttchments();
+               });
+              
+              //Filter the SObject JSON
+                function filterJSON(data) {
+                    var ele = data;
+                      
+                    for (var i in ele) {
+                                       
+                        var ele1 = ele[i];
+                        if(ele[i].hasOwnProperty('$$hashKey')){
+                            delete ele[i]['$$hashKey']
+                        }
+                        for (var j in ele1) {
+                            
+                            if(typeof(ele1[j]) == 'object'){
+                                if(ele[i][j].hasOwnProperty('$$hashKey')){
+                                    delete ele[i][j]['$$hashKey']
+                                }
+                                for (var k in ele1[j]) {
+                                    for (var l in ele1[j][k]) {
+                                        if(ele[i][j][k][l].hasOwnProperty('$$hashKey')){
+                                            delete ele[i][j][k][l]['$$hashKey']
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(ele.length === undefined){
+                        delete  ele['$$hashKey'];        
+                    }
+                    return ele;
+                }
+                
+                
+                
+            </script>
+            
+            <script>
+             $(document).ready(function(){
+                   $('.slds-tabs--default__item').on('click', function(){
+                        $(this).addClass('slds-active');
+                        $(this).find('a').attr('aria-selected', true);
+                        var $contentToShow = $('#'+$(this).find('a').attr('aria-controls'));
+                        $contentToShow.removeClass('slds-hide');
+                        $contentToShow.addClass('slds-show');
+                        $(this).siblings().removeClass('slds-active');
+                        $(this).siblings().find('a').attr('aria-selected', false);
+                        $contentToShow.siblings('.slds-tabs--default__content').removeClass('slds-show');
+                        $contentToShow.siblings('.slds-tabs--default__content').addClass('slds-hide');
+                    });
+                    $( "#fontsize_slider" ).slider({
+                      value:18,
+                      min: 5,
+                      max: 72,
+                      step: 2,
+                      slide: function( event, ui ) {
+                        $( "#fontsize" ).val( ui.value );
+                        angular.element(document.getElementById('cssCtrl')).scope().CSSData.Font_Size__c = ui.value;
+                        document.getElementById('font-sample-text').style.fontSize = ui.value+'px';
+                      }
+                    });
+                    $( "#fontsize" ).val( $( "#fontsize_slider" ).slider( "value" ) );
+                    $( "#fontsize_slider1" ).slider({
+                      value:18,
+                      min: 5,
+                      max: 72,
+                      step: 2,
+                      slide: function( event, ui ) {
+                        $( "#fontsize1" ).val( ui.value );
+                        document.getElementById('font-sample-text1').style.fontSize = ui.value+'px';
+                        angular.element(document.getElementById('cssCtrl')).scope().changeFontSize('Email',ui.value);
+                      }
+                    });
+                    $( "#fontsize1" ).val( $( "#fontsize_slider1" ).slider( "value" ) );
+                    
+                    $( "#fontsize_slider_table" ).slider({
+                      value:18,
+                      min: 5,
+                      max: 72,
+                      step: 2,
+                      slide: function( event, ui ) {
+                        $( "#fontsizetable" ).val( ui.value );
+                        angular.element(document.getElementById('cssCtrl')).scope().CSSData.Table_Font_Size__c = ui.value;
+                        document.getElementById('font-sample-text-table').style.fontSize = ui.value+'px';
+                      }
+                    });
+                    
+                    
+                    $('#settings-wrap-inner').accordion();
+                    convertCheckBoxToLDS();
+
+              });
+             
+
+            </script>
+            <style>
+              .colortop{
+                top : -5px;
+              }
+              .slds-tabs--default__content{
+                  background: white;
+              }
+              .ui-accordion-content-active{
+                  height: 100% !important;
+              }
+              .slider-bound{
+                  width: 50px;
+              }
+              .more {
+                  display: none;
+              }
+              .more-link{
+                  cursor: pointer;
+                  text-decoration: none;
+              }
+            </style>
+            <script>
+                function updateSampleTextStyle(element){
+                    if(element.id == 'fontfamily'){
+                        document.getElementById('font-sample-text').style.fontFamily = element.value;
+                        document.getElementById('font-sample-text1').style.fontFamily = element.value;
+                    }
+                    else if(element.id == 'fontstyle'){
+                        document.getElementById('font-sample-text').style.fontStyle = element.value;
+                        document.getElementById('font-sample-text1').style.fontStyle = element.value;
+                    }
+                    else if(element.id == 'fontsize'){
+                        document.getElementById('font-sample-text').style.fontSize = element.value+'px';
+                        document.getElementById('font-sample-text1').style.fontSize = element.value+'px';
+                    }
+                    document.getElementById('font-sample-text1').style.color= document.getElementById('fontcolor').value;
+                }
+                
+            
+            
+            function convertCheckBoxToLDS() {
+                var Row = document.getElementsByClassName("convertToLSD");
+                for (var k = 0; k < Row.length; k++) {
+                    var colTds = Row[k].getElementsByTagName("td");
+                    for (var i = 0; i < colTds.length; i++) {
+                        var inrHtml = colTds[i].innerHTML;
+                        var chkId = inrHtml.substring(inrHtml.indexOf("id=") + 4, inrHtml.indexOf("\"", inrHtml.indexOf("id=") + 4));
+                        var chkBx = inrHtml.substring(inrHtml.indexOf("<input"), inrHtml.indexOf(">") + 1);
+                        var chkLable = colTds[i].getElementsByTagName("label")[0].textContent;
+                        var typeOfInput = colTds[i].getElementsByTagName("input")[0].getAttribute("type");
+                        var newChkBox = '<label class="slds-' + typeOfInput + '" for="' + chkId + '">' + chkBx +
+                        '<span class="slds-' + typeOfInput + '--faux"></span>' +
+                        '<span class="slds-form-element__label">' + chkLable + '</span>' +
+                        '</label>';
+                        colTds[i].innerHTML = newChkBox;
+                    }
+                }
+            }
+            
+            </script>
+        </head>
+        <body>
+           
+            <div class="slds" ng-app='myApp' id="cssCtrl" ng-controller='cssCtrl'>
+                <c:AlertBox ></c:AlertBox>
+                    <div class="slds-grid slds-m-top--large">
+                        <div class="slds-col slds-col-rule--right ">
+                            <div class="slds-card" style="margin-left:2%;margin-right:2%;">
+                                <header class="slds-page-header slds-card__header slds-grid">
+                                    <div class="slds-col slds-media slds-media--center">
+                                        <div class="slds-media__figure">
+                                            <span class="slds-icon__container slds-icon-standard-account">
+                                                  <svg aria-hidden="true" class="slds-icon">
+                                                    <use xlink:href="{!URLFOR($Resource.SLDS011,  '/assets/icons/custom-sprite/svg/symbols.svg#custom19')}"></use>
+                                                  </svg>
+                                                  <span class="slds-assistive-text">CSS Icon</span>
+                                             </span>
+                                        </div>
+                                        <div class="slds-media__body">
+                                              <h3 class="slds-text-heading--small">CSS</h3>
+                                        </div>
+                                    </div>
+                                    <div class="slds-no-flex">
+                                         <div class="slds-form--inline">
+                                              <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="name">CSS Name</label>
+                                                <div class="slds-form-element__control">
+                                                    <select id="name" ng-model="CSSData.Name" class="slds-input">
+                                                        <option ng-repeat="pageName in PageNames" value="{{pageName}}" label="{{pageName}}" ng-selected="CSSData.Name == pageName"/>
+                                                    </select>
+                                                </div>
+                                              </div>
+                                             <div class="slds-form-element">
+                                              <label class="slds-checkbox" for="checkboxSample1">
+                                                <input name="checkbox" ng-model="CSSData.Is_Active__c" type="checkbox" id="checkboxSample1" />
+                                                <span class="slds-checkbox--faux"></span>
+                                                <span class="slds-form-element__label">Active</span>
+                                              </label>
+                                            </div>
+                                                                                      
+                                              <div class="slds-button-group slds-form-element">
+                                              <a href="#" class="slds-button slds-button--neutral " ng-click="saveCss()">Save</a>
+                                               </div>
+                                            
+                                         </div>
+                                    </div>
+                                </header>
+                                  <div class="slds-tabs--default">
+                                      <ul class="slds-tabs--default__nav" role="tablist">
+                                        <li class="slds-tabs--default__item slds-text-heading--label slds-active" title="Typography" role="presentation"><a class="slds-tabs--default__link" href="#void" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-default-1" id="tab-default-1__item">Typography</a></li>
+                                        <li class="slds-tabs--default__item slds-text-heading--label" title="Button" role="presentation"><a class="slds-tabs--default__link" href="#void" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-2" id="tab-default-2__item">Button</a></li>
+                                        <li class="slds-tabs--default__item slds-text-heading--label" title="Table" role="presentation"><a class="slds-tabs--default__link" href="#void" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-3" id="tab-default-3__item">Table</a></li>
+                                        <li class="slds-tabs--default__item slds-text-heading--label" title="Map" role="presentation"><a class="slds-tabs--default__link" href="#void" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-4" id="tab-default-4__item">Map</a></li>
+                                        <li class="slds-tabs--default__item slds-text-heading--label" title="Map" role="presentation"><a class="slds-tabs--default__link" href="#void" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-5" id="tab-default-5__item">Email</a></li>
+                                        <li class="slds-tabs--default__item slds-text-heading--label" title="Map" role="presentation"><a class="slds-tabs--default__link" href="#void" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-6" id="tab-default-6__item">Upload Images</a></li>
+                                      </ul>
+                                      <div id="tab-default-1" class="slds-tabs--default__content slds-show" role="tabpanel" aria-labelledby="tab-default-1__item">
+                                          <section class="slds-card__body slds-scrollable--y slds-box slds-theme--default" style="padding-bottom:0px; border-radius:0px;">
+                                              <div class="slds-modal__content">
+                                                  <div class="slds-form-element">
+                                                      <label class="slds-checkbox" for="typographyActive">
+                                                        <input name="checkbox" ng-model="CSSData.Typography__c" type="checkbox" id="typographyActive" />
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-form-element__label">Active</span>
+                                                      </label>
+                                                  </div>
+                                                  <h3 class="slds-section-title--divider">Font/Text</h3>
+                                                  <div class="slds-grid slds-wrap">
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--2-of-3 slds-large-size--3-of-5">
+                                                         <fieldset class="slds-form--compound">
+                                                             <legend class="slds-form-element__label">Font</legend>
+                                                             <div class="form-element__group">
+                                                                 <div class="slds-form-element__row">
+                                                                     <label class="slds-form-element__control slds-size--1-of-6">
+                                                                        <span class="slds-form-element__helper">Font Family</span>
+                                                                        <select id="fontfamily" class="slds-select" ng-model="CSSData.Font_Family__c" onChange="updateSampleTextStyle(this)">
+                                                                            <option value="inherit" label="inherit" ng-selected="CSSData.Font_Family__c == 'inherit'"/>
+                                                                            <option label="initial" value="initial" ng-selected="CSSData.Font_Family__c == 'initial'"/>
+                                                                            <option label="-webkit-body" value="-webkit-body" ng-selected="CSSData.Font_Family__c == '-webkit-body'"/>
+                                                                            <option label="cursive" value="cursive" ng-selected="CSSData.Font_Family__c == 'cursive'"/>
+                                                                            <option label="fantasy" value="fantasy" ng-selected="CSSData.Font_Family__c == 'fantasy'"/>                                        
+                                                                            <option label="monospace" value="monospace" ng-selected="CSSData.Font_Family__c == 'monospace'"/>
+                                                                            <option label="sans-serif" value="sans-serif" ng-selected="CSSData.Font_Family__c == 'sans-serif'"/>
+                                                                            <option label="serif" value="serif" ng-selected="CSSData.Font_Family__c == 'serif'"/>
+                                                                            <option label="-webkit-pictograph" value="-webkit-pictograph" ng-selected="CSSData.Font_Family__c == '-webkit-pictograph'"/>                                                    
+                                                                        </select>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--1-of-6">
+                                                                        <span class="slds-form-element__helper">Font Style</span>
+                                                                        <select id="fontstyle" class="slds-select" ng-model="CSSData.Font_Style__c" onChange="updateSampleTextStyle(this)">
+                                                                          <option label="normal" value="normal" ng-selected="CSSData.Font_Style__c == 'normal'"/>
+                                                                          <option label="italic" value="italic" ng-selected="CSSData.Font_Style__c == 'italic'"/>
+                                                                          <option label="oblique" value="oblique" ng-selected="CSSData.Font_Style__c == 'oblique'"/>                                       
+                                                                          <option label="initial" value="initial" ng-selected="CSSData.Font_Style__c == 'initial'"/>
+                                                                          <option label="inherit" value="inherit" ng-selected="CSSData.Font_Style__c == 'inherit'"/>
+                                                                        </select>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--2-of-6">
+                                                                          <span class="slds-form-element__helper">Font Size</span>
+                                                                          <div style="min-height: inherit;padding: 0px;" class="slds-input">
+                                                                              <div id="fontsize_slider"></div>
+                                                                          </div>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--1-of-6">
+                                                                          <input id="fontsize" style="width: 50px;" ng-model="CSSData.Font_Size__c" class="slds-input" type="text" onChange="updateSampleTextStyle(this)"/>    
+                                                                      </label>
+                                                                  </div>
+                                                              </div>
+                                                          </fieldset>   
+                                                      </div> 
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-5">
+                                                          <p id="font-sample-text" class="font-sample"> Sample Text </p>
+                                                      </div>
+                                                 </div>
+                                               </div>
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Header</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                        
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Color</span><br/>
+                                                            
+                                                            <input class="color slds-input" type="text" id="headercolor" ng-model="CSSData.Header_Color__c" name="headercolor" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                          
+                                                          <label class="slds-form-element__control slds-size--1-of-4 ">
+                                                            <span class="slds-form-element__helper">Header Font Size</span>
+                                                            <input id="headerfontsize" ng-model="CSSData.Header_Font_size__c"  class="slds-input" type="text" />
+                                                          </label>
+                                                          <label class="slds-form-element__control slds-size--1-of-4 ">
+                                                            <span class="slds-form-element__helper">Header Style</span>
+                                                            <select id="headerstyle" ng-model="CSSData.Header_Font_Style__c"  class="slds-select">
+                                                              <option >normal</option>
+                                                              <option>italic</option>
+                                                              <option>oblique</option>                                         
+                                                              <option>initial</option>
+                                                              <option>inherit</option>
+                                                            </select>
+                                                          </label>
+                                                         
+                                                        </div>
+                                                      </div>
+                                                  </div>
+                                               </fieldset>
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Horizontal Line (HR)/Text</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Background-Color</span><br/>
+                                                            <input class="color slds-input" type="text" ng-model="CSSData.Hr_Background__c" id="hrbackground" name="hrbackground" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                          <label class="slds-form-element__control slds-size--1-of-4 ">
+                                                            <span class="slds-form-element__helper">Height</span>
+                                                              <input id="hrheight"  ng-model="CSSData.Hr_Height__c" class="slds-input" type="text" />
+                                                          </label>
+                                                        </div>
+                                                      </div>
+                                                  </div>
+                                               </fieldset>
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Page Background</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                          
+                                                         <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Background-Color</span><br/>
+                                                            <input class="color slds-input" type="text" ng-model="CSSData.Backgroundcolor__c" id="background" name="background-color" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                       
+                                                         </div>
+                                                        
+                                                      </div>
+                                                  </div>
+                                               </fieldset> 
+                                               
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Heading (H1 - H6)</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                          <label class="slds-form-element__control slds-size--1-of-6">
+                                                            <span class="slds-form-element__helper">h1-Color</span><br/>
+                                                             <input class="color slds-input" type="text" id="h1color" ng-model="CSSData.H1color__c"  name="font-color" value="#ffffff" />
+                                                              <div class="color-view bg"></div>
+                                                          </label>
+                                                          <label class="slds-form-element__control slds-size--1-of-6">
+                                                            <span class="slds-form-element__helper">h2-Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="h2color" ng-model="CSSData.H2color__c"  name="font-color" value="#ffffff" />
+                                                              <div class="color-view bg"></div>              
+                                                          </label>
+                                                          <label class="slds-form-element__control slds-size--1-of-6">
+                                                            <span class="slds-form-element__helper">h3-Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="h3color" ng-model="CSSData.H3color__c" name="font-color" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                          <label class="slds-form-element__control slds-size--1-of-6">
+                                                            <span class="slds-form-element__helper">h4-Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="h4color" ng-model="CSSData.H4color__c" name="font-color" value="#ffffff" />
+                                                              <div class="color-view bg"></div>                                      
+                                                          </label>
+                                                        </div>
+                                                      </div>
+                                                  </div>
+                                               </fieldset>
+                                           </section>
+                                           <!-- button css -->
+                                      
+                                          <textarea class="buttoncss" id="btnCompiledCSS" ng-model="CSSData.Button_CSS__c" style="display:none;" />
+                                      </div>
+                                      
+                                      <!-- Button Tab Starts here --->
+                                      
+                                      <div id="tab-default-2" class="slds-tabs--default__content slds-hide" role="tabpanel" aria-labelledby="tab-default-2__item">
+                                          <section class="slds-card__body slds-scrollable--y slds-box slds-theme--default" style="padding-bottom:0px; border-radius:0px;">
+                                            <div class="slds-grid inner cf">
+                                                <div class="slds-col slds-size--1-of-1 slds-medium-size--2-of-3 slds-large-size--3-of-5">
+                                                  <div id="settings-wrap" class="slds-modal__content" style="margin-bottom: 25px;">
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-checkbox" for="buttonActive">
+                                                            <input name="checkbox" ng-model="CSSData.Button__c" type="checkbox" id="buttonActive" />
+                                                            <span class="slds-checkbox--faux"></span>
+                                                            <span class="slds-form-element__label">Active</span>
+                                                        </label>
+                                                    </div>
+                                                    <h2 class="slds-section-title--divider">Settings</h2>
+                                                    <div id="settings-wrap-inner">
+                                                      <h3> Font / Text</h3>
+                                                      <div>
+                                                        <div class="accordion-inner2 slds-form--horizontal">
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                      <label class="slds-form-element__label" for="text">Text:</label>
+                                                                      <div class="slds-form-element__control">    
+                                                                          <input type="text" class="slds-input" name="text" value="Click Me" id="text" />
+                                                                      </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                     <div class="slds-form-element__control" style="margin-top: 25px;"> 
+                                                                         <input type="checkbox" name="font-family-check" checked="checked" ng-model="Button['font-family-check']" id="font-family-check" data-control="font-family" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element  slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                     <div class="slds-form-element" data-control-group="font-family">
+                                                                         <label class="slds-form-element__label" for="font-family">font-family:</label>
+                                                                         <div class="slds-form-element__control"> 
+                                                                             <select ng-init="Button['font-family'] = Button['font-family'] != undefined ? Button['font-family'] : 'Arial'" class="slds-input" id="font-family" ng-model="Button['font-family']" >
+                                                                                <option value="Arial">Arial</option>
+                                                                                <option value="Georgia">Georgia</option>
+                                                                                <option value="Courier New">Courier New</option>
+                                                                             </select>
+                                                                         </div>
+                                                                     </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                      <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                          <input type="checkbox" name="font-color-check" checked="checked" id="font-color-check" ng-model="Button['font-color-check']" data-control="font-color" />
+                                                                      </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                      <label class="slds-form-element__label"  for="color">font-color:</label>
+                                                                      <div class="slds-form-element__control" data-control-group="font-color">
+                                                                            <input class="color slds-input" type="text" name="font-color" ng-model="Button['font-color']" value="#ffffff" id="color"/>
+                                                                            <div class="color-view bg"></div>
+                                                                      </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                      <input type="checkbox" name="font-size-check" checked="checked" ng-model="Button['font-size-check']"  id="font-size-check" data-control="font-size" />
+                                                                  </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <div  data-control-group="font-size">
+                                                                        <label class="slds-form-element__label"  for="font-size">font-size:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="font-size" ng-model="Button['font-size']" ng-value="Button['font-size']" style="width:50px;" id="font-size" max="60"/>
+                                                                        </div> 
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" style="margin-top:10px;">
+                                                                    <div style="margin-left:20px;margin-top: 17px;" id="font-size-slider"></div>
+                                                                </div>
+                                                            </div>
+                                                
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                        <input type="checkbox" name="text-shadow-color-check" id="text-shadow-color-check" ng-model="Button['text-shadow-color-check']"  data-control="text-shadow" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <div data-control-group="text-shadow">
+                                                                        <label class="slds-form-element__label" for="text-shadow-color">text-shadow:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="text-shadow-color" ng-model="Button['text-shadow-color']" value="#666666" id="text-shadow-color" max="60"/>
+                                                                        </div>
+                                                                        <div class="color-view">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-grid slds-wrap" data-control-group="text-shadow">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <label class="slds-form-element__label" for="text-shadow-x">x:</label>
+                                                                    <div class="slds-form-element__control">
+                                                                        <input class="slider-bound slds-input" type="text" name="text-shadow-x" ng-model="Button['text-shadow-x']" value="1" id="text-shadow-x" max="30"/>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    <div id="text-shadow-x-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <label class="slds-form-element__label" for="text-shadow-y">y:</label>
+                                                                    <div class="slds-form-element__control">
+                                                                        <input class="slider-bound slds-input" type="text" name="text-shadow-y" ng-model="Button['text-shadow-y']"  value="1" id="text-shadow-y" max="30" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                    <div id="text-shadow-y-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4"> 
+                                                                    <label class="slds-form-element__label" for="text-shadow-blur">blur:</label>
+                                                                    <div class="slds-form-element__control">
+                                                                        <input class="slider-bound slds-input" type="text" name="text-shadow-blur" ng-model="Button['text-shadow-blur']"  value="3" id="text-shadow-blur" max="30"/>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> 
+                                                                    <div id="text-shadow-blur-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                </div>
+                                                                
+                                                            </div>                                        
+                                                        </div><!-- end accordion-inner, accordion-inner2 -->
+                                                      </div>
+                                                      <h3> Box </h3>
+                                                      <div>
+                                                          <div class="accordion-inner2 slds-form--horizontal">
+                                                             
+                                                             <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                          <input type="checkbox" name="box-shadow-color-check" id="box-shadow-color-check" ng-model="Button['box-shadow-color-check']"  data-control="box-shadow" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <div data-control-group="box-shadow">
+                                                                        <label class="slds-form-element__label" for="box-shadow-color">box-shadow:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="box-shadow-color" ng-model="Button['box-shadow-color']"  value="#666666" id="box-shadow-color" max="60"/>
+                                                                        </div>
+                                                                        <div class="color-view">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                </div>
+                                                            </div>
+                                                           
+                                                            <div class="slds-grid slds-wrap" data-control-group="box-shadow">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="box-shadow-x">x:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="box-shadow-x" ng-model="Button['box-shadow-x']" value="1" id="box-shadow-x" max="30"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        <div id="box-shadow-x-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="box-shadow-y">y:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="box-shadow-y" ng-model="Button['box-shadow-y']" value="1" id="box-shadow-y" max="30" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                        <div id="box-shadow-y-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4"> 
+                                                                        <label class="slds-form-element__label" for="box-shadow-blur">blur:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="box-shadow-blur" ng-model="Button['box-shadow-blur']" value="3" id="box-shadow-blur" max="30"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> 
+                                                                        <div id="box-shadow-blur-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                             </div>          
+                                                               
+                                                             <div class="slds-grid slds-wrap" >
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                             <input type="checkbox" name="padding-check" id="padding-check"  ng-model="Button['padding-check']" data-control="padding" />
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                           <label for="padding" class="slds-form-element__label">padding:</label>
+                                                                           <div  data-control-group="padding" class="slds-form-element__control">
+                                                                               <input class="slider-bound slds-input" type="text"  ng-model="Button['padding']" name="padding" value="10" id="padding" max="40"/>
+                                                                           </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" data-control-group="padding">
+                                                                        <div id="padding-slider"  style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                                   
+                                                              </div>  
+                                                                
+                                                             <div class="slds-grid slds-wrap" data-control-group-switch="padding">
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                       <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                           <input type="checkbox" name="padding-top-check" checked="checked"  ng-model="Button['padding-top-check']" id="padding-top-check" data-control="padding-top" />
+                                                                       </div>
+                                                                   </div>     
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                       <label for="padding-top" class="slds-form-element__label">padding-top:</label>
+                                                                       <div class="slds-form-element__control" data-control-group="padding-top">
+                                                                           <input class="slider-bound slds-input" type="text" name="padding-top" ng-model="Button['padding-top']" value="10" id="padding-top" max="40"/>
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" data-control-group="padding-top">
+                                                                       <div id="padding-top-slider"  style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                   </div>
+                                                              </div>
+                                                             
+                                                              <div class="slds-grid slds-wrap">
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                       <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                            <input type="checkbox" name="padding-right-check" checked="checked" id="padding-right-check" ng-model="Button['padding-right-check']"  data-control="padding-right" />
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                       <label for="padding-right" class="slds-form-element__label">padding-right:</label>
+                                                                       <div data-control-group="padding-right" class="slds-form-element__control" >
+                                                                           <input class="slider-bound slds-input" type="text" name="padding-right" value="20"  ng-model="Button['padding-right']" id="padding-right" max="40"/>
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" data-control-group="padding-right">
+                                                                       <div id="padding-right-slider"  style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                   </div>
+                                                              </div>
+                                                              
+                                                              <div class="slds-grid slds-wrap">
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                       <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                           <input type="checkbox" name="padding-bottom-check" checked="checked"  ng-model="Button['padding-bottom-check']" id="padding-bottom-check" data-control="padding-bottom" />
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                       <label for="padding-bottom" class="slds-form-element__label">padding-bottom:</label>
+                                                                       <div data-control-group="padding-bottom" class="slds-form-element__control" >
+                                                                           <input class="slider-bound slds-input" type="text" name="padding-bottom" ng-model="Button['padding-bottom']" value="20" id="padding-bottom" max="40"/>
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" data-control-group="padding-bottom">
+                                                                       <div id="padding-bottom-slider"  style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                   </div>
+                                                              </div>
+                                                              
+                                                             <div class="slds-grid slds-wrap">
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                       <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                           <input type="checkbox" name="padding-left-check" checked="checked"  ng-model="Button['padding-left-check']" id="padding-left-check" data-control="padding-left" />
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                       <label for="padding-left" class="slds-form-element__label">padding-left:</label>
+                                                                       <div data-control-group="padding-left" class="slds-form-element__control" >
+                                                                           <input class="slider-bound slds-input" type="text" name="padding-left"  ng-model="Button['padding-left']" value="20" id="padding-left" max="40"/>
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" data-control-group="padding-left">
+                                                                       <div id="padding-left-slider"  style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                   </div>
+                                                              </div>
+                                                          </div>
+                                                      </div><!-- end accordion-inner, accordion-inner2 -->
+                                            
+                                                      <h3> Border</h3>
+                                                      <div>
+                                                          <div class="accordion-inner2 slds-form--horizontal">
+                                                            <div class="slds-grid slds-wrap">
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                       <div class="slds-form-element__control" style="margin-top: 25px;">
+                                                                           <input type="checkbox" name="border-radius-check" checked="checked"  ng-model="Button['border-radius-check']" id="border-radius-check" data-control="border-radius" />
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                       <label for="border-radius" class="slds-form-element__label">border-radius:</label>
+                                                                       <div data-control-group="border-radius" class="slds-form-element__control" >
+                                                                           <input class="slider-bound slds-input" type="text" name="border-radius" ng-model="Button['border-radius']" value="28" id="border-radius" max="60"/>
+                                                                       </div>
+                                                                   </div>
+                                                                   <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" data-control-group="border-radius">
+                                                                       <div id="border-radius-slider"  style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                   </div>
+                                                            </div>
+                                                            
+                                                             <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                        <input type="checkbox" name="border-color-check" id="border-color-check" ng-model="Button['border-color-check']"  data-control="border" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <div data-control-group="border">
+                                                                        <label class="slds-form-element__label" for="border-color">border:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="border-color" ng-model="Button['border-color']" value="#666666" id="border-color" max="60"/>
+                                                                        </div>
+                                                                        <div class="color-view">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                </div>
+                                                            </div>
+                                                           
+                                                            <div class="slds-grid slds-wrap" data-control-group="border">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-style">border-style:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <select class="slds-input" id="border-style" ng-model="Button['border-style']">
+                                                                                <option id="solid">solid</option>
+                                                                                <option id="dotted">dotted</option>
+                                                                            </select>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                    
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-width">border-width:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="border-width" ng-model="Button['border-width']" value="1" id="border-width" max="30" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                        <div id="border-width-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                             </div> 
+                                                              
+                                                            <a href="" class="more-link" data-section="border">More</a>
+                                                            <div class="more" data-section-more="border">
+                                                              <div data-control-group-switch="border">
+                                                                <!-- border-top -->
+                                                               <div class="slds-grid slds-wrap">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                            <input type="checkbox" name="border-top-color-check" id="border-top-color-check" ng-model="Button['border-top-color-check']"  data-control="border-top" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <div data-control-group="border-top">
+                                                                            <label class="slds-form-element__label" for="border-top-color">border-top:</label>
+                                                                            <div class="slds-form-element__control">
+                                                                                <input class="color slds-input" type="text" name="border-color" ng-model="Button['border-top-color']" value="#666666" id="border-top-color" max="60"/>
+                                                                            </div>
+                                                                            <div class="color-view">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                </div>
+                                                               
+                                                                <div class="slds-grid slds-wrap" data-control-group="border-top">
+                                                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                            <label class="slds-form-element__label" for="border-top-style">border-top-style:</label>
+                                                                            <div class="slds-form-element__control">
+                                                                                <select class="slds-input" id="border-top-style" ng-model="Button['border-top-style']">
+                                                                                    <option id="solid">solid</option>
+                                                                                    <option id="dotted">dotted</option>
+                                                                                </select>                                                                        
+                                                                            </div>
+                                                                        </div>   
+                                                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        </div>
+                                                                        
+                                                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                            <label class="slds-form-element__label" for="border-top-width">border-top-width:</label>
+                                                                            <div class="slds-form-element__control">
+                                                                                <input class="slider-bound slds-input" type="text" name="border-top-width" ng-model="Button['border-top-width']" value="1" id="border-top-width" max="30" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                            <div id="border-top-width-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                        </div>
+                                                                 </div> 
+                                                                <!-- border-right -->
+                                                                <div class="slds-grid slds-wrap">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                            <input type="checkbox" name="border-right-color-check" id="border-right-color-check" ng-model="Button['border-right-color-check']"  data-control="border-right" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <div data-control-group="border-right">
+                                                                            <label class="slds-form-element__label" for="border-top-color">border-right:</label>
+                                                                            <div class="slds-form-element__control">
+                                                                                <input class="color slds-input" type="text" name="border-right-color" ng-model="Button['border-right-color']" value="#666666" id="border-right-color" max="60"/>
+                                                                            </div>
+                                                                            <div class="color-view">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                </div>
+                                                           
+                                                                <div class="slds-grid slds-wrap" data-control-group="border-right">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-right-style">border-right-style:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <select class="slds-input" id="border-right-style" ng-model="Button['border-right-style']" >
+                                                                                <option id="solid">solid</option>
+                                                                                <option id="dotted">dotted</option>
+                                                                            </select>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                    
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-right-width">border-right-width:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="border-right-width"  ng-model="Button['border-right-width']" value="1" id="border-right-width" max="30" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                        <div id="border-right-width-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                                </div>
+                                                             
+                                                                
+                                                                <!-- border-bottom -->
+                                                                <div class="slds-grid slds-wrap">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                            <input type="checkbox" name="border-bottom-color-check" id="border-bottom-color-check" ng-model="Button['border-bottom-color-check']" data-control="border-bottom" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <div data-control-group="border-bottom">
+                                                                            <label class="slds-form-element__label" for="border-bottom-color">border-bottom:</label>
+                                                                            <div class="slds-form-element__control">
+                                                                                <input class="color slds-input" type="text" name="border-bottom-color" value="#666666" ng-model="Button['border-bottom-color']" id="border-bottom-color" max="60"/>
+                                                                            </div>
+                                                                            <div class="color-view">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-grid slds-wrap" data-control-group="border-bottom">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-bottom-style">border-bottom-style:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <select class="slds-input" id="border-bottom-style" ng-model="Button['border-bottom-style']">
+                                                                                <option id="solid">solid</option>
+                                                                                <option id="dotted">dotted</option>
+                                                                            </select>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                    
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-bottom-width">border-bottom-width:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="border-bottom-width" ng-model="Button['border-bottom-width']" value="1" id="border-bottom-width" max="30" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                        <div id="border-bottom-width-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                               </div>
+                                                                
+                                                            <!-- border-left -->
+                                                            <div class="slds-grid slds-wrap">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                        <div class="slds-form-element__control" style="margin-top: 30px;">
+                                                                            <input type="checkbox" name="border-left-color-check"  ng-model="Button['border-left-color-check']" id="border-left-color-check" data-control="border-left" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <div data-control-group="border-left">
+                                                                            <label class="slds-form-element__label" for="border-top-color">border-left:</label>
+                                                                            <div class="slds-form-element__control">
+                                                                                <input class="color slds-input" type="text" name="border-left-color" ng-model="Button['border-left-color']" value="#666666" id="border-left-color" max="60"/>
+                                                                            </div>
+                                                                            <div class="color-view">
+                                                                            </div>
+                                                                        </div>
+                                                                     </div>
+                                                                     <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                     </div>
+                                                               </div>
+                                                               <div class="slds-grid slds-wrap" data-control-group="border-left">
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-left-style">border-left-style:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <select class="slds-input" id="border-left-style" ng-model="Button['border-left-style']">
+                                                                                <option id="solid">solid</option>
+                                                                                <option id="dotted">dotted</option>
+                                                                            </select>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    </div>
+                                                                    
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label" for="border-left-width">border-left-width:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="slider-bound slds-input" type="text" name="border-left-width" ng-model="Button['border-left-width']" value="1" id="border-left-width" max="30" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4" >
+                                                                        <div id="border-left-width-slider" style="margin-top: 12px; margin-left: 20px;"></div>
+                                                                    </div>
+                                                               </div> 
+                                                                
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                      </div>
+                                                      <!-- end accordion-inner, accordion-inner2 -->
+                                            
+                                            
+                                                      <h3> Background</h3>
+                                                      <div>
+                                                          <div class="accordion-inner2 slds-form--horizontal">
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                    <div class="slds-form-element__control" style="margin-top: 22px;">
+                                                                       <input type="checkbox" name="background-check" ng-model="Button['background-check']" id="background-check" data-control="background" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                    <div data-control-group="background" >
+                                                                        <label class="slds-form-element__label" for="background">background:</label>
+                                                                        <div class="slds-form-element__control radio-wrap">
+                                                                            <input type="radio" name="background" value="" id="background-gradient"  ng-model="Button['background-gradient']" data-control-display="background-gradient" checked="checked"/><label>gradient</label>
+                                                                            <input type="radio" name="background" value="" style="margin-left: 15px;"  ng-model="Button['background-solid']" id="background-solid" data-control-display="background-solid"/><label>solid</label>
+                                                                             <div class="clear"></div>
+                                                                        </div>
+                                                                     </div>
+                                                                 </div>
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                 </div>
+                                                              
+                                                            </div>
+                                                
+                                                            <div data-control-group="background">
+                                                
+                                                              <div id="gradient-wrap" data-control-display-group="background-gradient" data-control-display-selector="background">
+                                                               <div class="slds-grid slds-wrap"> 
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label bg-start-gradient" for="bg-start-gradient">start color:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="color" ng-model="Button['bg-start-gradient']" value="#3498db" id="bg-start-gradient"/>
+                                                                            <div class="color-view bg"></div>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                  <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  </div>
+                                                                </div>
+                                                                <div class="slds-grid slds-wrap">   
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label bg-end-gradient" for="bg-start-gradient">end color:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="color"  ng-model="Button['bg-end-gradient']" value="#3cb0fd" id="bg-end-gradient"/>
+                                                                            <div class="color-view bg"></div>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                  <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  </div>
+                                                                </div>  
+                                                                </div>
+                                                                <!-- end #gradient-wrap -->
+                                                
+                                                              <div id="solid-wrap" data-control-display-group="background-solid" data-control-display-selector="background">
+                                                                
+                                                                <div class="slds-grid slds-wrap">   
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label " for="background">color:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="color" ng-model="Button['background']" value="#3cb0fd" id="background"/>
+                                                                            <div class="color-view bg"></div>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                  <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  </div>
+                                                                </div>  
+                                                              </div> 
+                                                              
+                                                
+                                                            </div>
+                                                          </div>
+                                                      </div>
+                                                      <!-- end accordion-inner, accordion-inner2 -->
+                                            
+                                                      <h3> Hover</h3>
+                                                      <div>
+                                                      <div class="accordion-inner2 slds-form--horizontal">
+                                                            <div class="slds-grid slds-wrap">
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                            <div class="slds-form-element__control" style="margin-top: 22px;">
+                                                                                <input type="checkbox" name="background-check" ng-model="Button['background-hover-check']" id="background-hover-check" data-control="hover-background" />
+                                                                            </div>
+                                                                </div>
+                                                                <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                            <div data-control-group="hover-background" >
+                                                                                <label class="slds-form-element__label" for="background-hover">background:</label>
+                                                                                <div class="slds-form-element__control radio-wrap">
+                                                                                    <input type="radio" name="hover-background" value="" id="background-gradient-hover"  ng-model="Button['hover-background-gradient']"  data-control-display="hover-background-gradient" checked="checked"/><label>gradient</label>
+                                                                                    <input type="radio" name="hover-background" value="" style="margin-left: 15px;" id="background-solid-hover" ng-model="Button['background-solid-hover']" data-control-display="hover-background-solid"/><label>solid</label>
+                                                                                    <div class="clear"></div>
+                                                                                </div>
+                                                                             </div>
+                                                                 </div>
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                 </div>
+                                                              
+                                                            </div>
+                                                
+                                                            <div  data-control-group="hover-background">
+                                                
+                                                              <div id="gradient-hover-wrap" data-control-display-group="hover-background-gradient" data-control-display-selector="hover-background">
+                                                               <div class="slds-grid slds-wrap"> 
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label bg-start-gradient-hover" for="bg-start-gradient-hover">start color:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="color" ng-model="Button['bg-start-gradient-hover']" value="#3498db" id="bg-start-gradient-hover"/>
+                                                                            <div class="color-view bg"></div>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                  <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  </div>
+                                                                </div>
+                                                                <div class="slds-grid slds-wrap">   
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label bg-end-gradient-hover" for="bg-end-gradient-hover">end color:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="color" ng-model="Button['bg-end-gradient-hover']" value="#3cb0fd" id="bg-end-gradient-hover"/>
+                                                                            <div class="color-view bg"></div>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                  <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  </div>
+                                                                </div>  
+                                                                </div>
+                                                                <!-- end #gradient-wrap -->
+                                                
+                                                              <div id="solid-hover-wrap" data-control-display-group="hover-background-solid" data-control-display-selector="hover-background">
+                                                                
+                                                                <div class="slds-grid slds-wrap">   
+                                                                 <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4"> </div>
+                                                                    <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-4">
+                                                                        <label class="slds-form-element__label " for="background-hover">color:</label>
+                                                                        <div class="slds-form-element__control">
+                                                                            <input class="color slds-input" type="text" name="color" ng-model="Button['background-hover']" value="#3cb0fd" id="background-hover"/>
+                                                                            <div class="color-view bg"></div>                                                                        
+                                                                        </div>
+                                                                    </div>   
+                                                                  <div class="slds-form-element slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--1-of-4">
+                                                                  </div>
+                                                                </div>  
+                                                              </div> 
+                                                              
+                                                
+                                                            </div>
+                                                          </div>
+                                                          
+                                                          <!-- end accordion-inner, accordion-inner2 -->                                                  
+                                                    </div><!-- end settings-wrap-inner -->
+                                                  </div><!-- end settings-wrap -->
+                                              </div>
+                                          </div>
+                                          <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-5">
+                                              <div id="button-wrap" class="slds-modal__content">
+                                                <h2 class="slds-section-title--divider">Button preview</h2>
+                                                <div id="button-wrap-inner">
+                                                  <a class="custom-btn" href="">Click Me</a>
+                                                </div><!-- end button-wrap-inner -->
+                                              </div><!-- end button-wrap -->
+                                        
+                                              <div class="slds-modal__content">
+                                                <!-- <h2><a href="" class="copy">Copy the code</a> </h2> -->
+                                                <div id="styles-wrap-inner">
+                                                  <div id="css-display"></div>
+                                                </div><!-- end styles-wrap-inner -->
+                                              </div><!-- end styles-wrap -->
+                                            </div>
+                                          </div>
+                                        </section>
+                                      </div>
+                                      <div id="tab-default-3" class="slds-tabs--default__content slds-hide" role="tabpanel" aria-labelledby="tab-default-3__item">
+                                          <section class="slds-card__body slds-scrollable--y slds-box slds-theme--default" style="padding-bottom:0px; border-radius:0px;">
+                                              <div class="slds-modal__content">
+                                                  <div class="slds-form-element">
+                                                      <label class="slds-checkbox" for="tableActive">
+                                                        <input name="checkbox" ng-model="CSSData.Table__c" type="checkbox" id="tableActive" />
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-form-element__label">Active</span>
+                                                      </label>
+                                                  </div>
+                                                  <h3 class="slds-section-title--divider">Font/Text</h3>
+                                                  <div class="slds-grid slds-wrap">
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--2-of-3 slds-large-size--3-of-5">
+                                                         <fieldset class="slds-form--compound">
+                                                             <legend class="slds-form-element__label">Table Font</legend>
+                                                             <div class="form-element__group">
+                                                                 <div class="slds-form-element__row">
+                                                                     <label class="slds-form-element__control slds-size--1-of-6">
+                                                                        <span class="slds-form-element__helper">Font Family</span>
+                                                                        <select id="fontfamily" class="slds-select" ng-model="CSSData.Table_Font_Family__c" onChange="updateSampleTextStyle(this)">
+                                                                            <option value="inherit" label="inherit" ng-selected="CSSData.Table_Font_Family__c== 'inherit'"/>
+                                                                            <option label="initial" value="initial" ng-selected="CSSData.Table_Font_Family__c == 'initial'"/>
+                                                                            <option label="-webkit-body" value="-webkit-body" ng-selected="CSSData.Table_Font_Family__c == '-webkit-body'"/>
+                                                                            <option label="cursive" value="cursive" ng-selected="CSSData.Table_Font_Family__c == 'cursive'"/>
+                                                                            <option label="fantasy" value="fantasy" ng-selected="CSSData.Table_Font_Family__c == 'fantasy'"/>                                        
+                                                                            <option label="monospace" value="monospace" ng-selected="CSSData.Table_Font_Family__c == 'monospace'"/>
+                                                                            <option label="sans-serif" value="sans-serif" ng-selected="CSSData.Table_Font_Family__c == 'sans-serif'"/>
+                                                                            <option label="serif" value="serif" ng-selected="CSSData.Table_Font_Family__c == 'serif'"/>
+                                                                            <option label="-webkit-pictograph" value="-webkit-pictograph" ng-selected="CSSData.Table_Font_Family__c == '-webkit-pictograph'"/>                                                    
+                                                                        </select>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--1-of-6">
+                                                                        <span class="slds-form-element__helper">Font Style</span>
+                                                                        <select id="fontstyle" class="slds-select" ng-model="CSSData.Table_Font_Style__c" onChange="updateSampleTextStyle(this)">
+                                                                          <option label="normal" value="normal" ng-selected="CSSData.Table_Font_Style__c == 'normal'"/>
+                                                                          <option label="italic" value="italic" ng-selected="CSSData.Table_Font_Style__c == 'italic'"/>
+                                                                          <option label="oblique" value="oblique" ng-selected="CSSData.Table_Font_Style__c == 'oblique'"/>                                       
+                                                                          <option label="initial" value="initial" ng-selected="CSSData.Table_Font_Style__c == 'initial'"/>
+                                                                          <option label="inherit" value="inherit" ng-selected="CSSData.Table_Font_Style__c == 'inherit'"/>
+                                                                        </select>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--2-of-6">
+                                                                          <span class="slds-form-element__helper">Font Size</span>
+                                                                          <div style="min-height: inherit;padding: 0px;" class="slds-input">
+                                                                              <div id="fontsize_slider_table"></div>
+                                                                          </div>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--1-of-6">
+                                                                          <input id="fontsizetable" style="width: 50px;" ng-model="CSSData.Table_Font_Size__c" class="slds-input" type="text" onChange="updateSampleTextStyle(this)"/>    
+                                                                      </label>
+                                                                  </div>
+                                                              </div>
+                                                          </fieldset>   
+                                                      </div> 
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-5">
+                                                          <p id="font-sample-text-table" class="font-sample"> Sample Text </p>
+                                                      </div>
+                                                 </div>
+                                               </div>
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Header</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                        
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Header Background Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="headercolor" ng-model="CSSData.Table_Header_Backgroundcolor__c" name="headercolor" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                          
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Header Text Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="headercolor" ng-model="CSSData.Table_Header_Text_Color__c" name="headercolor" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                        
+                                                        </div>
+                                                      </div>
+                                                  </div>
+                                               </fieldset>
+                                               
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Footer</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                        
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Footer Background Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="headercolor" ng-model="CSSData.Table_Footer_Backgroundcolor__c" name="footercolor" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                          
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">FooterText Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="headercolor" ng-model="CSSData.Table_Footer_Text_Color__c" name="footercolor" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                        
+                                                        </div>
+                                                      </div>
+                                                  </div>
+                                               </fieldset>
+                                               
+                                               
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Table Border Color</h3>
+                                                      <div class="form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                          <label class="slds-form-element__control slds-size--1-of-4">
+                                                            <span class="slds-form-element__helper">Color</span><br/>
+                                                            <input class="color slds-input" type="text" id="headercolor" ng-model="CSSData.Table_Border_Color__c" name="footercolor" value="#ffffff" />
+                                                            <div class="color-view bg"></div>
+                                                          </label>
+                                                        </div>
+                                                      </div>
+                                                  </div>
+                                               </fieldset>
+                                               
+                                               
+                                           </section>
+                                      </div>
+                                      
+                                      <div id="tab-default-4" class="slds-tabs--default__content slds-hide" role="tabpanel" aria-labelledby="tab-default-4__item">
+                                           <section class="slds-card__body slds-scrollable--y slds-box slds-theme--default" style="padding-bottom:0px; border-radius:0px;">
+                                               <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                       <h3 class="slds-section-title--divider">Map Marker Style (Travelling Country)</h3>
+                                                      <div class="form-element__group">
+                                                          <div class="slds-form-element__row">                                                       
+                                                              <label class="slds-form-element__control slds-size--1-of-4">
+                                                                  <span class="slds-form-element__helper">Marker URL</span><br/>
+                                                                  <input class="slds-input" type="text" id="map-travelling-country-marker" ng-model="CSSData.CS_Travelling_Country_Marker__c" />
+                                                              </label>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </fieldset>
+                                              
+                                              <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Map Marker Style (Itinerary Page)</h3>
+                                                      <div class="form-element__group">
+                                                          <div class="slds-form-element__row">                                                       
+                                                              <label class="slds-form-element__control slds-size--1-of-4">
+                                                                  <span class="slds-form-element__helper">Marker URL</span><br/>
+                                                                  <input class="slds-input" type="text" id="map-itinerary-marker" ng-model="CSSData.CS_Itinerary_Page_Marker__c" />
+                                                              </label>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </fieldset>
+                                              
+                                              <fieldset class="slds-form--compound">
+                                                   <div class="slds-modal__content">
+                                                      <h3 class="slds-section-title--divider">Map Marker Style (Address)</h3>
+                                                      <div class="form-element__group">
+                                                          <div class="slds-form-element__row">                                                       
+                                                              <label class="slds-form-element__control slds-size--1-of-4">
+                                                                  <span class="slds-form-element__helper">Marker URL</span><br/>
+                                                                  <input class="slds-input" type="text" id="map-address-marker" ng-model="CSSData.CS_Address_Marker__c" />
+                                                              </label>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </fieldset>
+                                          </section>
+                                      </div>
+                                      
+                                      <div id="tab-default-5" class="slds-tabs--default__content slds-hide" role="tabpanel" aria-labelledby="tab-default-5__item">
+                                          <section class="slds-card__body slds-scrollable--y slds-box slds-theme--default" style="padding-bottom:0px; border-radius:0px;">
+                                              <div class="slds-modal__content">
+                                                  <h3 class="slds-section-title--divider">Email Font/Text</h3>
+                                                  <div class="slds-form-element">
+                                                        <label class="slds-checkbox" for="emailActive">
+                                                            <input name="email" ng-model="CSSData.Email__c" type="checkbox" id="emailActive" />
+                                                            <span class="slds-checkbox--faux"></span>
+                                                            <span class="slds-form-element__label">Active</span>
+                                                        </label>
+                                                    </div>
+                                                  <div class="slds-grid slds-wrap">
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--2-of-3 slds-large-size--3-of-5">
+                                                         <fieldset class="slds-form--compound">
+                                                             <legend class="slds-form-element__label">Font</legend>
+                                                             <div class="form-element__group">
+                                                                 <div class="slds-form-element__row">
+                                                                     <label class="slds-form-element__control slds-size--1-of-7">
+                                                                        <span class="slds-form-element__helper">Color</span><br/>
+                                                                        
+                                                                        <input class="color slds-input" type="text" id="fontcolor" ng-model="CSSData.Email_Font_Color__c" onChange="updateSampleTextStyle(this)" name="headercolor" value="#ffffff" />
+                                                                        <div class="color-view bg"></div>
+                                                                      </label>
+                                                                     <label class="slds-form-element__control slds-size--1-of-7">
+                                                                        <span class="slds-form-element__helper">Font Family</span>
+                                                                        <select id="fontfamily" class="slds-select" ng-model="CSSData.Email_Font_Family__c" onChange="updateSampleTextStyle(this)">
+                                                                            <option value="inherit" label="inherit" ng-selected="CSSData.Email_Font_Family__c== 'inherit'"/>
+                                                                            <option label="initial" value="initial" ng-selected="CSSData.Email_Font_Family__c== 'initial'"/>
+                                                                            <option label="-webkit-body" value="-webkit-body" ng-selected="CSSData.Email_Font_Family__c== '-webkit-body'"/>
+                                                                            <option label="cursive" value="cursive" ng-selected="CSSData.Email_Font_Family__c== 'cursive'"/>
+                                                                            <option label="fantasy" value="fantasy" ng-selected="CSSData.Email_Font_Family__c== 'fantasy'"/>                                        
+                                                                            <option label="monospace" value="monospace" ng-selected="CSSData.Email_Font_Family__c== 'monospace'"/>
+                                                                            <option label="sans-serif" value="sans-serif" ng-selected="CSSData.Email_Font_Family__c== 'sans-serif'"/>
+                                                                            <option label="serif" value="serif" ng-selected="CSSData.Email_Font_Family__c== 'serif'"/>
+                                                                            <option label="-webkit-pictograph" value="-webkit-pictograph" ng-selected="CSSData.Email_Font_Family__c== '-webkit-pictograph'"/>                                                    
+                                                                        </select>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--1-of-7">
+                                                                        <span class="slds-form-element__helper">Font Style</span>
+                                                                        <select id="fontstyle" class="slds-select" ng-model="CSSData.Email_Font_Style__c" onChange="updateSampleTextStyle(this)">
+                                                                          <option label="normal" value="normal" ng-selected="CSSData.Email_Font_Style__c== 'normal'"/>
+                                                                          <option label="italic" value="italic" ng-selected="CSSData.Email_Font_Style__c== 'italic'"/>
+                                                                          <option label="oblique" value="oblique" ng-selected="CSSData.Email_Font_Style__c== 'oblique'"/>                                       
+                                                                          <option label="initial" value="initial" ng-selected="CSSData.Email_Font_Style__c== 'initial'"/>
+                                                                          <option label="inherit" value="inherit" ng-selected="CSSData.Email_Font_Style__c== 'inherit'"/>
+                                                                        </select>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--2-of-7">
+                                                                          <span class="slds-form-element__helper">Font Size</span>
+                                                                          <div style="min-height: inherit;padding: 0px;" class="slds-input">
+                                                                              <div id="fontsize_slider1"></div>
+                                                                          </div>
+                                                                      </label>
+                                                                      <label class="slds-form-element__control slds-size--1-of-7">
+                                                                          <input id="fontsize1" style="width: 50px;" ng-model="CSSData.Email_Font_Size__c" class="slds-input" type="text" onChange="updateSampleTextStyle(this)"/>    
+                                                                      </label>
+                                                                  </div>
+                                                              </div>
+                                                          </fieldset>   
+                                                      </div> 
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-3 slds-large-size--2-of-5">
+                                                          <p id="font-sample-text1" class="font-sample"> Sample Text </p>
+                                                      </div>
+                                                 </div>
+                                               </div>
+                                           </section>
+                                      </div>
+                                      
+                                      <!-- Upload Images ----->
+                                      <div id="tab-default-6" class="slds-tabs--default__content slds-hide" role="tabpanel" aria-labelledby="tab-default-6__item">
+                                          <section class="slds-card__body slds-scrollable--y slds-box slds-theme--default" style="padding-bottom:0px; border-radius:0px;">
+                                              <div class="slds-modal__content">
+                                                  
+                                                  <div class="slds-grid slds-wrap">
+                                                      <div class="slds-col slds-size--1-of-1 slds-medium-size--2-of-3 slds-large-size--3-of-5">
+                                                          <c:DocumentUploader pName="Client Invoice" NameSpacePrefix="{!NameSpacePrefix}" getDoc="footer,header"/>    
+                                                          <table>
+                                                              <tr>
+                                                                  <th>Document Name</th>
+                                                                  <th>Image</th>
+                                                              </tr>
+                                                              <tr ng-if="attachments.length > 0" ng-repeat="att in attachments">
+                                                                  <td>{{att.Name}}</td>
+                                                                  <td>
+                                                                      <img src="/servlet/servlet.FileDownload?file={{att.Id}}" style="width:100px;height:100px;"/>
+                                                                  </td>
+                                                              </tr>
+                                                              <tr ng-if="attachments.length == 0">
+                                                                  <td colspan="2">No Images Found</td>
+                                                              </tr>
+                                                          </table>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </section>    
+                                      </div>
+                                      
+                                      
+                                  </div>
+                             </div> 
+                         </div>
+                    </div>
+               </div>  
+        </body>
+       </div>
+       <c:ButtonJsComponent />
+       <script>
+      
+
+       </script>
+   </html>
+</apex:component>

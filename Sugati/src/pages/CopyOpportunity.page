@@ -1,0 +1,556 @@
+<!--Clone Opportunity-->
+<apex:page standardController="Opportunity" extensions="CopyOpportunity" title="Copy Opportunity" sidebar="false" showHeader="false" standardStylesheets="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+        <apex:includeScript value="//code.jquery.com/ui/1.11.0/jquery-ui.js" />
+        <script src="https://rawgithub.com/angular-ui/ui-sortable/master/src/sortable.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/>
+        <c:BasicResources ></c:BasicResources>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css"/>
+        <link rel="stylesheet" href="//rawgit.com/tamtakoe/oi.select/master/dist/select.css" />
+        <script data-require="angular-resource@1.4.3" data-semver="1.4.3" src="https://code.angularjs.org/1.4.3/angular-resource.js"></script>
+        <script src="//rawgit.com/tamtakoe/oi.select/master/dist/select-tpls.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-sanitize.js"></script>
+        <apex:form >
+            <style>
+                #contentLoading{
+                width: 100%;
+                height: 100%;
+                top: 0px;
+                left: 0px;
+                position: fixed;
+                display: block;
+                opacity: 0.7;
+                background-color: #fff;
+                z-index: 111111111111111111111;
+                text-align: center;
+                }
+                
+                #contentLoading1{
+                    position: absolute;
+                    top:350px;
+                    z-index: 100;
+                } 
+                a.accountN{
+                    width:20% !important;
+                    display: inherit !important;
+                    padding : 0 !important;
+                }
+                .datePicker{
+                    z-index: 111111;
+                }
+                .dateFormat{
+                    display : none;
+                }
+                .lookupIcon {
+                    background-image: url(/img/func_icons/util/lookup20.gif);
+                    background-position: 0 0;
+                    width: 20px;
+                    height: 20px;
+                    background-position: top left;
+                }
+                
+                .lookupIconOn {
+                    background-image: url(/img/func_icons/util/lookup20.gif);
+                    background-position: 0 0;
+                    width: 20px;
+                    height: 20px;
+                    background-position: top right;
+                }
+                .leftmargin{
+                    margin-left: 5px;
+                }
+                
+            </style>
+            <script>
+                var errorMsg = {!hEPageErrorMessage};
+                function loading(val){
+                    if (val) {
+                        document.getElementById('contentLoading').style.display = 'inline-block';
+                        document.getElementById('contentLoaded').style.display = 'none';
+                    }
+                    else {
+                        document.getElementById('contentLoading').style.display = 'none';
+                        document.getElementById('contentLoaded').style.display = 'inline-block';
+                    }
+                }
+                $(document).ready(function() {
+                    $('.lstOpp').toggle('show');
+                });
+                function checkIt(Isd){ 
+                    var c = $('.piped'+Isd).prop('checked');
+                    $( ".piped" ).each(function( ) {
+                        var cls=$(this).attr('class');
+                        cls = cls.split(' ')[1] 
+                        if(cls!= 'piped'+Isd &&  c == true){
+                            $('.'+cls).prop('checked',false);   
+                        }  
+                    });
+                }
+                function Next(){
+                    
+                    if($('.oppType').val == 'none'){
+                        alert(errorMsg['Copy_Opp_Option'],'Error');
+                    }else{
+                        callChangeType();
+                    }
+                }
+                function scrollIt(){
+                    console.log('scrolled');
+                    $('.slds-modal__content').animate({scrollTop: $(".matchSection").offset().top},'slow');
+                }
+                                            
+            </script>
+            <apex:pageMessages />
+            <apex:actionFunction name="callSave" status="loading" action="{!saveOpp}" reRender="modalPopup,modalPopup1,msg"/>
+            <apex:actionFunction name="callChangeType" status="loading" action="{!DoCopy}" reRender="modalPopup,modalPopup1,msg" oncomplete="scrollIt()"/>
+            <apex:actionFunction name="refreshOppType" status="loading" reRender="oppTypePanel,msg"/>
+            <apex:actionStatus id="loading" onstart="loading(true)" onstop="loading(false)" />
+            
+            <div class="slds">
+                <c:Loading ></c:Loading>
+                <c:AlertBox ></c:AlertBox>
+                <apex:outputPanel id="oppTypePanel">
+                    <script>
+                         var oppType = '{!OpportunityType}';
+                     </script>
+                </apex:outputPanel>
+                <!-- Copy Popup --->
+                <div class="lstOpp" style="display:none;" >
+                    <div aria-hidden="false" role="dialog" class="slds-modal slds-modal--large slds-fade-in-open">
+                        <div class="slds-modal__container">
+                            <div class="slds-modal__header" style="padding: 10px 16px;">
+                                <h2 class="slds-text-heading--medium" style="float:left;font-size:17px;"><strong><span class="red">Copy {!Opportunity.name} </span><span> (Client Groups : {!clientGroupCount}, Group Members : {!groupMemberCount})</span></strong></h2>
+                            </div>
+                            <div class="slds-modal__content" style="overflow: auto !important;">
+                                <apex:pageMessages id="msg"></apex:pageMessages>
+                                <apex:outputPanel id="modalPopup">
+                                    <div class="modal-body" style="padding-bottom: 0px;">
+                                        <apex:outputPanel rendered="{!step != 1}">
+                                                <strong>Client Group(s)</strong> 
+                                                <br/>
+                                                <apex:repeat value="{!lstCGs}" var="cg">
+                                                    {!cg.Name} (Adults: {!cg.CG_Total_Adult_Members__c}&nbsp;&nbsp;Children: {!cg.CG_Total_Child_Members__c}&nbsp;&nbsp;Infants: {!cg.CG_Total_Infant_Members__c})
+                                                    <br/>
+                                                </apex:repeat>
+                                            <br/>
+                                            <div class="slds-form--horizontal slds-form-element" style="text-align: inherit;margin-left: 15px;">
+                                                <label class="slds-form-element__label" for="supplier">Type:*</label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:selectList styleclass="oppType slds-select" value="{!OpportunityType}" size="1" style="width:200px">
+                                                        <apex:selectOption itemvalue="none" itemlabel="--Please select one--" />
+                                                        <apex:selectOption itemvalue="Same Client" itemlabel="Same client" />
+                                                        <apex:selectOption itemvalue="New Client without Cost" itemlabel="New client without cost"/>
+                                                        <apex:selectOption itemvalue="New Client with cost" itemlabel="New client with cost"/>
+                                                        <apex:actionSupport status="loading" event="onchange" action="{!selectType}" reRender="modalPopup,modalPopup1"/>
+                                                    </apex:selectList>    
+                                                </div>
+                                            </div>
+                                       </apex:outputPanel>
+                                     
+                                    <apex:outputPanel id="options">
+                                        <div class="row">
+                                            <apex:outputPanel rendered="{!step == 1}">
+                                                <br/>
+                                                <apex:pageBlock id="popUP">
+                                                    <apex:pageBlockTable value="{!lstOfOpportunity}" var="item" styleClass="itinerary slds-table slds-table--bordered">
+                                                        
+                                                        <apex:column headerValue="Pipeline">
+                                                            <div class="slds-form-element">
+                                                                <label class="slds-checkbox">
+                                                                    <apex:inputField styleClass="piped piped{!item.Id} slds-input" onChange="checkIt('{!item.Id}')" value="{!item.Pipeline__c}"/>
+                                                                    <span class="slds-checkbox--faux"></span>
+                                                                    <span class="slds-form-element__label"></span>
+                                                                </label>
+                                                            </div>
+                                                            
+                                                        </apex:column> 
+                                                        <apex:column value="{!item.Name }"/> 
+                                                        <apex:column value="{!item.O_Departure_Date__c}"/> 
+                                                        <apex:column value="{!item.O_Return_Date__c }"/> 
+                                                        
+                                                        <apex:column > 
+                                                            <apex:facet name="header">Stage</apex:facet>
+                                                            <apex:inputField value="{!item.StageName}" styleClass="slds-input"/>
+                                                        </apex:column>
+                                                        <apex:column value="{!item.CreatedDate}"/> 
+                                                    </apex:pageBlockTable> 
+                                                </apex:pageBlock>
+                                            </apex:outputPanel>
+                                        </div>
+                                        
+                                        <apex:outputPanel rendered="{!IF(step == 0 && OpportunityType != '' && OpportunityType != 'Same Client',true,false)}">
+                                            <br/>
+                                          <!-- Contact section --->
+                                        <div class="slds-card">
+                                        <div class="slds-card__body">
+                                          <apex:pageBlock id="pbCon">            
+                                                <table style="width:70%;">
+                                                    <tr>
+                                                        <td>
+                                                            <div class="slds-form--horizontal slds-form-element leftmargin"  style="text-align: inherit;">
+                                                                <label class="slds-form-element__label" for="supplier">Account:</label>
+                                                                <div class="slds-form-element__control">
+                                                                    <apex:inputField value="{!objCon.AccountId}" styleClass="accountN slds-input" style="width:80%;margin-right: 1%;" onchange="refreshContact()" />
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <apex:actionRegion >
+                                                                <div class="slds-form--horizontal slds-form-element" style="text-align: inherit;">
+                                                                    <label class="slds-form-element__label" for="supplier">Add additional pax:</label>
+                                                                    <div class="slds-form-element__control">
+                                                                        <apex:selectList id="newPax" value="{!SelectedPax}" size="1" styleClass="slds-select">
+                                                                            <apex:selectOption itemLabel="--Select--" itemValue="Select" /> 
+                                                                            <apex:selectOptions value="{!PaxOptions}"  />                   
+                                                                            <apex:actionSupport event="onchange" status="loading" action="{!DoCreate}" reRender="pbCon"  />                                                                                                      
+                                                                        </apex:selectList> 
+                                                                    </div>
+                                                                </div>
+                                                            </apex:actionRegion> 
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <br/>
+                                                
+                                                <apex:actionFunction name="refreshContact" status="loading" action="{!getContacts}" reRender="accountContacts"/>
+                                                <apex:outputPanel id="accountContacts">
+                                                     <apex:outputPanel id="opnew">
+                                                        <apex:actionRegion >
+                                                            <apex:outputPanel style="width:100%;" rendered="{!IF(lstWrapperAdd.size > 0, true, false)}" >
+                                                            <div class="field-title leftmargin" style="background: none !important;margin-bottom: -20px;"><strong>Travellers</strong></div><br/><br/>
+                                                            <apex:variable value="{!0}" var="count"/>
+                                                            <apex:pageBlockTable value="{!lstWrapperAdd}" var="item" id="table" styleClass="itinerary slds-table slds-table--bordered">
+                                                                <apex:column headerValue="Salutation">                                  
+                                                                     <apex:inputField id="conSal" value="{!item.conWrapper.Salutation}" style="width:100px"  styleClass="dd slds-select"/>
+                                                                </apex:column>
+                                                                <apex:column headerValue="First Name" >
+                                                                    <apex:inputText id="conFname" value="{!item.conWrapper.firstname}" style="width:100px"  styleClass="txt slds-input"/>
+                                                                </apex:column>
+                                                                <apex:column headerValue="Middle Name">
+                                                                    <apex:inputText value="{!item.conWrapper.C_Middle_Name__c }" style="width:100px"  styleClass="txt slds-input" /> 
+                                                                </apex:column>
+                                                                <apex:column headerValue="Last Name *">
+                                                                    <apex:inputText value="{!item.conWrapper.lastname}" style="width:100px"  styleClass="txt lastName slds-input" />
+                                                                </apex:column>
+                                                                
+                                                                <apex:column headerValue="Email *">
+                                                                    <apex:inputText id="conEmail" value="{!item.conWrapper.email}"  style="width:150px"  styleClass="email{!count} txt slds-input"/>
+                                                                </apex:column>
+                                                                <apex:column headerValue="Phone *">
+                                                                    <apex:inputText id="conPhn" value="{!item.conWrapper.phone}" onkeyup="checkinteger(this); return false;" style="width:150px" styleClass="phone{!count} txt slds-input"/>
+                                                                </apex:column>
+                                                                <apex:column headerValue="DOB">
+                                                                    <apex:inputField id="dob" value="{!item.conWrapper.birthdate}" onchange="setfocusDOB(this.id);" style="width:100px" styleClass="dobPicker txt slds-input" />                                    
+                                                                </apex:column>
+                                                                <apex:column headerValue="Client Type">
+                                                                    <apex:inputField value="{!item.conWrapper.Occupancy_Type__c}" styleClass="slds-input"/>
+                                                                </apex:column>
+                                                                <apex:column headerValue="Lead">
+                                                                    <div class="slds-form-element">
+                                                                        <label class="slds-checkbox">
+                                                                            <apex:inputCheckbox id="conLead" styleClass="lead lead{!count}" value="{!item.isLead}" onChange="if(!this.checked && '{!item.gmId}' == 'true' && '{!item.isLead}' == 'true'){var r = confirm('Are you sure you want to change the Lead status of this member? Please note that all the related client group costing will also be deleted.');if (r != true) { this.checked=true;} else{checkInclude('Lead','{!count}')}  }else{checkInclude('Lead','{!count}')}" style="width:50px" />
+                                                                            <span class="slds-checkbox--faux"></span>
+                                                                            <span class="slds-form-element__label"></span>
+                                                                        </label>
+                                                                    </div>
+                                                                </apex:column>
+                                                                <apex:column headerValue="Include">
+                                                                    <apex:actionRegion >
+                                                                        <div class="slds-form-element">
+                                                                            <label class="slds-checkbox">
+                                                                                <apex:inputCheckbox value="{!item.checked}" styleClass="checked checked{!count}"   onChange="if(!this.checked && '{!item.gmId}' == 'true' && '{!item.isLead}' == 'true'){var r = confirm('Are you sure you want to change the Lead status of this member? Please note that all the related client group costing will also be deleted.');if (r != true) { this.checked=true;} else{checkInclude('Include','{!count}');}  }else{checkInclude('Include','{!count}')}" />
+                                                                                <span class="slds-checkbox--faux"></span>
+                                                                                <span class="slds-form-element__label"></span>
+                                                                            </label>
+                                                                        </div>
+                                                                    </apex:actionRegion>
+                                                                    <apex:variable value="{!count+1}" var="count"/>   
+                                                                </apex:column>
+                                                                
+                                                            </apex:pageBlockTable>
+                                                            <br/>
+                                                          <apex:outputPanel rendered="{!step != 1 && OpportunityType == 'New Client with cost'}">
+                                                                <a class="slds-button slds-button--brand leftmargin"  onclick="checkvalidation1('Map');" ><span>Match</span></a>
+                                                          </apex:outputPanel> 
+                                                          </apex:outputPanel> 
+                                                            
+                                                          <apex:actionFunction name="saveContact" status="loading" action="{!saveContact}"   reRender="modalPopup,modalPopup1" oncomplete="scrollIt()"/>
+                                                      </apex:actionRegion>
+                                                </apex:outputPanel>                                               
+                                             </apex:outputPanel>                                        
+                                           </apex:pageBlock>
+                                       </div>
+                                   </div>
+                                           <script>
+                                               
+                                               function checkInclude(type,count){
+                                                    
+                                                    if(type == 'Lead' && $('.lead'+count).prop('checked')){
+                                                       $('.checked'+count).prop('checked', true); 
+                                                    }
+                                                    
+                                                    if(type == 'Include' && (!$('.checked'+count).prop('checked'))){
+                                                       $('.lead'+count).prop('checked', false);  
+                                                    }
+                                                 } 
+                                                                   
+                                               function callBirthDatePicker(){
+                                                    j$('input.dobPicker').each(function() {
+                                                // Clear the DOM element onfocus
+                                                this.onfocus = null;
+                                                });
+                                                    
+                                                    var currentDateYear = new Date();
+                                                    var rang = (currentDateYear.getFullYear()-2)+':'+(currentDateYear.getFullYear()+5);
+                                                    var rang = '1920:'+currentDateYear.getFullYear();
+                                                    $(".dobPicker").datepicker({ yearRange: ""+rang,
+                                                        changeYear: true, defaultDate: new Date(),
+                                                        altFormat: "dd/mm/yy", 
+                                                        dateFormat: 'dd/mm/yy'
+                                                    });
+                                                    
+                                                   
+                                                }
+                                                function checkvalidation1(map){
+                                                    
+                                                    if($('.accountN').val() == ''){
+                                                        $('.accountN').css('border-color','red');
+                                                        alert(errorMsg['Copy_Opp_NewC'],'Error');
+                                                        return false;
+                                                    }
+                                                    
+                                                    var validate = true;
+                                                    $('.lastName').each(function() {
+                                                        if($(this).val() == ''){
+                                                            $(this).css('border-color','red');
+                                                            validate = false;
+                                                        }
+                                                    }); 
+                                                    if(!validate){
+                                                        alert(errorMsg['Copy_Opp_Required'],'Error');
+                                                    }
+                                                    
+                                                    var rows = new Array();
+                                                    $('.lead').each(function() {
+                                                        var className = $(this).attr('class');
+                                                        var classNameS = className.split(' ');
+                                                        if($(this).is(":checked")){
+                                                            rows.push(classNameS[1].substring(4,classNameS[1].length));    
+                                                        }
+                                                    }); 
+                                                    var rows1 = new Array();
+                                                    $('.checked').each(function() {
+                                                        var className = $(this).attr('class');
+                                                        var classNameS = className.split(' ');
+                                                        if($(this).is(":checked")){
+                                                            rows1.push(classNameS[1].substring(7,classNameS[1].length));    
+                                                        }
+                                                    }); 
+                                                    
+                                                    if(rows1.length == 0 && validate){
+                                                        alert(errorMsg['Copy_Opp_Lead'],'Error');
+                                                         return false ;
+                                                    }
+                                                    else if(rows.length == 0 && validate){
+                                                        alert(errorMsg['Copy_Opp_Lead'],'Error');
+                                                         return false ;
+                                                    }
+                                                    else if(validate){
+                                                        var checkPhone = false;
+                                                        for(var i=0; i<rows.length; i++){
+                                                            if($('.email'+rows[i]).val() != '' && $('.phone'+rows[i]).val() != '')
+                                                                checkPhone = true;
+                                                        }
+                                                        
+                                                        if(checkPhone){
+                                                            $('.email'+rows[i]).attr('style','width: 150px;');
+                                                            $('.phone'+rows[i]).attr('style','width: 150px;');
+                                                            if(map == ''){
+                                                                    var validate = true;
+                                                                    var groupMembers = [];
+                                                                    var clientGroups = [];
+                                                                    
+                                                                    $('.selectedCG').each(function (){
+                                                                        if($(this).val() == ''){
+                                                                            validate = false;
+                                                                            $(this).css('border-color','red');
+                                                                        }
+                                                                        else{
+                                                                            $(this).css('border','1px solid #959595');
+                                                                        }
+                                                                        if($(this).val() != ''){
+                                                                            if(clientGroups.indexOf($(this).val()) != -1){
+                                                                                validate = false;
+                                                                                $(this).css('border-color','red');        
+                                                                            }
+                                                                            else{
+                                                                                clientGroups.push($(this).val());
+                                                                                $(this).css('border','1px solid #959595');
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                    
+                                                                    $('.selectedGM').each(function (){
+                                                                        if($(this).val() == ''){
+                                                                            validate = false; 
+                                                                            $(this).css('border-color','red');
+                                                                        }
+                                                                        else{
+                                                                            $(this).css('border','1px solid #959595');
+                                                                        }
+                                                                        if($(this).val() != ''){
+                                                                            if(groupMembers.indexOf($(this).val()) != -1){
+                                                                                validate = false;
+                                                                                $(this).css('border-color','red');        
+                                                                            }
+                                                                            else{
+                                                                                groupMembers.push($(this).val());
+                                                                                $(this).css('border','1px solid #959595');
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                    
+                                                                    $('.selectedGM').each(function (){
+                                                                         var oldOccu = $(this)[0].className.split(' ')[2];
+                                                                         if($(this)[0].selectedOptions[0].label.indexOf(oldOccu) == -1){
+                                                                             validate = false;
+                                                                             $(this).css('border-color','red'); 
+                                                                         }
+                                                                         else{
+                                                                             $(this).css('border','1px solid #959595');
+                                                                         }
+                                                                     });
+                                                                    
+                                                                    if(validate){
+                                                                        saveContact1();
+                                                                    }
+                                                                    else{
+                                                                        alert(errorMsg['Copy_Opp_GM'],'Error');
+                                                                    }
+                                                                }
+                                                                
+                                                             else{
+                                                                saveContact();
+                                                            }
+                                                            return true;    
+                                                        }
+                                                        else{
+                                                            for(var i=0; i<rows.length; i++){
+                                                                $('.email'+rows[i]).attr('style','border-color: red;width: 150px;');
+                                                                $('.phone'+rows[i]).attr('style','border-color: red;width: 150px;');    
+                                                            }
+                                                            alert(errorMsg['Copy_Opp_Phone'],'Error');
+                                                            return false ;
+                                                        }
+                                                    }
+                                                    
+                                                    
+                                                }
+                                                
+                                                function changeGroupMembervalue(selectedid,val){
+                                                    
+                                                    if(val != '' && val != undefined){
+                                                        $.each( $('.'+selectedid).find('option'), function( index, value ){
+                                                            if($('.'+selectedid).find('option')[index].text.indexOf(val.substring(0, 2)) > -1 ){
+                                                                $('.'+selectedid).val($('.'+selectedid).find('option')[index].value);
+                                                            }
+                                                        });
+                                                    }
+                                                    else{
+                                                         $('.'+selectedid).val('');
+                                                    }
+                                                    
+                                                    
+                                                }
+                                                
+                                            </script>
+                                           
+                                        </apex:outputPanel>
+                                        
+                                        <div class="row matchSection">
+                                            <apex:outputPanel style="color:red" rendered="{!mapping}">
+                                            <br/><br/>
+                                            You must put the exact number of client groups and group members. <br/>{!mappingMSG } <apex:outputLink rendered="{!mappingMSG  = 'Please configure your Itinerary completely'}" value="/{!OppId}">Click here</apex:outputLink>&nbsp;</apex:outputPanel>
+                                            <apex:outputPanel rendered="{!(!mapping) && step == 0 && OpportunityType == 'New Client with cost' && lstMappingCG.size > 0}">
+                                                <br/>
+                                                
+                                                <apex:pageBlock id="popUP1" >
+                                                    <div class="field-title" style="background: none !important;margin-bottom: -10px;"><strong>Match Client Groups</strong></div>&nbsp;           
+                                                    <apex:pageBlockTable value="{!lstMappingCG}" var="item" id="table" styleClass="itinerary slds-table slds-table--bordered">
+                                                        <apex:column headerValue="Old Client Group" style="width: 320px;">
+                                                            <apex:outputText value="{!item.oldClientGorup}"></apex:outputText>
+                                                        </apex:column>
+                                                        <apex:column headerValue="New Client Group" >    
+                                                            <apex:selectList styleClass="selectedCG slds-select" size="1" style="width: 250px;"  value="{!item.selectedNewCG}" onchange="changeGroupMembervalue('{!item.oldClientGorupId}true',this.value); return false;">
+                                                                <apex:selectOption itemLabel="--Select--" itemValue=""></apex:selectOption>
+                                                                <apex:SelectOptions value="{!item.newClientGorups}"></apex:SelectOptions>
+                                                            </apex:selectList>
+                                                        </apex:column>
+                                                    </apex:pageBlockTable>
+                                                </apex:pageBlock>
+                                                <apex:pageBlock id="popUP2" >
+                                                    <div class="field-title" style="background: none !important;margin-bottom: -10px;"><strong>Match Group Members</strong></div>&nbsp;           
+                                                    <apex:pageBlockTable value="{!lstMappingGM}" var="item" id="table" styleClass="itinerary slds-table slds-table--bordered">
+                                                        <apex:column headerValue="Old Group Member" style="width: 178px;">
+                                                            <apex:outputField value="{!item.oldGM.GM_Contact__R.Name}"></apex:outputField>
+                                                        </apex:column>
+                                                        <apex:column headerValue="Occupency Type" style="width: 178px;">
+                                                            <apex:outputField value="{!item.oldGM.GM_Contact__R.Occupancy_Type__c}"></apex:outputField>
+                                                        </apex:column>
+                                                        <apex:column headerValue="Lead Group Member" style="width: 142px;">
+                                                            <apex:outputField value="{!item.oldGM.GM_Lead_Passenger__c }"></apex:outputField>
+                                                        </apex:column>
+                                                        <apex:column headerValue="New Group Member">    
+                                                            <apex:selectList styleClass="selectedGM slds-select {!item.oldGM.GM_Contact__R.Occupancy_Type__c} {!item.oldGM.GM_Client_Group__c}{!item.oldGM.GM_Lead_Passenger__c}" style="width: 250px;" size="1"   value="{!item.selecteNewGM}">
+                                                                <apex:selectOption itemLabel="--Select--" itemValue=""></apex:selectOption>
+                                                                <apex:SelectOptions value="{!item.newGropMemberOption}"></apex:SelectOptions>
+                                                            </apex:selectList>
+                                                        </apex:column>
+                                                    </apex:pageBlockTable>
+                                                </apex:pageBlock>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </apex:outputPanel>
+                                    </div>
+                                    
+                                </apex:outputPanel>
+                            </div>
+                            <div  class="slds-modal__footer slds-modal__footer">
+                                <apex:outputPanel id="modalPopup1" style="float:right;">
+                                    <apex:actionFunction name="saveContact1" status="loading" action="{!saveContact}"   reRender="modalPopup,modalPopup1,msg" oncomplete="scrollIt()">
+                                        <apex:param name="dd" value="{!2}" assignTo="{!step}"/>
+                                    </apex:actionFunction>
+                                    <apex:outputPanel rendered="{!step == 1}">
+                                        <a class="slds-button slds-button--brand"  onclick="callSave();" ><span>Save &amp; Close</span></a>
+                                    </apex:outputPanel>  
+                                         
+                                    <apex:outputPanel rendered="{! (!mapping) && (step == 0 && OpportunityType != 'Same Client' && OpportunityType != 'New Client with cost' || (step != 1 && lstMappingCG.size > 0))}">
+                                        <a class="slds-button slds-button--brand"  onclick="checkvalidation1('');" ><span>Next</span></a>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!OpportunityType == 'Same Client' && step != 1}">
+                                        <a class="slds-button slds-button--brand"  onclick="callChangeType();" ><span>Next</span></a>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:none;" id="lstOpp" class="lstOpp slds-backdrop slds-backdrop--open"></div>
+                </div>
+                
+            </div>
+            
+        </apex:form>
+        <!--<script>
+            $('.lstOpp .slds-modal__close').on('click', function(){
+                $('.lstOpp').toggle('hide');    
+            });
+            $('.lstOpp .closeButton').on('click', function(){
+                $('.lstOpp').toggle('hide');    
+            });
+            
+        </script> -->
+    </html>
+</apex:page>

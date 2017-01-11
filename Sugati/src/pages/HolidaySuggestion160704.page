@@ -1,0 +1,60 @@
+<apex:page standardController="opportunity" standardStylesheets="false" sidebar="false" extensions="HolidaySuggestionController" action="{!pageReferenceMethod}">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-ui.js')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+        <c:BasicResources ></c:BasicResources>
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+        
+        <apex:stylesheet value="https://appssential-sf.s3.amazonaws.com/sugati/css/slds-appssential.css" />
+        <apex:includescript value="https://appssential-sf.s3.amazonaws.com/sugati/js/slds-appssential.js" />
+        <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/ng-file-upload-shim.min.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Framework,'FrameWork/JS/ng-file-upload.min.js')}" /> 
+        <script>
+            var myApp = angular.module('MyApp', ['ui.sortable','ui.bootstrap','oi.select','ngSanitize', 'ui.select','checklist-model','ngRoute','ngFileUpload']);
+            var contrl = myApp.controller('myController' ,function($scope,$http, $timeout,oiSelect){});
+            myApp.directive('ckEditor', [function () {
+                return {
+                    require: '?ngModel',
+                    link: function ($scope, elm, attr, ngModel) {
+            
+                        var ck = CKEDITOR.inline(elm[0]);
+                        ck.on( 'instanceReady', function( ev ) {
+                             var editor = ev.editor;
+                             editor.setReadOnly( false );
+                        });
+                        ck.on('pasteState', function () {
+                            $scope.$apply(function () {
+                                ngModel.$setViewValue(ck.getData());
+                            });
+                        });
+            
+                        ngModel.$render = function (value) {
+                            ck.setData(ngModel.$modelValue);
+                        };
+                    }
+                };
+            }])
+        </script>
+        <body>
+            <div class="app-wrap" ng-app="MyApp">
+                <div id="mycontroller" ng-controller="myController" >
+                    <div class="slds">
+                        <c:Loading ></c:Loading>
+                        <c:ClientInfoAll />
+                    </div>
+                    <apex:include pageName="HolidaySuggestionCompClone"/>
+                </div>
+            </div>
+        </body>
+    </html>
+      
+</apex:page>

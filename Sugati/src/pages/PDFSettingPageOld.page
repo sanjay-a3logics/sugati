@@ -1,0 +1,543 @@
+<apex:page standardController="Opportunity" title="Itinerary PDF Setting" cache="false" standardStylesheets="false" action="{!SaveIntroImgs}" extensions="ItineraryPDFSettingController" showHeader="true"  sidebar="false">
+    <apex:form >
+        <head>
+        <meta charset="utf-8" />
+        <title>jQuery UI Sortable - Default functionality</title>
+        <c:BasicResources ></c:BasicResources>
+        <style type="text/css">
+            .btnSave, .btnExit, .btnChange, .btnChng{   
+                color: #fff !important;
+                paslds-inputing: 0 10px !important;
+                height: 40px !important;
+                border: 0 !important;
+                font-size: 16px !important;
+                text-transform: uppercase !important;
+                font-weight: bold !important;
+            } 
+            .btnSave {   
+                    color: #fff !important;
+                    paslds-inputing: 0 10px !important;
+                    height: 40px !important;
+                    border: 0 !important;
+                    font-size: 16px !important;
+                    text-transform: uppercase !important;
+                    font-weight: bold !important;
+            }
+            .opportunity-table .btn {
+                     font-weight: bold !important;
+            }
+            input[type = checkbox]{
+                display: inline-block;
+                width: 25px;
+                height: 25px;
+                background-position: 0 0;
+                background-repeat: no-repeat;
+                line-height: 32px;
+                cursor: pointer;
+            }
+            
+            .styleMargin {
+                margin-left: 25px;
+                margin-right: 25px;
+            }
+            .Fbold{
+                font-weight: none !important;
+            }
+            .opportunity-table .btnBottm{font-size: 12.2px !important;}
+            .opportunity-table .btn{font-size: 12.2px !important;}  
+        
+        </style> 
+        <script>
+            var errorMSG = {!hEPageErrorMessage};
+            function loading(val){
+                if (val) {
+                    document.getElementById('contentLoading').style.display = 'inline-block';
+                    document.getElementById('contentLoaded').style.display = 'none';
+                }
+                else {
+                    document.getElementById('contentLoading').style.display = 'none';
+                    document.getElementById('contentLoaded').style.display = 'inline-block';
+                }
+            }
+       
+            $(function() {
+            $( "#sortable" ).sortable();
+            $( "#sortable" ).disableSelection();
+            });
+            
+                               
+            function testBlock(){
+                loadSupplier();  
+                CKEDITOR.replaceAll();
+                console.log('slds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-inputDslds-input'+CKEDITOR.instances);
+                for (var i in CKEDITOR.instances) {
+                    var chk = CKEDITOR.instances[i];
+                    
+                        var name = CKEDITOR.instances[i].name;
+                        console.log('className ='+chk.element.getAttribute('class').split(' ')[1]);
+                        vvR(chk)
+                    
+                } 
+                
+                
+            } 
+            function vvR(chk){
+                console.log(chk);
+                var className = chk.element.getAttribute('class').split(' ');
+                chk.on('change', function() {
+                         console.log(chk.element.getAttribute('class').split(' ')[1]);  
+                        console.log('Text Area Changes**************'+chk.getData());
+                        $( 'textarea[class$='+className[1]+']').html(chk.getData()) ;
+                   
+                }); 
+            } 
+            
+            $(document).ready(function(){
+                QuotationChanged('{!opp.O_Quotation_Type__c}');
+            });
+            function QuotationChanged(quotationType){
+                if(quotationType == 'Default'){
+                    $('.CGQuotation').hide();
+                    $('.DefaultQuotation').show();
+                }
+                else if(quotationType == 'Multiple Client Group'){
+                    $('.DefaultQuotation').hide();
+                    $('.CGQuotation').show();
+                }
+                if(quotationType == ''){
+                    $('.CGQuotation').hide();
+                    $('.DefaultQuotation').hide();
+                }
+            }
+            function showMsg(){
+                alert(errorMSG ['PDF_Settting_Save']);
+            } 
+            function navigateCancel(){
+                window.open('', '_self', '');
+                window.close();
+                location.href = '/'+'{!opp.Id}';
+            }
+            
+            
+            
+            jQuery(document).ready(function() {
+                if('{!opp.O_Map_Type__c}' =='Single'){
+                    $('.mapOptionControlled').hide();    
+                    $('.mapOptionControlledMaster').show();  
+                } 
+                else{
+                    $('.mapOptionControlled').show(); 
+                    $('.mapOptionControlledMaster').hide();     
+                }
+                
+            });
+            
+             function updateUI(mapType){
+                if(mapType =='Multiple'){
+                    $('.mapOptionControlled').show();
+                    $('.mapOptionControlledMaster').hide();            
+                }
+                else{
+                    $('.mapOptionControlled').hide(); 
+                    $('.mapOptionControlledMaster').show();      
+                }
+                            
+            }                       
+        </script>
+        
+        <style>
+            #contentLoading{
+                width: 100%;
+                height: 100%;
+                top: 0px;
+                left: 0px;
+                position: fixed;
+                display: block;
+                opacity: 0.7;
+                background-color: #fff;
+                z-index: 99;
+                text-align: center;
+            }
+    
+            #contentLoading1{
+                position: absolute;
+                top:350px;
+                z-index: 100;
+            }
+           
+        </style> 
+        
+        
+        </head>      
+        
+        <div class="body slds">
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+            <apex:pageBlock >
+                <script>
+                        jQuery(document).ready(function() { 
+                        
+                            for (var i in CKEDITOR.instances) {
+                            
+                            var chk = CKEDITOR.instances[i];
+                            var name = CKEDITOR.instances[i].name;
+                            console.log('className ='+chk.element.getAttribute('class').split(' '));
+                            vv(chk);      
+                            
+                            }
+                        });
+                        
+                        function vv(chk){
+                            console.log(chk);
+                            var className = chk.element.getAttribute('class').split(' ');
+                            chk.on('change', function() {
+                                     console.log(chk.element.getAttribute('class').split(' ')[1]);  
+                                    console.log('Text Area Changes**************'+chk.getData());
+                                    $( 'textarea[class$='+className[1]+']').html(chk.getData()) ;
+                               
+                            }); 
+                        } 
+                            
+                   </script>     
+                   <apex:actionFunction name="changeImage" action="{!changeImage}" reRender="msg">
+                       <apex:param name="Ter" value="" assignTo="{!sbId}"/>
+                       <apex:param name="Ter1" value="" assignTo="{!youWillStay}"/>
+                       <apex:param name="Ter2" value="" assignTo="{!IsCountryMap}"/>
+                       <apex:param name="Ter3" value="" assignTo="{!IsSingleMap}"/>
+                   </apex:actionFunction>
+                  
+                   <apex:outputPanel id="msg">
+                        <script>
+                            $("html, body").animate({ scrollTop: 0 }, "slow");
+                        </script>
+                        <apex:pageMessages ></apex:pageMessages>
+                   </apex:outputPanel>
+                
+                    <!-- Introduction Images-----> 
+                    <div class="slds-card" ng-form="IBForm">
+                        <div class="slds-card__header slds-grid">
+                            <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                <div class="slds-media__figure">
+                                    <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                                </div>
+                                <div class="slds-media__body">
+                                    <h2 class="slds-text-heading--small slds-truncate">Introduction Images</h2>
+                                    &nbsp;
+                                    
+                                </div>
+                            </div>
+                            <div class="slds-no-flex">
+                                <div class="slds-button-group">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-card__body" ng-class="{toggle : toggleIB}" style="max-height:370px;overflow-x:scroll;"> 
+                            <table >
+                                <tr>
+                                    <td>
+                                        <apex:repeat value="{!IntroImgsIds}" var="img" >
+                                            <apex:image value="/servlet/servlet.FileDownload?file={!img}"  width="230" height="150"/>&nbsp;
+                                        </apex:repeat>
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="opportunity-table">
+                                           <input type="button"  onclick="changeImage('{!SICCIntro.id}','false')" class="slds-button slds-button--brand" value="Change Image" ></input>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!----------------->
+                   
+                    <!--Destination Map Images-->
+                    <div class="slds-card" ng-form="IBForm">
+                        <div class="slds-card__header slds-grid">
+                            <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                <div class="slds-media__figure">
+                                    <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                                </div>
+                                <div class="slds-media__body">
+                                    <h2 class="slds-text-heading--small slds-truncate">Destination Map</h2>
+                                    &nbsp;
+                                    
+                                </div>
+                            </div>
+                            <div class="slds-no-flex">
+                                <div class="slds-button-group">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-card__body" ng-class="{toggle : toggleIB}" > 
+                            <table style="width: 100%;">
+                                <tr> 
+                                    <td style="width: 405px;"> 
+                                        <label  class="field-title" style="margin-left:25px;margin-right:5px;"><strong>Map:</strong></label>
+                                        <apex:selectList value="{!opp.O_Map_Type__c}" onChange="updateUI(this.value);" styleClass="slds-input" size="1" style="width:200px;"> 
+                                            <apex:selectOptions value="{!TypeOfMapOptions}"/>
+                                        </apex:selectList>
+                                    </td>
+                                    <td>
+                                       <div class="mapOptionControlledMaster">
+                                           <apex:image rendered="{!opp.O_Destination_Map_Image_ID__c != null}" value="/servlet/servlet.FileDownload?file={!opp.O_Destination_Map_Image_ID__c}"  width="230" height="150"/>&nbsp;
+                                       </div>
+                                       &nbsp; 
+                                    </td>
+                                    <td style="width:48%;">
+                                        <div id="sup{!Opp.id}" class="mapOptionControlledMaster opportunity-table">
+                                           <input type="button" onclick="changeImage('{!Opp.id}','false','false','true')" Class="slds-button slds-button--brand " value="Change Image"></input>
+                                        </div>    
+                                    </td>
+                                </tr>            
+                            </table >
+                            <table style="width: 100%;">
+                                <apex:repeat value="{!DestinationImgs}" var="Dobj" >
+                                    <tr>
+                                        <td colspan="3" style="width: 405px;padding: 10px;">
+                                            <label class="field-title" style="margin-left:25px;margin-right:5px;">Country Name:</label>
+                                            <apex:outputtext value="{!Dobj.Countryname}" style="font-size:16px;"/>
+                                        </td>
+                                        <td> &nbsp; </td>
+                                        <td style="width:48%;"> &nbsp; </td>
+                                    </tr>
+                                    <!---- Multiple Map ---->
+                                    <tr id="sup{!Dobj.TCId}">
+                                        <td style="width: 405px;padding: 10px;">
+                                            <table>
+                                                <tr> 
+                                                    <th> <label  style="margin-left:25px;margin-right:5px;">Accommodation/Region:</label> </th>
+                                                    <td> 
+                                                        <apex:selectList value="{!mapTCRecords[Dobj.TCId].TC_Accommodation_Region__c}" styleClass="slds-input" size="1" style="width:200px;"> 
+                                                            <apex:selectOptions value="{!AccommodationRegionOption}"/>
+                                                        </apex:selectList>
+                                                    </td>
+                                                </tr>            
+                                            </table >
+                                        </td>
+                                        <td style="paslds-inputing-left:10px; paslds-inputing-right:10px;padding: 10px;">
+                                            <div class="mapOptionControlled">
+                                                <apex:image rendered="{!Dobj.HasImage}" value="/servlet/servlet.FileDownload?file={!Dobj.ImgId}"  width="230" height="150"/>&nbsp;
+                                            </div>
+                                        </td>
+                                        <td style="width:48%;paslds-inputing-left:10px; paslds-inputing-right:10px;padding: 10px;">
+                                            <div class="mapOptionControlled opportunity-table">
+                                                <input type="button"  onclick="changeImage('{!Dobj.TCId}','false','true')" Class="slds-button slds-button--brand " value="Change Image"></input>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                            </table>
+                        </div>    
+                    </div>    
+                    
+                    
+                    <apex:outputPanel >
+
+                </apex:outputPanel>
+              
+                <!-- Detail Itinerary ---->
+                <div class="slds-card" ng-form="IBForm">
+                    <div class="slds-card__header slds-grid">
+                        <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-text-heading--small slds-truncate">Detailed Itinerary</h2>
+                                &nbsp;
+                                
+                            </div>
+                        </div>
+                        <div class="slds-no-flex">
+                            <div class="slds-button-group">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-card__body" ng-class="{toggle : toggleIB}">               
+                        <apex:outputPanel id="componentSection" >
+                            <div style="padding:15px">
+                                <apex:actionFunction status="loading" name="callController" action="{!callController}" reRender="sbId"/>
+                                    <apex:repeat value="{!supplierBookings1}" var="sb">
+                                        <div id="sup{!sb.id}">                       
+                                            <label  class="field-title"><strong>Component : </strong></label>
+                                            <label >{!sb.recordtype.name}</label>
+                                            
+                                            <apex:outputPanel rendered="{!(sb.recordtype.name == 'Int Flight' || sb.recordtype.name == 'Light Aircraft' || sb.recordtype.name == 'Domestic Flight') && sb.SB_Departure_Airport_l__c != null}">
+                                                <label class="field-title"><strong>From : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Departure_Airport_l__c }" rendered="{!sb.SB_Departure_Airport_l__c != null}"/>
+                                                &nbsp;&nbsp;
+                                                <label  class="field-title"><strong>To : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Arrival_Airport_l__c}" rendered="{!sb.SB_Arrival_Airport_l__c!= null}"/>
+                                                &nbsp;&nbsp;
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!sb.recordtype.name == 'Accommodation' && sb.SB_Supplier__c != null}">
+                                                <label  class="field-title"><strong>Supplier : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Supplier__r.Name}" rendered="{!sb.SB_Supplier__c != null}"/>
+                                                &nbsp;&nbsp;
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!sb.recordtype.name == 'Transfer' && sb.SB_Transfer_Car_Hire_Option__c!= null}">
+                                                <label  class="field-title"><strong>Transfer option : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Transfer_Car_Hire_Option__c}" rendered="{!sb.SB_Transfer_Car_Hire_Option__c != null}"/>
+                                                &nbsp;&nbsp;
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!sb.recordtype.name == 'Car Hire' && sb.SB_Transfer_Car_Hire_Option__c!= null}">
+                                                <label  class="field-title"><strong>Transfer option : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Transfer_Car_Hire_Option__c}" rendered="{!sb.SB_Transfer_Car_Hire_Option__c!= null}"/>
+                                                &nbsp;&nbsp;
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!sb.recordtype.name == 'Excursion' && sb.SB_Name__c!= null}">
+                                                <label  class="field-title"><strong>What to do : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Name__c}" />
+                                                &nbsp;&nbsp;
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!sb.recordtype.name == 'Days at Leisure' && (sb.SB_What_to_do__c != null || sb.SB_Supplier__c != null)}">
+                                                <label  class="field-title"><strong>WTG/Supplier : </strong></label>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_What_To_Do__r.Name}" rendered="{!sb.SB_What_to_do__c != null}"/>
+                                                <apex:OutputField style="font-size:16px;" value="{!sb.SB_Supplier__r.Name}" rendered="{!sb.SB_Supplier__c != null}"/>
+                                                &nbsp;&nbsp;
+                                            </apex:outputPanel>
+                                            
+                                            <label  class="field-title"><strong> Date : </strong></label>
+                                            <apex:OutputField style="font-size:16px;" value="{!sb.SB_From_Date__c}"/>
+                                            
+                                            <apex:outputPanel >
+                                                <label  class="field-title"><strong> New Page : </strong></label>
+                                                <apex:inputCheckbox disabled="{!CONTAINS(containsSB,sb.Id)}" value="{!sb.SB_New_Page__c}"   onchange="callController()" style="vertical-align: mislds-inputle;  bottom: 1px; cursor: pointer; position: relative; width: 25px; height: 18px; "/>
+                                                <table >
+                                                    <tr>
+                                                        <td style="width: 495px;">
+                                                            <apex:outputPanel id="sbId">
+                                                             <apex:repeat value="{!sb.SupplierBookingImages__r}" var="img" rendered="{!sb.SB_New_Page__c}">
+                                                                <apex:image value="/servlet/servlet.FileDownload?file={!img.SBI_Attachement_Id__c}" style="width:230px;height:150px;"/>&nbsp;
+                                                            </apex:repeat>
+                                                            </apex:outputPanel>
+                                                        </td>
+                                                        <td>
+                                                 <div class="opportunity-table">
+                                                     <input type="button" onclick="changeImage('{!sb.id}','false')" Class="slds-button slds-button--brand " value="Change Image"></input>
+                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                </table>
+                                           </apex:outputPanel>
+                                         
+                                            <br />
+                                            <div style="width: 100%; height: auto ;">
+                                             <apex:inputTextarea style="width: 50%; height: 70px ;" styleClass="ckeditor ck{!sb.Id}" richText="false" value="{!sb.SB_Itinerary_Description__c}" />
+                                                <hr />
+                                            </div>
+                                        </div>
+                                    </apex:repeat>
+                             <br /> <br />
+                             <h3 class="field-title" >Where You Will Stay</h3>&nbsp; 
+                             <apex:repeat value="{!supplierBookings2}" var="rec">
+                                 <div id="stay{!rec.sb.Id}">
+                                     <label  class="field-title"><strong>Component : </strong></label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.sb.recordtype.name}"/>
+                                    &nbsp;&nbsp;
+                                     <apex:outputPanel rendered="{!rec.sb.recordtype.name == 'Accommodation' && rec.sb.SB_Supplier__c != null}">
+                                        <label  class="field-title"><strong>Supplier : </strong></label>
+                                        <apex:OutputField style="font-size:16px;" value="{!rec.sb.SB_Supplier__r.Name}" rendered="{!rec.sb.SB_Supplier__c != null}"/>
+                                        &nbsp;&nbsp;
+                                    </apex:outputPanel>
+                                    <label class="field-title"><strong>Date : </strong></label>
+                                    <apex:OutputField style="font-size:16px;" value="{!rec.sb.SB_From_Date__c}"/>
+                                    &nbsp;&nbsp;
+                                    <apex:outputPanel >    
+                                    <br />
+                                      
+                                   </apex:outputPanel>
+                                 
+                                    <br />
+                                    <div style="width: 100%; height: auto ;">
+                                      <apex:inputTextarea richText="false" disabled="true" styleClass="ckeditor c{!rec.sb.Id}" style="width: 50%; height: 70px ;"   value="{!rec.qtMsg}" />
+                                        <hr />
+                                    </div>
+                                </div>      
+                            </apex:repeat>
+                            <br /> <br />
+                             <h3 class="field-title">Upgrages</h3>&nbsp; 
+                             <apex:outputPanel styleClass="otherUpgrages" style="margin-left:10px;" layout="block"> 
+                                <label class="field-title"><strong>Show Option text for quotation : </strong></label>
+                                <apex:inputCheckbox value="{!opp.O_Show_Option_text_for_quotation__c}"  style="vertical-align: mislds-inputle;  bottom: 1px; cursor: pointer; position: relative; width: 25px; height: 18px; "/>
+                                            
+                             </apex:outputPanel>
+                             <br /> <br />
+                             <h3 class="field-title">Quotation</h3>&nbsp; 
+                             <apex:outputPanel styleClass="quotation" style="margin-left:10px;" layout="block"> 
+                                <label class="field-title"><strong>Show Selling Price For : </strong></label>
+                                <apex:inputField value="{!opp.O_Quotation_Type__c}" styleClass="slds-input QuotationType" onchange="QuotationChanged(this.value);" style="width:200px;" />
+                                <apex:outputPanel layout="block" styleClass="DefaultQuotation" style="display:none;">
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td> 
+                                                <label class="field-title"></label> 
+                                                <apex:outputtext value="" style="font-size:16px;"/>
+                                            </td>
+                                            <td>
+                                                <label class="field-title"><strong>Quotation Text : </strong></label> 
+                                                <apex:inputField value="{!opp.O_Quotation_Default_Text__c}" styleClass="slds-input" style="width:200px;" />  
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>  
+                                <apex:outputPanel layout="block" styleClass="CGQuotation" style="display:none;">
+                                    <table style="width: 100%;">
+                                    <apex:repeat value="{!lstClientGroups}" var="clientGroup">
+                                        <tr>
+                                            <td style="width: 30%">
+                                                <label class="field-title"><strong>Client Group : </strong></label> 
+                                                <apex:outputtext value="{!clientGroup.Name}" style="font-size:16px;"/>
+                                            </td>
+                                            <td style="width: 70%">
+                                                <label style="font-size:16px;background: none !important;margin-left : -30px;" class="field-title">Quotation Text:</label> 
+                                                <apex:inputField value="{!clientGroup.CG_PDF_Quotation__c}" styleClass="slds-input" style="width:350px;" />  
+                                            </td>
+                                        </tr>
+                                    </apex:repeat> 
+                                    </table>
+                                </apex:outputPanel>             
+                             </apex:outputPanel>
+                        
+                        <br /><br />
+                            <div class="slds-card__footer">
+                                <div class="slds-x-small-buttons--horizontal" style="text-align: right;">
+                                    <span class="input-group-addon" >
+                                        <apex:commandButton id="btnSave" styleClass="slds-button slds-button--brand"   value="Save" action="{!save}" reRender="msg"  oncomplete="showMsg();"/>                   
+                                        <apex:commandButton id="btnExit"  styleClass="slds-button slds-button--brand"  value="Exit" action="{!cancel}" oncomplete="navigateCancel();"/>
+                                   </span>
+                               </div>
+                            </div>  
+                        </div>  
+                    </apex:outputPanel>    
+                 </div>
+                 </div>      
+            </apex:pageBlock>
+        
+        </div>
+        <script>
+             $(document).ready(function(){
+                var ret = '{!$CurrentPage.parameters.ret}';
+                ret = ret.trim();
+                if(ret != '')
+                    scrollToElement(ret,600);
+                
+            });
+            var scrollToElement = function(el, ms){
+                var speed = (ms) ? ms : 600;
+                $('body').animate({
+                    scrollTop: $('.'+el).offset().top
+                }, speed);
+            }
+        </script>
+    </apex:form>
+</apex:page>

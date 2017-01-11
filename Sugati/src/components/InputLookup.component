@@ -1,0 +1,59 @@
+<apex:component >
+  <script>
+    myApp.directive('inputLookup', function($timeout,$http) {
+        return {
+            restrict: 'AEC',
+            scope: {
+            value: '@',
+            label:'@',
+            modeldisplay:'=',
+            modelret: '='
+        },
+        
+        link: function(scope, elem, attrs) {
+            scope.current = 0;
+            scope.selected = false; 
+            
+            scope.da  = function(txt){
+              
+              scope.ajaxClass = 'loadImage';
+              $http({method: 'Get', url: '/apex/Account_JSON?AccName='+txt}).
+                    success(function(data, status) {
+                      scope.TypeAheadData = data;
+                      scope.ajaxClass = '';
+                    }) ;  
+            
+            }
+            
+            scope.handleSelection = function(key,val) {
+                scope.modelret = key;
+                scope.modeldisplay = val;
+                scope.current = 0;
+                scope.selected = true;
+            }
+            
+            scope.isCurrent = function(index) {
+                return scope.current == index;
+            }
+            
+            scope.setCurrent = function(index) {
+                scope.current = index;
+            }
+        
+        },
+        template: '<div class="slds"><input type="text" ng-model="modeldisplay" ng-KeyPress="da(modeldisplay)" ng-keydown="selected=false"'+
+                'style="width: 240px;" class="slds-input">'+
+                '<div class="slds-input ng-dirty ng-invalid ng-invalid-editable ng-invalid-parse ng-touched slds-scrollable--y overlap" style="overflow-y:auto; height:280px; width: 240px;" ng-hide="!modeldisplay.length || selected">'+
+                    '<li class="list-group-item noTopBottomPad" style="list-style-type: none;" ng-repeat="item in TypeAheadData|filter:model  track by $index" '+
+                       'ng-click="handleSelection(item[value],item[label])" style="cursor:pointer" '+
+                       'ng-class="{active:isCurrent($index)}" '+
+                       'ng-mouseenter="setCurrent($index)">'+
+                         ' '+
+                         '<i>{{item[label]}} <br /></i>'+   
+                    '</li> '+
+                '</div>'+
+                '</input></div>' 
+        };
+    });
+  </script>
+</apex:component>

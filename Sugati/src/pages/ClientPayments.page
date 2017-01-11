@@ -1,0 +1,665 @@
+<apex:page title="Client Payments" showHeader="true" standardController="Opportunity" extensions="ClientPaymentsController" sidebar="false" standardStylesheets="false" cache="false">
+    <!--
+    * Updated 24-02-2016
+    * Authore Veer Singh
+    *-->
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/jquery-1.10.2.js')}" />
+            <apex:includeScript value="//code.jquery.com/ui/1.11.0/jquery-ui.js" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/jquery-ui.css')}" />
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css"/>
+            <c:BasicResources ></c:BasicResources>
+            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.js"></script>
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/sortable.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-animate.js')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select2.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Framework, 'AdditionalResouce/select.css')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-resource.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/select-tpls.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/moment.min.js')}" />
+            <apex:includescript value="{!URLFOR($Resource.Framework,'AdditionalResouce/angular-sanitize.js')}"/>
+            
+        </head>
+       
+        <!--------- Style to control default behavior of Design System Components  ------->
+        <style>
+            
+            .slds .slds-section-title--divider{
+                margin-top : 10px !important;
+            }
+            @media (min-width: 48em)
+            .slds .slds-modal--large .slds-modal__container {
+                width: 70% !important;
+            }
+            
+            .slds-form-element {
+                padding: 2.5px !important;
+            }
+            .slds-large-size--1-of-3 {
+                padding-right: 5% !important;
+            }
+            select.ng-invalid{
+                border: 1px solid red !important;
+            }
+            input.ng-invalid{
+                border: 1px solid red !important;
+            }
+            .numberTD{
+                text-align: right !important;
+            }
+        </style>        
+       
+        <!-- Angular Controller -->
+        <script>
+            
+            var myApp = angular.module('MyApp', []);
+            var lastSetBy = '';
+            var contrl = myApp.controller('ClientPaymentsController' ,function($scope){
+                $scope.oppRecord = {!oppRecord};    
+                $scope.clientPayments = [];
+                $scope.totalReceipt = 0;
+                $scope.daysBeforeDepart = 0;
+                $scope.pickListValues = {!PickListValues};
+                $scope.clientGroups = {!clientGroupsOptions};
+                $scope.clientInvoices = {!clientInvoices};
+                $scope.newClientPaymentRec = {!newClientPaymentRec};
+                $scope.newClientPaymentRec = $scope.newClientPaymentRec;
+                $scope.editClientPayment = $scope.newClientPaymentRec;
+                $scope.showbookingoverview = true;
+                $scope.showpaymentreceived = true;
+                $scope.PageMessage = {!PageMessage};
+                //$scope.lstCreditMemos = {!lstCreditMemos};
+                $scope.promotionalcm = '';
+                $scope.backButton= ((typeof sforce != 'undefined') && (sforce != null));
+
+                //Function 
+                $scope.loadClientPayments = function(){ 
+                    Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.ClientPaymentsController.getClientPayments}', 
+                        $scope.oppRecord.Id,
+                        function(result, event){
+                            if(event.status){
+                                $scope.clientPayments = result;
+                                //Update totalReceipt Amount
+                                $scope.totalReceipt = 0;
+                                angular.forEach($scope.clientPayments, function(receipt){
+                                    if(receipt['{!nameSpacePrefix}CP_Processed_On__c'] !== undefined){
+                                        $scope.totalReceipt += receipt['{!nameSpacePrefix}CP_Amount__c'];  
+                                    }
+                                });
+                                $scope.totalReceipt = $scope.totalReceipt.toFixed(2);
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message, 'error');
+                            }
+                            $scope.loading("hide");
+                            $scope.$apply();
+                        }, 
+                        {escape:false}
+                    );
+                    $scope.loadOppDetail();
+                }
+                
+                $scope.loadOppDetail = function(){ 
+                    $scope.loading("show");
+                    Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.ClientPaymentsController.getOpportunityDetail}', 
+                        $scope.oppRecord.Id,
+                        function(result, event){
+                            if(event.status){
+                                $scope.oppRecord = result;
+                            }
+                            else if (event.type === 'exception'){
+                                alert(event.message, 'error');
+                            }
+                            $scope.loading("hide");
+                            $scope.$apply();
+                        }, 
+                        {escape:false}
+                    );
+                    
+                }
+                
+                $scope.showRecieptDetails = function(receipt){
+                    $scope.editClientPayment = $scope.updateDate(receipt);
+                    attachmentParentId = $scope.editClientPayment.Id;  
+                    angular.element(document.getElementById('FileUpload')).scope().isClientPayment = true;  
+                    angular.element(document.getElementById('FileUpload')).scope().getAttchments(); 
+                    
+                }
+                
+                $scope.addNewReciept = function(){
+                    $scope.promotionalcm = $('#promotionalcm').text();
+                    $scope.editClientPayment = angular.copy($scope.newClientPaymentRec);
+                    if($scope.clientGroups.length == 1){
+                        $scope.editClientPayment['{!nameSpacePrefix}CP_Payee__c'] = $scope.clientGroups[0].value;
+                    }
+                    if(($scope.editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] === undefined || $scope.editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] == null) && $scope.oppRecord['{!nameSpacePrefix}O_Outstanding__c'] > 0){
+                        $scope.editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] = $scope.oppRecord['{!nameSpacePrefix}O_Outstanding__c'];
+                        $scope.totalAmount();
+                    }
+                    $('.clientPayment').toggle('show');    
+                }
+                
+                //Save client payment record into database
+                $scope.totalAmount = function(){
+                    var creditCharge = 0;
+                    if($scope.editClientPayment['{!nameSpacePrefix}CP_Credit_Card_Charge__c'] !== undefined && $scope.editClientPayment['{!nameSpacePrefix}CP_Credit_Card_Charge__c'] != ''){
+                        creditCharge = $scope.editClientPayment['{!nameSpacePrefix}CP_Credit_Card_Charge__c']/100;
+                    }
+                    $scope.editClientPayment['{!nameSpacePrefix}CP_Amount__c'] =  parseFloat(($scope.editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c']+($scope.editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] * creditCharge)).toFixed(2));
+                }
+                
+                $scope.SaveClientPayment = function(){
+                    if($scope.cpForm.$valid){
+                        var cloneObj = angular.copy($scope.editClientPayment);
+                        $scope.loading("show");
+                        Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.ClientPaymentsController.saveClientPayment}', 
+                            JSON.stringify(changeDateInSalesforceDate(cloneObj)),
+                            function(result, event){
+                                if(event.status){
+                                    $scope.clientPayments = result;
+                                    alert($scope.PageMessage['Client_Payment_Save']);
+                                    $('.clientPayment').toggle('hide');  
+                                    //Update totalReceipt Amount
+                                    $scope.totalReceipt = 0;
+                                    angular.forEach($scope.clientPayments, function(receipt){
+                                        if(receipt['{!nameSpacePrefix}CP_Processed_On__c'] !== undefined){
+                                            $scope.totalReceipt += receipt['{!nameSpacePrefix}CP_Amount__c'];  
+                                        }
+                                    });
+                                    $scope.totalReceipt = $scope.totalReceipt.toFixed(2);
+                                    $scope.loadOppDetail();
+                                    jsrefreshComponent();
+                                }
+                                else if (event.type === 'exception'){
+                                    alert(event.message);
+                                    $scope.loading("hide");
+                                }
+                                $scope.loading("hide");
+                                $scope.$apply();
+                            }, 
+                            {escape:false}
+                        );    
+                    }
+                    else{
+                        alert('Please fill the required fields.','Error');
+                    }
+                }
+                
+                // loading 
+                $scope.loading = function(action){
+                    if(action == "show"){
+                        $('#contentLoading').css("display","block");
+                    }
+                    else{
+                        $('#contentLoading').css("display","none");
+                    }
+                }
+                
+                $scope.updateDate = function(clientPaymentObj){
+                    // For CP_Date__c 
+                    if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] !== undefined && typeof clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] === 'number')
+                        clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Date__c']).format('DD/MM/YYYY');    
+                    else if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Date__c'].indexOf('-') != -1)
+                        clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Date__c']).format('DD/MM/YYYY');    
+                    else if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] !== undefined )
+                        clientPaymentObj['{!nameSpacePrefix}CP_Date__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+                    
+                    // For CP_Expiry_Cheque_Doc_Date__c
+                    if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] !== undefined && typeof clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] === 'number')
+                        clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c']).format('DD/MM/YYYY');    
+                    else if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'].indexOf('-') != -1)
+                        clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] ).format('DD/MM/YYYY');    
+                    else if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] !== undefined )
+                        clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+                    
+                    // For CP_Processed_On__c     
+                    if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] !== undefined && typeof clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] === 'number')
+                        clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c']).format('DD/MM/YYYY');    
+                    else if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'].indexOf('-') != -1)
+                        clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c']).format('DD/MM/YYYY');    
+                    else if(clientPaymentObj !== undefined && clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] !== undefined )
+                        clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'] = moment(clientPaymentObj['{!nameSpacePrefix}CP_Processed_On__c'],'DD/MM/YYYY').format('DD/MM/YYYY');   
+                    return clientPaymentObj;      
+                }        
+                $scope.loadClientPayments();
+                
+                
+                //Receipt Method validation
+                $scope.validateFields = function(){
+                    if($scope.editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] != null && $scope.editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'].indexOf('Card') == -1){
+                        $scope.editClientPayment['{!nameSpacePrefix}CP_Credit_Card_Charge__c'] = null;
+                        $scope.editClientPayment['{!nameSpacePrefix}CP_Card_Type__c'] = null;
+                        $scope.totalAmount();
+                    }
+                }
+                
+                //Function TO upload Files
+                $scope.showFileUploader = function(parentId){
+                    attachmentParentId = parentId;  
+                    $('#attachmentParent').html('Attachments');
+                    angular.element(document.getElementById('FileUpload')).scope().getAttchments();
+                    $('#attachedFiles').empty();
+                    $('.popupUpload').toggle('show'); 
+                }
+                
+            });
+            
+            //DatePicker directive
+            myApp.directive('jqdatepicker', function () {
+                return {
+                    restrict: 'A',
+                    require: 'ngModel',
+                     link: function (scope, element, attrs, ngModelCtrl) {
+                        $(element).datepicker({
+                            dateFormat: 'dd/mm/yy',
+                            onSelect: function (date) {
+                                ngModelCtrl.$setViewValue(date);
+                                ngModelCtrl.$render();
+                                scope.$apply();
+                            }
+                        });
+                    }
+                };
+            });
+        
+            // Change date format of queried data
+            function changeDateInSalesforceDate(data){
+                for (var key in data) {
+                    var item = data[key];
+                    if (typeof item != "object" && (key.indexOf('Date__c') != -1 || key.indexOf('Processed_On__c') != -1 )) {
+                         if(data[key] != ''){
+                             data[key] = moment(data[key],'DD/MM/YYYY').format('YYYY-MM-DD');
+                         }
+                         else{
+                             data[key] = null;
+                         }
+                    } else if (typeof item == "object") {
+                        changeDateInSalesforceDate(item);
+                    }
+                } 
+                return data;
+            }
+            
+            
+            //Filter the SObject JSON
+            function removeHashKey(data) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    if (typeof item != "object") {
+                        delete data['$$hashKey']; 
+                    } else if (typeof item == "object") {
+                        delete data['$$hashKey'];
+                        removeHashKey(item);
+                    }
+                } return data;   
+            }
+            function removeProperty(data, prop) {
+                for (var key in data) {
+                    var item = data[key]; 
+                    
+                    if (typeof item != "object") {
+                        delete data[prop]; 
+                    } else if (typeof item == "object") {
+                        delete data[prop]; 
+                        removeProperty(item,prop);
+                    }
+                } return data;   
+            }
+            
+            
+            //jQuery code for event handling
+            $(document).ready(function(){
+                $('.slds-modal__close').on('click', function(){
+                    $('.clientPayment').toggle('hide');
+                });
+                
+                $('.closeButton').on('click', function(){
+                    $('.clientPayment').toggle('hide');
+                });
+            });
+            
+            //back button
+            
+            function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+              }
+        </script>
+        <!------------ Page Body starts here   --------------->
+        <body>
+            <div ng-app="MyApp" ng-cloak="ng-cloak">
+                <div id="ClientPaymentsController" ng-controller="ClientPaymentsController" >
+                    <div class="slds">        
+                        <c:Loading ></c:Loading>
+                        <c:OpportunityDetailComponent ></c:OpportunityDetailComponent>
+                        <c:AlertBox />
+                        <!-- Opp Summary Section --->
+                         
+                        <!-- Supplier Booking Table --->
+                        <div class="slds-card">
+                            <div class="slds-card__header slds-grid">
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                           <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                        </svg>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-text-heading--small slds-truncate">Client Payment</h2>
+                                    </div>
+                                </div>
+                                <div class="slds-no-flex">
+                                    <div class="slds-button-group">
+                                        <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                        <button class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-click = "showbookingoverview = !showbookingoverview">
+                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Show More</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__body" ng-show="showbookingoverview">
+                                <div class="slds-scrollable--x">
+                                    <table class="slds-table slds-table--bordered" style="font-size: 10px !important;">
+                                        <thead>
+                                            <tr> 
+                                                <th colspan="1" class="headerRow">Selling Currency</th>
+                                                <th colspan="1" class="headerRow">Booking Value</th>
+                                                <th colspan="1" class="headerRow">Total Receipt</th>
+                                                <th colspan="1" class="headerRow">Total Outstanding</th>
+                                                <th colspan="1" class="headerRow">Travel Date</th>
+                                                <th colspan="1" class="headerRow" >Day Before Departure</th>
+                                            </tr>     
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{{oppRecord.CurrencyIsoCode}}</td>
+                                                <td ng-model="totalAmount">{{oppRecord.Amount | number:2}}</td>
+                                                <td>{{totalReceipt | number:2}}</td>
+                                                <td>{{oppRecord['{!nameSpacePrefix}O_Outstanding__c'] | number:2}}</td>
+                                                <td> {{oppRecord['{!nameSpacePrefix}O_Departure_Date__c'] | date: 'dd/MM/yyyy'}} </td>
+                                                <td style="{!if(opp.O_Days_to_Departure__c < 60 ,'background-color: red;color: white;','')}"><!-- class="daysBeforeDepart" > -->{{oppRecord['{!nameSpacePrefix}O_Days_to_Departure__c']}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="slds-card__footer" ng-show="showbookingoverview" >
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">                                              
+                                        <div class="input-group-addon" style="float: right;">
+                                            <input type="button" id="btnSave" ng-click="addNewReciept()" class="slds-button slds-button--brand" value="Add New Reciept" />
+                                            <input type="button" id="btnclose" onClick="window.close()" class="slds-button slds-button--brand" value="Close" />
+                                            <input type="button"  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" value="Back"/>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Received --->
+                        <div class="slds-card">
+                            <div class="slds-card__header slds-grid">
+                                <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/standard-sprite/svg/symbols.svg#contact')}"></use> 
+                                        </svg>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-text-heading--small slds-truncate">Payment Received</h2>
+                                    </div>
+                                </div>
+                                <div class="slds-no-flex">
+                                    <div class="slds-button-group">
+                                        <!-- <button class="slds-button slds-button--neutral slds-button--small">Button</button> -->
+                                        <button class="slds-button slds-button--icon-border-filled slds-toggle-visibility" ng-click = "showpaymentreceived  = !showpaymentreceived " >
+                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS012, '/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Show More</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-card__body" ng-show="showpaymentreceived">
+                                <div class="slds-scrollable--x">
+                                    <table class="slds-table slds-table--bordered" style="font-size: 10px !important;">
+                                        <thead>
+                                            <tr> 
+                                                <th colspan="1" class="headerRow">Receipt Date</th>
+                                                <th colspan="1" class="headerRow">Receipt Method</th>
+                                                <th colspan="1" class="headerRow">Receipt Currency</th>
+                                                <th colspan="1" class="headerRow" style="text-align: right;max-width:95px;">Receipt Amount incl card charge</th>
+                                                <th colspan="1" class="headerRow" style="text-align: right;">Receipt Amount excl card charge</th>
+                                                <th colspan="1" class="headerRow" style="text-align: right;">Card Charge</th>
+                                                <th colspan="1" class="headerRow" style="text-align: right;">Card Charge(%)</th>
+                                                <th colspan="1" class="headerRow">Processed On</th>
+                                                <th colspan="1" class="headerRow">Action</th>
+                                            </tr>     
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="receipt in clientPayments">
+                                                <td> {{receipt['{!nameSpacePrefix}CP_Date__c'] | date: 'dd/MM/yyyy'}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}CP_Payment_Method_C__c']}} </td>
+                                                <td> {{oppRecord.CurrencyIsoCode}}</td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}CP_Amount__c'] | number:2}} </td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] | number:2}} </td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}CP_Credit_Card_Charges_Amount__c'] | number:2}} </td>
+                                                <td class="numberTD"> {{receipt['{!nameSpacePrefix}CP_Credit_Card_Charge__c'] | number:2}} </td>
+                                                <td> {{receipt['{!nameSpacePrefix}CP_Processed_On__c'] | date: 'dd/MM/yyyy'}} </td>
+                                                <td>
+                                                    <a href="#" ng-click="showRecieptDetails(receipt);" onclick="$('.clientPayment').toggle('show');return false;"> View/Edit Detail </a>
+                                                </td>
+                                             </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                          <!---- Client Payment Pop-up ----->
+                        <div aria-hidden="false" role="dialog" style="display:none"  class="clientPayment slds-modal slds-modal--large slds-fade-in-open">
+                            <div class="slds-modal__container">
+                                <div class="slds-modal__header" style="padding: 10px 16px;">
+                                    <h2 class="slds-text-heading--medium" style="float:left;font-size:17px;">Add/View Receipt</h2>
+                                    
+                                    <button class="slds-button slds-button--icon-inverse slds-modal__close" onclick="return false;">
+                                        <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS011, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="slds-modal__content slds-scrollable--x" style="overflow-y : auto !important" ng-form="cpForm">
+                                    <div>
+                                        <h3 class="slds-section-title--divider">Details 
+                                            <span style="float: right;margin-right: 45px;">
+                                                <label class="slds-checkbox">
+                                                    <input name="IsGroupBooking" type="checkbox" id="gBooking" ng-disabled="oppRecord.Client_Groups__r.length == 1"  ng-model="editClientPayment['{!nameSpacePrefix}CP_Client_Group_Payment__c']"/>
+                                                    <span class="slds-checkbox--faux"></span>
+                                                    <span class="slds-form-element__label">Is Group Booking</span>
+                                                </label>
+                                            </span></h3>
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptDate"> Receipt Date </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" id="modal-receiptDate" ng-disabled="editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined" ng-init="updateDate(editClientPayment)" class="slds-input" type="text" ng-model="editClientPayment['{!nameSpacePrefix}CP_Date__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptMethod"> Receipt Method </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptMethod" class="slds-select" ng-change="validateFields()" ng-disabled="editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined"  ng-model="editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c']" ng-options="record.value as record.label for record in pickListValues['{!nameSpacePrefix}cp_payment_method_c__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label"> Receipt Currency </label>
+                                                    <div class="slds-form-element__control" style="margin-top:8px;">
+                                                        {{oppRecord.CurrencyIsoCode}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptCardType"> Card Type </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptCardType" class="slds-select" ng-disabled="(editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined) || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cheque' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Credit Memo' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Internet Banking' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cash'" 
+                                                        ng-required="!(editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == null ||  editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] === undefined ||  editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cheque' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Credit Memo' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Internet Banking' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cash')"
+                                                        ng-model="editClientPayment['{!nameSpacePrefix}CP_Card_Type__c']" ng-options="record.value as record.label for record in pickListValues['{!nameSpacePrefix}cp_card_type__c']">
+                                                            <option value="" label="--Select--"></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptAmtExcCC"> Receipt Amount(excl Credit Charge) </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input type="number"  style="padding-right: 0px;" id="modal-receiptAmtExcCC" ng-if="editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Credit Memo'" max="{{promotionalcm}}" ng-disabled="editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined" class="slds-input" ng-blur="totalAmount()" ng-model="editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c']"/>
+                                                        <input type="number"  style="padding-right: 0px;" id="modal-receiptAmtExcCC" ng-if="editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] != 'Credit Memo'"  ng-disabled="editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined" class="slds-input" ng-blur="totalAmount()" ng-model="editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptCCChargePerc"> Credit Card Charge % </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input type="number"  style="padding-right: 0px;" id="modal-receiptCCChargePerc" class="slds-input" ng-blur="totalAmount()" ng-model="editClientPayment['{!nameSpacePrefix}CP_Credit_Card_Charge__c']" ng-disabled="(editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined) || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cheque' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Credit Memo' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Internet Banking' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cash'" 
+                                                        ng-required="!(editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == null ||  editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] === undefined ||  editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cheque' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Credit Memo' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Internet Banking' || editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Cash')" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptTotalAmt"> Total Receipt Amount </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input type="number" style="padding-right: 0px;" id="modal-receiptTotalAmt" ng-disabled="true" class="slds-input" ng-model="editClientPayment['{!nameSpacePrefix}CP_Amount__c']" ng-required="true" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptCardType"> Payee </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptCardType" class="slds-select" ng-class="{ 'hasError': cpForm.payee.$invalid }" name="payee" ng-required="true" ng-model="editClientPayment['{!nameSpacePrefix}CP_Payee__c']" ng-options="record.value as record.label for record in clientGroups">
+                                                            <option value="" label="--Select--"></option>        
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3"/>                                              
+                                            <!--
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element" ng-if="editClientPayment['{!nameSpacePrefix}CP_Payment_Method_C__c'] == 'Credit Memo'">
+                                                    <label class="slds-form-element__label" for="modal-receiptCardType"> Credit Memo</label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptCardType" class="slds-select" ng-class="{ 'hasError': cpForm.payee.$invalid }" name="payee" ng-required="true" ng-model="editClientPayment['{!nameSpacePrefix}CP_Credit_Memo__c']" ng-options="record.value as record.label for record in lstCreditMemos">
+                                                            <option value="" label="--Select--"></option>        
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            -->
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="slds-section-title--divider">Further Details</h3>
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptCardChequeNo"> Card/Cheque/Doc No. </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input id="modal-receiptCardChequeNo" class="slds-input" type="text" ng-model="editClientPayment['{!nameSpacePrefix}CP_Card_Cheque_Doc_No__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptCardChequeDate"> Expiry/Cheque/Doc Date </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" id="modal-receiptCardChequeDate"  ng-init="updateDate(editClientPayment)"  class="slds-input" type="text" ng-model="editClientPayment['{!nameSpacePrefix}CP_Expiry_Cheque_Doc_Date__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptSecNum"> Sec. Number </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input id="modal-receiptSecNum" class="slds-input" type="number" ng-model="editClientPayment['{!nameSpacePrefix}CP_Sec_Number__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label" for="modal-receiptProcessedOn"> Processed On </label>
+                                                    <div class="slds-form-element__control">
+                                                        <input jqdatepicker="jqdatepicker" ng-disabled="editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] != undefined && editClientPayment.Id !== undefined && editClientPayment['{!nameSpacePrefix}CP_Processed_On__c'] !== undefined"  id="modal-receiptProcessedOn"  ng-init="updateDate(editClientPayment)"  class="slds-input" type="text" ng-model="editClientPayment['{!nameSpacePrefix}CP_Processed_On__c']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label"> Client Invoice </label>
+                                                    <div class="slds-form-element__control">
+                                                        <select id="modal-receiptCardType" class="slds-select" ng-model="editClientPayment['{!nameSpacePrefix}CP_Client_Invoice__c']" ng-options="record.value as record.label for record in clientInvoices">
+                                                            <option value="" label="--Select--"></option>        
+                                                        </select>    
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-3">                                              
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div  ng-show="editClientPayment.Id !== undefined">
+                                        <!--<h3 class="slds-section-title--divider">Attachment </h3>
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-form--horizontal slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1">                                              
+                                                 <input type="hidden" ng-model="editClientPayment.Id" ng-value="editClientPayment.Id" id="attparentID" />
+                                                 <c:DragDrop DragDropHeight="100px" />    
+                                            </div>    
+                                        </div> -->
+                                        <h3 class="slds-section-title--divider">
+                                            Attached Files
+                                        </h3>
+                                       
+                                        <div class="slds-form-element">
+                                            <div id="attachedFiles" style="font-weight: bold; font-size: 12px; font-family: arial;">
+                                            
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-modal__footer slds-modal__footer">
+                                    <div class="slds-x-small-buttons--horizontal">
+                                        <button class="closeButton slds-button slds-button--brand" onclick="return false;">Close</button>
+                                        <button class="slds-button slds-button--brand" ng-show="editClientPayment.Id !== undefined" ng-click="showFileUploader(editClientPayment.Id);" onclick="return false;">Attach Files</button> &nbsp;
+                                        <button type="submit" ng-disabled="editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] === undefined || editClientPayment['{!nameSpacePrefix}CP_Receipt_AmountEx__c'] == null" class="slds-button slds-button--brand" ng-click="SaveClientPayment()" onclick="return false;">Save &amp; Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:none;" class="clientPayment slds-backdrop slds-backdrop--open"></div>
+                    </div>
+                </div>
+                
+                <c:FileUploader NameSpacePrefix="{!NameSpacePrefix}"/> 
+            </div>
+        </body>
+    </html>
+</apex:page>

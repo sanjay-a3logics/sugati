@@ -1,0 +1,100 @@
+<apex:page standardController="Opportunity"  extensions="CategoryController" sidebar="false" showHeader="true" >
+    <!--
+    *    Update - 24-02-2016
+    *    Authore -Veer Singh
+    *-->
+    <apex:form id="frm">
+        <apex:pageMessages />
+        <head>
+            <title>Final Doc/Confirmation Category </title>        
+            <c:BasicResources ></c:BasicResources>
+            <script>
+                var errorMsg = {!hEPageErrorMessage};
+                $scope.backButton= ((typeof sforce != 'undefined') && (sforce != null));
+                function loading(val){
+                    if (val) {
+                        document.getElementById('contentLoading').style.display = 'inline-block';
+                        document.getElementById('contentLoaded').style.display = 'none';
+                    }
+                    else {
+                        document.getElementById('contentLoading').style.display = 'none';
+                        document.getElementById('contentLoaded').style.display = 'inline-block';
+                    }
+                }
+                
+                function navigateTo() {
+                    alert(errorMsg['FinalDoc_Save']);
+                    location.href = '/apex/{!nameSpacePrefix}FinalDocsPage?id='+'{!oppId}';
+                }
+                
+                function back(){
+                        sforce.one.navigateToURL('/apex/{!nameSpacePrefix}ItineraryBuilder?id={!$CurrentPage.parameters.id}');
+                }
+                
+            </script>
+                
+            <script>
+                function selectCheckboxes(inpt,receivedInptID){
+                    var inputCheckBox = document.getElementsByTagName("input");                  
+                    for(var i=0; i<inputCheckBox.length; i++){          
+                        if(inputCheckBox[i].id.indexOf(receivedInptID)!=-1){                                     
+                            inputCheckBox[i].checked = inpt.checked;
+                        }
+                    }
+                }
+            </script> 
+        </head>
+        <div class="slds">        
+            <c:Loading />
+            <c:AlertBox />
+    
+            <div class="slds-card" ng-form="IBForm">
+                <div class="slds-card__header slds-grid">
+                    <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <img src="{!URLFOR($Resource.SLDS011, '/assets/icons/utility/table_60.png')}" style="height: 20px;cursor: pointer;"></img>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-text-heading--small slds-truncate">Final Doc/Confirmation Category Page</h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <div class="slds-button-group">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-card__body" ng-class="{toggle : toggleIB}">
+                    <div class="slds-scrollable--x">
+                        <apex:pageBlock id="Ic">  
+                            <apex:pageBlockTable value="{!FinalDocsCategories}" var="c" id="table" styleClass="itinerary slds-table slds-table--bordered" >
+                                <div>
+                                    <apex:column value="{!c.category.Name}" headerValue="Final Doc/Confirmation Category"/>
+                                </div>
+                                <div>
+                                    <apex:column >
+                                        <apex:facet name="header">
+                                            <apex:inputCheckbox onclick="selectCheckboxes(this,'inputId')" />
+                                        </apex:facet>
+                                        <label class="slds-checkbox">
+                                            <apex:inputCheckbox value="{!c.selected}" id="inputId" />
+                                            <span class="slds-checkbox--faux"></span>
+                                            <span class="slds-form-element__label"></span>
+                                        </label>
+                                    </apex:column>
+                                </div>
+                            </apex:pageBlockTable>
+                        </apex:pageBlock>    
+                    </div>
+                </div>
+                <div class="slds-card__footer">
+                    <div class="slds-x-small-buttons--horizontal" style="text-align: right;">
+                        <apex:commandButton id="btnSave" styleClass="slds-button slds-button--brand" status="loading"  value="Save" action="{!FinalDocs_Save}"  oncomplete="navigateTo();"/>
+                        <button  class="slds-button slds-button--brand" onclick="back();" ng-if="backButton" > Back</button>
+
+                    </div>
+                </div>
+            </div>
+      </div>
+   </apex:form>
+</apex:page>

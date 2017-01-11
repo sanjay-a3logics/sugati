@@ -1,0 +1,79 @@
+<apex:component controller="CSSController" >
+    <style>
+        .Google-Map-Address{
+            height: 100%;
+            width: 100% !important;
+        }
+    </style>
+    <script>    
+        var googleMapIds = [];
+        myApp.directive('map', ['$http', function($http){
+            return {
+                restrict: 'E',
+                replace: true,
+                scope: {
+                  location: '@',
+                  id: '@',
+                  title: '@'
+                },
+                template: '<div class="Google-Map-Address"></div>',
+                link: function(scope, element, attrs) {
+                    //console.log(element);
+                    //console.log(scope);
+                    var markerURL = '';
+                    //Get Marker Icon from Activated Style Sheet
+                    Visualforce.remoting.Manager.invokeAction(
+                       '{!$RemoteAction.CSSController.getAddressMarkerURL}',
+                        function(result, event){
+                            if (event.status) {
+                                markerURL = result;
+                            }else if (event.type === 'exception') 
+                                alert(event.message);
+                        }, 
+                        {escape: false}
+                    ); 
+                    
+                    attrs.$observe('location', function(value){
+                        scope.mapDivId = attrs.id;
+                        googleMapIds.push(attrs.id);
+                        //console.log(attrs.id);
+                        //console.log(attrs.location);
+                        var encodedString = encodeURI(attrs.location);          
+                        $http.get("https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyCBEe79PX4uwBGAvxOFpVvhfscX_vt4-ms&address="+ encodedString)
+                        .success(function(data) {
+                          if(data.status =='OK') {
+                              //console.log(data);
+                             
+                              initMap(data.results[0].geometry.location, attrs.title);        
+                          }        
+                        });
+                    });  
+                    var map;
+                    initMap = function(pos, title){
+                        var myOptions = {
+                            zoom: 12,
+                            center: new google.maps.LatLng(pos.lat,pos.lng),
+                            mapTypeId: google.maps.MapTypeId.ROADMAP
+                        };
+                        var googleMapSectionId = googleMapIds.pop();
+                        //console.log(document.getElementById(googleMapSectionId));
+                        map = new google.maps.Map(document.getElementById(googleMapSectionId), myOptions);
+                        //console.log('aaaaaaa');
+                        addMarker(pos, title);
+                    }
+                    addMarker = function(pos, title){
+                       var myLatlng = new google.maps.LatLng(pos.lat,pos.lng);
+                       var marker = new google.maps.Marker({
+                            position: myLatlng, 
+                            map: map,
+                            title:title,
+                            icon : markerURL
+                        });
+                    } //end addMarker
+                }
+            };
+        }]);
+            
+    </script>  
+    
+</apex:component>
